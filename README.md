@@ -4,6 +4,15 @@ A high-conversion, premium homepage for the International Hotel School built wit
 
 ---
 
+## 🚀 Fire It Up
+
+```bash
+chmod +x start.sh
+./start.sh
+```
+
+---
+
 ## 🚀 Features
 
 - Fully responsive landing page
