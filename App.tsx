@@ -4,7 +4,6 @@ import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
 import { ValuePillars } from './components/ValuePillars';
-import { ProblemAwareness } from './components/ProblemAwareness';
 import { GuidanceSupport } from './components/GuidanceSupport';
 import { CoreOfferings } from './components/CoreOfferings';
 import { SuccessFramework } from './components/SuccessFramework';
@@ -24,7 +23,6 @@ const HomePage = () => (
   <>
     <Hero />
     <ValuePillars />
-    <ProblemAwareness />
     <GuidanceSupport />
     <LogoSlider />
     <CoreOfferings />

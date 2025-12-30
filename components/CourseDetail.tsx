@@ -492,9 +492,9 @@ export const CourseDetail: React.FC = () => {
             </div>
 
             {/* Hero Section */}
-            <section className="relative h-[90vh] flex flex-col justify-end bg-brand-primary border-b border-white/5 pb-0 overflow-hidden pt-16">
+            <section className="relative z-0 h-[90vh] max-h-[550px] md:max-h-none flex flex-col justify-center md:justify-end bg-brand-primary border-b border-white/5 pb-0 overflow-hidden pt-16">
                 {/* The video/image background here matches the final state of the transition overlay */}
-                <div className="absolute inset-0 overflow-hidden">
+                <div className="absolute inset-0 overflow-hidden z-0">
                     {/* Image/Video Layer - z-40 */}
                     <div className="absolute inset-0 z-40">
                         {course.video ? (
@@ -520,9 +520,9 @@ export const CourseDetail: React.FC = () => {
                     ref={heroContentRef}
                     className="relative z-50 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full opacity-0 translate-y-8"
                 >
-                    <div className="lg:w-2/3 pr-0 lg:pr-12 pb-6 md:pb-8">
+                    <div className="lg:w-2/3 pr-0 lg:pr-12 pb-6 md:pb-8 flex flex-col items-center md:items-start text-center md:text-left mx-auto md:mx-0">
 
-                        <div className="flex flex-col items-start gap-4 mb-6">
+                        <div className="flex flex-col items-center md:items-start gap-4 mb-6">
                             <Link to="/" className="inline-flex items-center text-brand-muted hover:text-white text-sm transition-colors">
                                 <ArrowLeft size={16} className="mr-2" /> Back to Programmes
                             </Link>
@@ -531,11 +531,11 @@ export const CourseDetail: React.FC = () => {
                             </div>
                         </div>
 
-                        <h1 className="font-serif text-3xl md:text-5xl lg:text-6xl text-white mb-14 leading-tight font-semibold">
+                        <h1 className="font-serif text-3xl md:text-5xl lg:text-[3rem] lg:leading-[1.1] text-white mb-14 font-semibold">
                             {course.title}
                         </h1>
 
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 border-t border-gray-200 pt-10 h-[115px]">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 border-t border-gray-200 pt-10 h-auto md:h-[115px] w-full">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-full bg-transparent flex items-center justify-center text-brand-gold shrink-0">
                                     <Clock size={20} />
@@ -578,7 +578,7 @@ export const CourseDetail: React.FC = () => {
             </section>
 
             {/* Sticky Tabbed Navigation */}
-            <div className={`sticky top-[80px] bg-brand-dark shadow-lg border-b border-white/10 ${isTabsSticky ? 'z-[1]' : 'z-0'}`}>
+            <div className={`sticky top-[80px] bg-brand-dark shadow-lg border-b border-white/10 ${isTabsSticky ? 'z-[99]' : 'z-0'}`}>
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-4">
                         {SECTIONS.map(sec => (
@@ -819,7 +819,7 @@ export const CourseDetail: React.FC = () => {
 
                     {/* Sticky Sidebar (Fees) */}
                     <div className="lg:col-span-1 hidden lg:block relative z-50">
-                        <div className="sticky top-[85px] lg:-mt-[30rem] transition-[top] duration-300 z-20">
+                        <div className="sticky top-[185px] lg:-mt-[30rem] transition-[top] duration-300 z-20">
                             <FeesCard course={course} className="shadow-2xl shadow-black/50" />
                         </div>
 
