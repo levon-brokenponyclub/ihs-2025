@@ -57,7 +57,7 @@ export const Hero: React.FC = () => {
   const currentSlide = SLIDES[activeSlide];
 
   return (
-    <section className="relative min-h-[calc(100vh-40px)] flex flex-col bg-brand-primary">
+    <section className="relative h-[90vh] flex flex-col bg-brand-primary">
       {/* Background Layer */}
       <div className="absolute inset-0 z-0 bg-brand-primary overflow-hidden">
         {SLIDES.map((slide, index) => (
@@ -165,7 +165,29 @@ export const Hero: React.FC = () => {
       {/* Bottom Navigation */}
       <div className="relative z-30 mt-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-gray-200">
+          {/* Mobile: Progress Bars Only */}
+          <div className="block lg:hidden">
+            <div className="flex justify-center gap-2 py-6">
+              {SLIDES.map((_, idx) => {
+                const isActive = activeSlide === idx;
+                return (
+                  <button
+                    key={idx}
+                    onClick={() => handleManualChange(idx)}
+                    className="flex-1 max-w-20 h-1 bg-gray-300 rounded-full overflow-hidden relative focus:outline-none focus:ring-2 focus:ring-brand-accent"
+                    aria-label={`Go to slide ${idx + 1}: ${SLIDES[idx].title}`}
+                  >
+                    {isActive && (
+                      <div className="absolute top-0 left-0 h-full bg-brand-accent animate-progress-load rounded-full"></div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Desktop: Full Navigation Blocks */}
+          <div className="hidden lg:grid lg:grid-cols-4 divide-x divide-gray-200">
             {/* Navigation Blocks */}
             {[0, 1, 2].map((idx) => {
               const s = SLIDES[idx];
@@ -174,9 +196,10 @@ export const Hero: React.FC = () => {
                 <button
                   key={idx}
                   onClick={() => handleManualChange(idx)}
-                  className={`px-6 py-6 lg:px-8 lg:py-8 text-left transition-all duration-300 relative group overflow-hidden ${
+                  className={`px-8 py-8 text-left transition-all duration-300 relative group overflow-hidden ${
                     isActive ? 'bg-brand-surface' : 'bg-white hover:bg-brand-surface'
                   }`}
+                  aria-label={`Go to slide ${idx + 1}: ${s.title}`}
                 >
                   {/* Progress Bar */}
                   <div className="absolute top-0 left-0 right-0 h-1 bg-gray-200"></div>
@@ -198,7 +221,7 @@ export const Hero: React.FC = () => {
             })}
 
             {/* Apply Now Block */}
-            <div className="relative bg-brand-accent px-6 py-6 lg:px-8 lg:py-8 cursor-pointer hover:bg-opacity-90 transition-colors group flex items-center justify-between z-10">
+            <div className="relative bg-brand-accent px-8 py-8 cursor-pointer hover:bg-opacity-90 transition-colors group flex items-center justify-between z-10">
               <div className="relative z-10">
                 <span className="text-[10px] font-bold text-brand-primary/70 uppercase tracking-widest block mb-2 group-hover:translate-x-1 transition-transform">
                   Interested?

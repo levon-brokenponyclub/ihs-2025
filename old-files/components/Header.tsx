@@ -60,8 +60,8 @@ export const Header: React.FC = () => {
 
   return (
     <>
-    {/* Main Header */}
-    <header className="fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-100 h-[80px]">
+    {/* Main Header - Z-Index 50 to stay above Hero Transition (z-40) */}
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-100 h-[80px]">
         <div className="max-w-7xl mx-auto h-full flex items-center justify-between px-4 lg:px-8 relative">
             
             {/* Left: Logo */}

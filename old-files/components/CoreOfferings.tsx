@@ -23,6 +23,7 @@ import { useCart } from '../context/CartContext';
 import { useCompare } from '../context/CompareContext';
 import { ApplicationModal } from './ApplicationModal';
 import { CheckoutModal } from './CheckoutModal';
+import gsap from 'gsap';
 
 const TABS = [
     { id: 'All', label: 'All Programmes' },
@@ -39,7 +40,7 @@ const CourseCardItem: React.FC<{
     onExpand: (offering: Offering, rect: DOMRect) => void; 
 }> = ({ offering, onExpand }) => {
     const videoRef = useRef<HTMLVideoElement>(null);
-    const cardRef = useRef<HTMLDivElement>(null);
+    const mediaRef = useRef<HTMLDivElement>(null); // Ref for the media container
     const { addToCart } = useCart();
     const { addToCompare, isInCompare, removeFromCompare } = useCompare();
     
@@ -95,8 +96,9 @@ const CourseCardItem: React.FC<{
         if ((e.target as HTMLElement).closest('button')) return;
         
         e.preventDefault();
-        if (cardRef.current) {
-            const rect = cardRef.current.getBoundingClientRect();
+        // Use mediaRef for the expansion start point to match the visual content that expands (video/image)
+        if (mediaRef.current) {
+            const rect = mediaRef.current.getBoundingClientRect();
             onExpand(offering, rect);
         }
     };
@@ -108,13 +110,12 @@ const CourseCardItem: React.FC<{
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
                 onClick={handleCardClick}
-                ref={cardRef}
             >
-                <div className="bg-white w-full group rounded-2xl overflow-hidden transition-all duration-300 flex flex-col h-full shadow-lg hover:shadow-2xl hover:-translate-y-1 relative">
+                <div className="bg-white w-full group rounded-sm overflow-hidden border border-transparent hover:border-white/50 transition-all duration-300 flex flex-col h-full shadow-lg hover:shadow-2xl hover:-translate-y-1 relative">
                     {/* Media Area (Video/Image) */}
-                    <div className="relative h-60 overflow-hidden shrink-0 bg-gray-100">
+                    <div ref={mediaRef} className="relative h-60 overflow-hidden shrink-0 bg-gray-100">
                         <div className="absolute top-4 left-4 z-10">
-                            <span className="bg-[#f8fafc] border border-[#eff4f7] text-[#002a4e] text-[10px] font-bold px-3 py-1.5 uppercase tracking-widest rounded-sm shadow-md hover:bg-[#c2b068] hover:border-[#d4c999] hover:text-[#fff] transition-colors">
+                            <span className="bg-brand-gold text-white text-[10px] font-bold px-3 py-1.5 uppercase tracking-widest rounded-sm shadow-md">
                                 {offering.category}
                             </span>
                         </div>
@@ -123,6 +124,7 @@ const CourseCardItem: React.FC<{
                         <video
                             ref={videoRef}
                             src={offering.video}
+                            // Removed legacy poster to prevent mismatch with hero
                             muted
                             loop
                             playsInline
@@ -160,7 +162,13 @@ const CourseCardItem: React.FC<{
 
                     {/* Content Area */}
                     <div className="p-6 flex-1 flex flex-col relative z-10 bg-white">
-                        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-gray-500 font-medium mb-4">
+                        <div className="block">
+                            <h3 className="text-xl lg:text-2xl font-serif font-bold text-[#002B4E] mb-4 leading-tight group-hover:text-[#1289fe] transition-colors">
+                                {offering.title}
+                            </h3>
+                        </div>
+                        
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-gray-500 font-medium mb-6">
                             <div className="flex items-center gap-1.5">
                                 <Clock size={16} className="text-[#002B4E]" />
                                 <span>{offering.duration}</span>
@@ -169,54 +177,48 @@ const CourseCardItem: React.FC<{
                                 <GraduationCap size={16} className="text-[#002B4E]" />
                                 <span>{offering.qualification}</span>
                             </div>
-                            <div className="flex items-center gap-1.5">
-                                <span className="text-[#002B4E] font-semibold">{offering.category}</span>
-                            </div>
                         </div>
 
-                        <div className="block">
-                            <h3 className="text-lg lg:text-xl font-serif font-bold text-[#002B4E] mb-4 leading-tight group-hover:text-[#1289fe] transition-colors">
-                                {offering.title}
-                            </h3>
+                        {/* Excerpt with Hover Reveal */}
+                        <div className="grid grid-rows-[0fr] group-hover:grid-rows-[1fr] transition-[grid-template-rows] duration-500 ease-out">
+                            <div className="overflow-hidden">
+                                <p className="text-gray-600 text-sm mb-6 line-clamp-3 leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">
+                                    {offering.description}
+                                </p>
+                            </div>
                         </div>
                         
                         {/* Spacer to push content to bottom */}
                         <div className="mt-auto"></div>
 
-                        {/* Price Block: Always visible */}
-                        <div className="mb-4">
-                            <div className="flex justify-between items-end border-t border-gray-100 pt-3">
-                                <div>
-                                    <p className="text-[10px] uppercase tracking-widest text-gray-400 font-bold mb-1">Tuition</p>
-                                    <p className="text-lg font-bold text-[#002B4E]">
-                                        R {offering.price?.toLocaleString()}
-                                    </p>
-                                </div>
-                                <div className="text-right">
-                                    <p className="text-[10px] uppercase tracking-widest text-gray-400 font-bold mb-1">Next Intake</p>
-                                    <p className="text-xs font-bold text-[#002B4E]">{offering.startDate}</p>
+                        {/* Price Block: Collapsed above details, expands on hover */}
+                        <div className="grid grid-rows-[0fr] group-hover:grid-rows-[1fr] transition-[grid-template-rows] duration-300 ease-out mb-0 group-hover:mb-4">
+                            <div className="overflow-hidden opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100">
+                                <div className="flex justify-between items-end border-t border-gray-100 pt-3">
+                                    <div>
+                                        <p className="text-[10px] uppercase tracking-widest text-gray-400 font-bold mb-1">Tuition</p>
+                                        <p className="text-lg font-bold text-[#002B4E]">
+                                            R {offering.price?.toLocaleString()}
+                                        </p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-[10px] uppercase tracking-widest text-gray-400 font-bold mb-1">Next Intake</p>
+                                        <p className="text-xs font-bold text-[#002B4E]">{offering.startDate}</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
                         {/* Action Buttons */}
                         <div className="flex gap-3 relative z-20 bg-white">
-                            <button
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    if (cardRef.current) {
-                                        const rect = cardRef.current.getBoundingClientRect();
-                                        onExpand(offering, rect);
-                                    }
-                                }}
-                                className="flex-1 bg-[#002845] border border-[#002845] text-white hover:bg-[#002845]/90 font-bold transition-all duration-300 text-xs uppercase tracking-widest px-4 py-3 rounded-md flex items-center justify-center"
+                            <button 
+                                className="flex-1 bg-white border border-[#002B4E] text-[#002B4E] hover:bg-[#002B4E] hover:text-white font-bold transition-all duration-300 text-xs uppercase tracking-widest px-4 py-3 rounded-sm flex items-center justify-center gap-2"
                             >
-                                Course Details
+                                Details
                             </button>
-                            <button
+                            <button 
                                 onClick={handleQuickView}
-                                className="w-12 flex items-center justify-center bg-[#c2b068] border border-[#c2b068] text-white hover:bg-[#d4c999] rounded-none transition-all duration-300"
+                                className="w-12 flex items-center justify-center bg-[#002B4E] border border-[#002B4E] text-white hover:bg-[#002B4E]/90 hover:border-[#002B4E]/90 rounded-sm transition-all duration-300"
                                 aria-label="Quick View"
                             >
                                 <Eye size={18} />
@@ -254,15 +256,12 @@ export const CoreOfferings: React.FC = () => {
     const [activeTab, setActiveTab] = useState('All');
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const tabsRef = useRef<HTMLDivElement>(null);
-    const desktopTabsRef = useRef<HTMLDivElement>(null);
-    const sliderRef = useRef<HTMLDivElement>(null);
     const navigate = useNavigate();
-
+    
     // --- Transition States ---
     const [expandingOffering, setExpandingOffering] = useState<Offering | null>(null);
-    const [expansionStyle, setExpansionStyle] = useState<React.CSSProperties | null>(null);
-    const [isTransitioning, setIsTransitioning] = useState(false);
-    const [overlayVisible, setOverlayVisible] = useState(false);
+    const overlayRef = useRef<HTMLDivElement>(null);
+    const cloneRef = useRef<HTMLDivElement>(null);
 
     // Filters
     const [searchQuery, setSearchQuery] = useState('');
@@ -339,82 +338,106 @@ export const CoreOfferings: React.FC = () => {
         setSelectedAccreditations([]);
     };
 
-    const scrollSlider = (direction: 'left' | 'right') => {
-        if (sliderRef.current) {
-            const scrollAmount = 340; // 320px card + 20px gap
-            sliderRef.current.scrollBy({
-                left: direction === 'left' ? -scrollAmount : scrollAmount,
-                behavior: 'smooth'
+    const scrollTabs = (direction: 'left' | 'right') => {
+        if (tabsRef.current) {
+            const scrollAmount = 200;
+            tabsRef.current.scrollBy({ 
+                left: direction === 'left' ? -scrollAmount : scrollAmount, 
+                behavior: 'smooth' 
             });
         }
     };
 
-    // --- Transition Handler ---
+    // --- Transition Handler (GSAP) ---
     const handleCardExpand = (offering: Offering, rect: DOMRect) => {
-        // 1. Set initial state (match card position)
         setExpandingOffering(offering);
-        setOverlayVisible(false);
-        setExpansionStyle({
-            position: 'fixed',
-            top: rect.top,
-            left: rect.left,
-            width: rect.width,
-            height: rect.height,
-            zIndex: 40, // Below header
-            transition: 'all 0.5s ease-in-out', // Faster transition
-            borderRadius: '2px', // Match card border radius initially
-        });
-        setIsTransitioning(true);
-    
-        // 2. Trigger expansion (match hero position)
-        // Using double requestAnimationFrame to ensure browser paints initial state first
-        requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-                setExpansionStyle({
-                    position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    width: '100vw',
-                    height: '100vh',
-                    zIndex: 40,
-                    transition: 'all 0.5s ease-in-out',
-                    borderRadius: '0px',
-                });
-                setTimeout(() => setOverlayVisible(true), 250);
-            });
-        });
 
-        // 3. Navigate after animation completes
-        setTimeout(() => {
-            navigate(`/course/${offering.id}`, { state: { fromTransition: true } });
-        }, 1000); // Wait for transition to finish
+        // Wait for render so refs are populated
+        requestAnimationFrame(() => {
+            if (!cloneRef.current || !overlayRef.current) return;
+
+            const clone = cloneRef.current;
+            const overlay = overlayRef.current;
+
+            // 1. Set Initial State
+            gsap.set(clone, {
+                position: 'fixed',
+                top: rect.top,
+                left: rect.left,
+                width: rect.width,
+                height: rect.height,
+                zIndex: 40, // Below Header (50), Above Content
+                borderRadius: '2px' // Match card radius
+            });
+            gsap.set(overlay, { opacity: 0 });
+
+            // 2. Animate
+            const tl = gsap.timeline({
+                onComplete: () => {
+                    navigate(`/course/${offering.id}`, { state: { fromTransition: true } });
+                    // Cleanup happens via page unmount, or we can explicit clear
+                    setTimeout(() => setExpandingOffering(null), 100);
+                }
+            });
+
+            // Phase 1: Horizontal Expansion (0-400ms)
+            // Stays at same Y, but expands to full width
+            tl.to(clone, {
+                left: 0,
+                width: '100vw',
+                borderRadius: 0,
+                duration: 0.4,
+                ease: "power2.inOut"
+            });
+
+            // Phase 2: Vertical Expansion + Overlay (400-800ms)
+            // Moves up to cover hero area (usually 100vh or Hero height)
+            tl.to(clone, {
+                top: 0,
+                height: '100vh',
+                duration: 0.4,
+                ease: "power2.inOut"
+            }, "-=0.1"); // Slight overlap for fluidity
+
+            // Animate overlay opacity during vertical phase
+            tl.to(overlay, {
+                opacity: 1,
+                duration: 0.4,
+                ease: "power1.inOut"
+            }, "<"); 
+        });
     };
 
     const activeFilterCount = selectedStudyLevels.length + selectedFocusAreas.length + selectedAccreditations.length;
 
     return (
         <section className="bg-white relative min-h-screen" id="offerings">
-
-            <style dangerouslySetInnerHTML={{__html: `.programmes-slider::-webkit-scrollbar { height: 4px; }`}} />
-
-            {/* --- EXPANSION OVERLAY --- */}
-            {isTransitioning && expandingOffering && expansionStyle && (
+            
+            {/* --- EXPANSION CLONE --- */}
+            {expandingOffering && (
                 <div 
-                    style={expansionStyle}
-                    className="overflow-hidden bg-brand-dark shadow-2xl"
+                    ref={cloneRef}
+                    className="overflow-hidden bg-brand-dark shadow-2xl pointer-events-none"
+                    style={{ position: 'fixed', zIndex: 40 }}
                 >
                     <div className="relative w-full h-full">
-                          <video
-                             src={expandingOffering.video}
-                             poster={expandingOffering.image}
-                             muted
-                             autoPlay
-                             loop
-                             playsInline
-                             className="w-full h-full object-cover"
-                         />
-                         <div className={`absolute inset-0 bg-[#0a3355]/80 z-10 transition-opacity duration-500 ${overlayVisible ? 'opacity-80' : 'opacity-0'}`}></div>
-                     </div>
+                         {/* Blue Overlay (Fades in during Phase 2) */}
+                         <div 
+                            ref={overlayRef}
+                            className="absolute inset-0 bg-[#0a3355]/80 z-20"
+                         ></div>
+                         
+                         {/* Media */}
+                         <video
+                            src={expandingOffering.video}
+                            // Removed legacy poster to prevent mismatch during transition
+                            muted
+                            autoPlay
+                            loop
+                            playsInline
+                            className="w-full h-full object-cover z-10"
+                        />
+                    </div>
                 </div>
             )}
 
@@ -527,64 +550,50 @@ export const CoreOfferings: React.FC = () => {
                 {/* Floating Tabs & Controls - Positioned to overlap the boundary */}
                 <div className="absolute bottom-0 left-0 right-0 translate-y-1/2 z-20">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="flex items-center gap-6">
-
-                            {/* Filter Toggle (Left) */}
-                            <button
+                        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                            
+                            {/* Filter Toggle (Left) - Relative position in flex container */}
+                            <button 
                                 onClick={() => setIsFilterOpen(!isFilterOpen)}
-                                className="flex items-center justify-center bg-white hover:bg-gray-50 text-gray-500 hover:text-[#1289fe] rounded-full h-[50px] w-[50px] shadow-lg transition-all duration-300 relative z-10"
+                                className="hidden md:flex items-center justify-center bg-white hover:bg-gray-50 text-gray-500 hover:text-[#1289fe] rounded-full h-[50px] w-[50px] shadow-lg transition-all duration-300 relative z-10"
                                 aria-label="Toggle Filters"
                             >
                                 <SlidersHorizontal size={20} />
                             </button>
 
-                            {/* Tabs Menu (Center) */}
-                            <div className="flex-1 flex justify-center">
-                                <div
-                                    ref={tabsRef}
-                                    className="bg-white rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.1)] p-1.5 flex items-center gap-1 overflow-x-auto max-w-full no-scrollbar"
-                                >
-                                    {TABS.map(tab => (
-                                        <button
-                                            key={tab.id}
-                                            data-tab={tab.id}
-                                            onClick={() => {
-                                                setActiveTab(tab.id);
-                                                // Scroll to the clicked tab if not in view
-                                                setTimeout(() => {
-                                                    if (tabsRef.current) {
-                                                        const button = tabsRef.current.querySelector(`[data-tab="${tab.id}"]`);
-                                                        if (button) {
-                                                            button.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-                                                        }
-                                                    }
-                                                }, 0);
-                                            }}
-                                            className={`px-6 py-3 rounded-full text-xs font-bold uppercase tracking-widest transition-all duration-300 whitespace-nowrap ${
-                                                activeTab === tab.id
-                                                ? 'bg-[#1289fe] text-white shadow-md'
-                                                : 'text-gray-500 hover:bg-gray-100 hover:text-[#1289fe]'
-                                            }`}
-                                        >
-                                            {tab.label}
-                                        </button>
-                                    ))}
-                                </div>
+                            {/* Centered Floating Pill Navigation */}
+                            <div 
+                                ref={tabsRef}
+                                className="bg-white rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.1)] p-1.5 flex items-center gap-1 overflow-x-auto max-w-full no-scrollbar mx-auto"
+                            >
+                                {TABS.map(tab => (
+                                    <button
+                                        key={tab.id}
+                                        onClick={() => setActiveTab(tab.id)}
+                                        className={`px-6 py-3 rounded-full text-xs font-bold uppercase tracking-widest transition-all duration-300 whitespace-nowrap ${
+                                            activeTab === tab.id 
+                                            ? 'bg-[#1289fe] text-white shadow-md' 
+                                            : 'text-gray-500 hover:bg-gray-100 hover:text-[#1289fe]'
+                                        }`}
+                                    >
+                                        {tab.label}
+                                    </button>
+                                ))}
                             </div>
 
                             {/* Navigation Arrows (Right) */}
                             <div className="hidden md:flex gap-2">
-                                <button
-                                    onClick={() => scrollSlider('left')}
+                                <button 
+                                    onClick={() => scrollTabs('left')}
                                     className="w-[50px] h-[50px] bg-white rounded-full text-[#002B4E] flex items-center justify-center shadow-lg hover:bg-[#1289fe] hover:text-white transition-all duration-300"
-                                    aria-label="Previous programmes"
+                                    aria-label="Previous"
                                 >
                                     <ChevronLeft size={20} />
                                 </button>
-                                <button
-                                    onClick={() => scrollSlider('right')}
+                                <button 
+                                    onClick={() => scrollTabs('right')}
                                     className="w-[50px] h-[50px] bg-white rounded-full text-[#002B4E] flex items-center justify-center shadow-lg hover:bg-[#1289fe] hover:text-white transition-all duration-300"
-                                    aria-label="Next programmes"
+                                    aria-label="Next"
                                 >
                                     <ChevronRight size={20} />
                                 </button>
@@ -596,7 +605,7 @@ export const CoreOfferings: React.FC = () => {
             </div>
 
             {/* --- BOTTOM BLUE GRID SECTION --- */}
-            <div className="bg-[#072136] pt-24 pb-20">
+            <div className="bg-[#1289fe] pt-24 pb-20">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     
                     {/* Mobile Controls (Visible only on small screens) */}
@@ -609,28 +618,18 @@ export const CoreOfferings: React.FC = () => {
                         </button>
                     </div>
 
-                    {/* Results Slider */}
-                    <div className="relative">
-                        {displayedOfferings.length > 0 && (
-                            <>
-                                {/* Slider Container */}
-                                <div ref={sliderRef} className="overflow-x-auto programmes-slider snap-x snap-mandatory">
-                                    <div className="flex gap-6 pb-4" style={{ width: `calc(${displayedOfferings.length} * (340px + 1.5rem))` }}>
-                                        {displayedOfferings.map((offering) => (
-                                            <div key={offering.id} className="flex-shrink-0 snap-center" style={{ width: '340px' }}>
-                                                <CourseCardItem
-                                                    offering={offering}
-                                                    onExpand={handleCardExpand}
-                                                />
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            </>
-                        )}
-
+                    {/* Results Grid (Replaces Slider) */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {displayedOfferings.map((offering) => (
+                            <CourseCardItem 
+                                key={offering.id} 
+                                offering={offering} 
+                                onExpand={handleCardExpand}
+                            />
+                        ))}
+                        
                         {displayedOfferings.length === 0 && (
-                            <div className="text-center py-20 bg-white/10 rounded-sm border border-white/20">
+                            <div className="col-span-full text-center py-20 bg-white/10 rounded-sm border border-white/20">
                                 <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-6 text-gray-400 shadow-sm">
                                     <Eye size={40} />
                                 </div>
@@ -638,7 +637,7 @@ export const CoreOfferings: React.FC = () => {
                                 <p className="text-blue-100 max-w-md mx-auto mb-8 leading-relaxed">
                                     We couldn't find any courses matching your current selection. Try switching categories or adjusting filters.
                                 </p>
-                                <button
+                                <button 
                                     onClick={() => {
                                         setActiveTab('All');
                                         resetFilters();
@@ -655,4 +654,3 @@ export const CoreOfferings: React.FC = () => {
         </section>
     );
 };
-

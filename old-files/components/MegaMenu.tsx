@@ -98,20 +98,19 @@ export const MegaMenu: React.FC<MegaMenuProps> = ({ isOpen, onMouseEnter, onMous
     );
 
     return (
-        <div
-            className={`fixed top-[80px] left-0 right-0 z-50 overflow-hidden pointer-events-none bg-[#002B4E] transition-all duration-700 ease-[cubic-bezier(0.76,0,0.24,1)]`}
-            style={{
-                height: 'calc(100vh - 80px)',
-                maxHeight: '600px',
-                clipPath: isOpen ? 'inset(0 0 0% 0)' : 'inset(0 0 100% 0)',
-                opacity: isOpen ? 1 : 0
-            }}
-            onMouseEnter={onMouseEnter}
-            onMouseLeave={onMouseLeave}
+        <div 
+            className="fixed top-[80px] left-0 right-0 z-50 overflow-hidden pointer-events-none"
+            style={{ height: 'calc(100vh - 80px)', maxHeight: '600px' }}
         >
             {/* Curtain Container */}
-            <div
-                className={`w-full h-full shadow-2xl flex pointer-events-auto`}
+            <div 
+                className={`w-full h-full bg-[#002B4E] shadow-2xl flex transition-all duration-700 ease-[cubic-bezier(0.76,0,0.24,1)] pointer-events-auto`}
+                style={{ 
+                    clipPath: isOpen ? 'inset(0 0 0% 0)' : 'inset(0 0 100% 0)',
+                    opacity: isOpen ? 1 : 0 
+                }}
+                onMouseEnter={onMouseEnter}
+                onMouseLeave={onMouseLeave}
             >
                 <div className="max-w-7xl mx-auto px-4 lg:px-8 w-full h-full flex flex-col lg:flex-row">
                     
@@ -150,7 +149,7 @@ export const MegaMenu: React.FC<MegaMenuProps> = ({ isOpen, onMouseEnter, onMous
                     </div>
 
                     {/* Right Column: Specific Links */}
-                    <div className="w-full lg:w-2/3 bg-[#002240] h-full relative overflow-hidden after:content-[''] after:absolute after:inset-y-0 after:left-full after:right-0 after:bg-[#002240] after:-z-10">
+                    <div className="w-full lg:w-2/3 bg-[#002240] h-full relative overflow-hidden">
                         {/* Background Marquee Text */}
                         <div className="absolute -right-20 top-0 h-full flex items-center justify-center opacity-5 pointer-events-none select-none">
                              <div className="whitespace-nowrap text-[20vh] font-serif font-bold text-white transform -rotate-90 origin-center leading-none">

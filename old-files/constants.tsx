@@ -113,154 +113,154 @@ export const SUCCESS_STEPS: SuccessStep[] = [
 ];
 
 export const OFFERINGS: Offering[] = [
-   {
-     id: '7',
-     category: 'Hospitality',
-     title: 'Bachelor of Business Administration in Hospitality Operations Management',
-     duration: '3 Years',
-     qualification: 'Degree',
-     description: 'A prestigious NQF Level 7 qualification designed for future executives. Master the strategic, financial, and operational aspects of the global hospitality industry.',
-     image: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?q=80&w=2940',
-     video: 'https://media.istockphoto.com/id/472897860/video/culinary-school-intructor-teaching-students-in-commercial-kitchen.mp4?s=mp4-640x640-is&k=20&c=hsucGTdCRxP4qSN4fHeX9YW7_qNeeNno0dfHRiaB5_k=',
-     programmeTypes: ['Full Time Learning', 'Degrees'],
-     accreditations: ['IHS'],
-     price: 123000,
-     startDate: 'March 2025',
-     intake: 'March and July',
-     highlights: [
-         'NQF Level 7 Qualification',
-         'Strategic Management Focus',
-         'Financial & Revenue Management',
-         'Research Methodology'
-     ]
-   },
-   {
-     id: '1',
-     category: 'Hospitality',
-     title: 'Diploma in Hospitality Management',
-     duration: '3 Years',
-     qualification: 'Diploma',
-     description: 'Comprehensive hospitality management programme with AHLEI certification. Graduate job-ready with global skills.',
-     image: 'https://picsum.photos/id/435/600/400',
-     video: 'https://www.shutterstock.com/shutterstock/videos/1087550930/preview/stock-footage-chef-teaching-how-to-cook-cutting-vegetables-indoors-in-commercial-kitchen.webm',
-     programmeTypes: ['Full Time Learning', 'Blended Learning', 'Diplomas'],
-     accreditations: ['AHLEI', 'CATHSSETA', 'CTH'],
-     price: 95000,
-     startDate: '12 Feb 2025',
-     intake: 'March & July',
-     highlights: [
-         'AHLEI & CTH International Accreditation',
-         '6-Month Industry Internship included',
-         'Management & Leadership focus',
-         'Global alumni network access'
-     ]
-   },
-   {
-     id: '2',
-     category: 'Culinary',
-     title: 'Diploma in Culinary Arts',
-     duration: '2 Years',
-     qualification: 'Diploma',
-     description: 'Professional culinary training with École Ducasse certification. Learn from industry experts and gain practical skills.',
-     image: 'https://picsum.photos/id/292/600/400',
-     video: 'https://www.shutterstock.com/shutterstock/videos/3541615587/preview/stock-footage-hotel-employees-and-guest-at-reception-for-check-in-hospitality-and-accommodation-with-tourism.webm',
-     programmeTypes: ['Full Time Learning', 'Diplomas'],
-     accreditations: ['QCTO', 'CATHSSETA', 'City & Guilds', 'École Ducasse'],
-     price: 110000,
-     startDate: '14 Feb 2025',
-     intake: 'February & July',
-     highlights: [
-         'École Ducasse Certification',
-         'Advanced French Culinary Techniques',
-         'State-of-the-art kitchen facilities',
-         'Fast-track to Executive Chef'
-     ]
-   },
-   {
-     id: '3',
-     category: 'Culinary',
-     title: 'Professional Cookery Certificate',
-     duration: '1 Year',
-     qualification: 'Certificate',
-     description: 'Intensive culinary certificate programme for aspiring chefs. Master fundamental techniques and build your portfolio.',
-     image: 'https://picsum.photos/id/225/600/400',
-     video: 'https://media.istockphoto.com/id/472897860/video/culinary-school-intructor-teaching-students-in-commercial-kitchen.mp4?s=mp4-640x640-is&k=20&c=hsucGTdCRxP4qSN4fHeX9YW7_qNeeNno0dfHRiaB5_k=',
-     programmeTypes: ['Full Time Learning', 'In-Service Traineeship', 'Certificates'],
-     accreditations: ['CATHSSETA', 'City & Guilds'],
-     price: 65000,
-     startDate: '01 Mar 2025',
-     intake: 'March & August',
-     highlights: [
-         'Intensive practical training',
-         'Foundation culinary techniques',
-         'Industry exposure',
-         'Fast-track to employment'
-     ]
-   },
-   {
-     id: '4',
-     category: 'Culinary',
-     title: 'Professional Patisserie',
-     duration: '1 Year',
-     qualification: 'Certificate',
-     description: 'Specialised pastry and baking programme. Master the art of French patisserie with internationally recognized methods.',
-     image: 'https://picsum.photos/id/493/600/400',
-     video: 'https://www.shutterstock.com/shutterstock/videos/1087550930/preview/stock-footage-chef-teaching-how-to-cook-cutting-vegetables-indoors-in-commercial-kitchen.webm',
-     programmeTypes: ['Full Time Learning', 'Part Time Learning', 'Certificates'],
-     accreditations: ['CATHSSETA', 'City & Guilds', 'École Ducasse'],
-     price: 72000,
-     startDate: '01 Mar 2025',
-     intake: 'March & August',
-     highlights: [
-         'Specialised Pastry Techniques',
-         'Chocolate & Sugar Arts',
-         'Artisan Bread Baking',
-         'Wedding Cake Design'
-     ]
-   },
-   {
-     id: '5',
-     category: 'Hospitality',
-     title: 'Certificate in Hotel Operations',
-     duration: '1 Year',
-     qualification: 'Certificate',
-     description: 'Foundational hotel operations programme covering front office, housekeeping, and guest services.',
-     image: 'https://picsum.photos/id/369/600/400',
-     video: 'https://www.shutterstock.com/shutterstock/videos/3541615587/preview/stock-footage-hotel-employees-and-guest-at-reception-for-check-in-hospitality-and-accommodation-with-tourism.webm',
-     programmeTypes: ['Part Time Learning', 'Online Learning', 'Certificates', 'Credit Bearing Short Courses'],
-     accreditations: ['CATHSSETA', 'AHLEI'],
-     price: 55000,
-     startDate: 'Anytime',
-     intake: 'Anytime',
-     highlights: [
-         'Front Office Operations',
-         'Housekeeping Management',
-         'Guest Service Excellence',
-         'Property Management Systems'
-     ]
-   },
-   {
-     id: '6',
-     category: 'Hospitality',
-     title: 'Food & Beverage Management',
-     duration: '1 Year',
-     qualification: 'Certificate',
-     description: 'Specialised programme in restaurant and bar management. Learn service excellence, menu planning, and cost control.',
-     image: 'https://picsum.photos/id/431/600/400',
-     video: 'https://media.istockphoto.com/id/472897860/video/culinary-school-intructor-teaching-students-in-commercial-kitchen.mp4?s=mp4-640x640-is&k=20&c=hsucGTdCRxP4qSN4fHeX9YW7_qNeeNno0dfHRiaB5_k=',
-     programmeTypes: ['Online Learning', 'In-Service Traineeship', 'Certificates', 'AHLEI Professional Certification'],
-     accreditations: ['CATHSSETA', 'AHLEI'],
-     price: 58000,
-     startDate: 'Anytime',
-     intake: 'Anytime',
-     highlights: [
-         'Restaurant Operations',
-         'Bar & Beverage Management',
-         'Menu Planning & Costing',
-         'Service Standards'
-     ]
-   }
- ];
+  {
+    id: '7',
+    category: 'Hospitality',
+    title: 'Bachelor of Business Administration in Hospitality Operations Management',
+    duration: '3 Years',
+    qualification: 'Degree',
+    description: 'A prestigious NQF Level 7 qualification designed for future executives. Master the strategic, financial, and operational aspects of the global hospitality industry.',
+    image: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?q=80&w=2940',
+    video: 'https://videos.pexels.com/video-files/3129671/3129671-sd_640_360_30fps.mp4',
+    programmeTypes: ['Full Time Learning', 'Degrees'],
+    accreditations: ['IHS'],
+    price: 123000, 
+    startDate: 'March 2025',
+    intake: 'March and July',
+    highlights: [
+        'NQF Level 7 Qualification',
+        'Strategic Management Focus',
+        'Financial & Revenue Management',
+        'Research Methodology'
+    ]
+  },
+  {
+    id: '1',
+    category: 'Hospitality',
+    title: 'Diploma in Hospitality Management',
+    duration: '3 Years',
+    qualification: 'Diploma',
+    description: 'Comprehensive hospitality management programme with AHLEI certification. Graduate job-ready with global skills.',
+    image: 'https://picsum.photos/id/435/600/400',
+    video: 'https://videos.pexels.com/video-files/3196238/3196238-sd_640_360_25fps.mp4',
+    programmeTypes: ['Full Time Learning', 'Blended Learning', 'Diplomas'],
+    accreditations: ['AHLEI', 'CATHSSETA', 'CTH'],
+    price: 95000,
+    startDate: '12 Feb 2025',
+    intake: 'March & July',
+    highlights: [
+        'AHLEI & CTH International Accreditation',
+        '6-Month Industry Internship included',
+        'Management & Leadership focus',
+        'Global alumni network access'
+    ]
+  },
+  {
+    id: '2',
+    category: 'Culinary',
+    title: 'Diploma in Culinary Arts',
+    duration: '2 Years',
+    qualification: 'Diploma',
+    description: 'Professional culinary training with École Ducasse certification. Learn from industry experts and gain practical skills.',
+    image: 'https://picsum.photos/id/292/600/400',
+    video: 'https://videos.pexels.com/video-files/4252396/4252396-sd_640_360_30fps.mp4',
+    programmeTypes: ['Full Time Learning', 'Diplomas'],
+    accreditations: ['QCTO', 'CATHSSETA', 'City & Guilds', 'École Ducasse'],
+    price: 110000,
+    startDate: '14 Feb 2025',
+    intake: 'February & July',
+    highlights: [
+        'École Ducasse Certification',
+        'Advanced French Culinary Techniques',
+        'State-of-the-art kitchen facilities',
+        'Fast-track to Executive Chef'
+    ]
+  },
+  {
+    id: '3',
+    category: 'Culinary',
+    title: 'Professional Cookery Certificate',
+    duration: '1 Year',
+    qualification: 'Certificate',
+    description: 'Intensive culinary certificate programme for aspiring chefs. Master fundamental techniques and build your portfolio.',
+    image: 'https://picsum.photos/id/225/600/400',
+    video: 'https://videos.pexels.com/video-files/5908233/5908233-sd_640_360_24fps.mp4',
+    programmeTypes: ['Full Time Learning', 'In-Service Traineeship', 'Certificates'],
+    accreditations: ['CATHSSETA', 'City & Guilds'],
+    price: 65000,
+    startDate: '01 Mar 2025',
+    intake: 'March & August',
+    highlights: [
+        'Intensive practical training',
+        'Foundation culinary techniques',
+        'Industry exposure',
+        'Fast-track to employment'
+    ]
+  },
+  {
+    id: '4',
+    category: 'Culinary',
+    title: 'Professional Patisserie',
+    duration: '1 Year',
+    qualification: 'Certificate',
+    description: 'Specialised pastry and baking programme. Master the art of French patisserie with internationally recognized methods.',
+    image: 'https://picsum.photos/id/493/600/400',
+    video: 'https://videos.pexels.com/video-files/5634473/5634473-sd_640_360_30fps.mp4',
+    programmeTypes: ['Full Time Learning', 'Part Time Learning', 'Certificates'],
+    accreditations: ['CATHSSETA', 'City & Guilds', 'École Ducasse'],
+    price: 72000,
+    startDate: '01 Mar 2025',
+    intake: 'March & August',
+    highlights: [
+        'Specialised Pastry Techniques',
+        'Chocolate & Sugar Arts',
+        'Artisan Bread Baking',
+        'Wedding Cake Design'
+    ]
+  },
+  {
+    id: '5',
+    category: 'Hospitality',
+    title: 'Certificate in Hotel Operations',
+    duration: '1 Year',
+    qualification: 'Certificate',
+    description: 'Foundational hotel operations programme covering front office, housekeeping, and guest services.',
+    image: 'https://picsum.photos/id/369/600/400',
+    video: 'https://videos.pexels.com/video-files/7578550/7578550-sd_640_360_30fps.mp4',
+    programmeTypes: ['Part Time Learning', 'Online Learning', 'Certificates', 'Credit Bearing Short Courses'],
+    accreditations: ['CATHSSETA', 'AHLEI'],
+    price: 55000,
+    startDate: 'Anytime',
+    intake: 'Anytime',
+    highlights: [
+        'Front Office Operations',
+        'Housekeeping Management',
+        'Guest Service Excellence',
+        'Property Management Systems'
+    ]
+  },
+  {
+    id: '6',
+    category: 'Hospitality',
+    title: 'Food & Beverage Management',
+    duration: '1 Year',
+    qualification: 'Certificate',
+    description: 'Specialised programme in restaurant and bar management. Learn service excellence, menu planning, and cost control.',
+    image: 'https://picsum.photos/id/431/600/400',
+    video: 'https://videos.pexels.com/video-files/5450849/5450849-sd_640_360_30fps.mp4',
+    programmeTypes: ['Online Learning', 'In-Service Traineeship', 'Certificates', 'AHLEI Professional Certification'],
+    accreditations: ['CATHSSETA', 'AHLEI'],
+    price: 58000,
+    startDate: 'Anytime',
+    intake: 'Anytime',
+    highlights: [
+        'Restaurant Operations',
+        'Bar & Beverage Management',
+        'Menu Planning & Costing',
+        'Service Standards'
+    ]
+  }
+];
 
 const SPECIFIC_COURSE_DATA: Record<string, Partial<CourseDetail>> = {
     '7': {

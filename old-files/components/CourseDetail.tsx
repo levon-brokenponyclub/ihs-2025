@@ -10,12 +10,10 @@ import { MultiStepForm } from './ui/MultiStepForm';
 import { 
   Clock, 
   GraduationCap, 
-  MapPin, 
   Calendar, 
   CheckCircle, 
   Download, 
   ArrowLeft,
-  Briefcase,
   Award,
   Check,
   ChevronUp,
@@ -30,15 +28,14 @@ import {
   X,
   ArrowRight,
   BookOpen,
-  Target,
   Circle,
-  FileText,
-  ShieldCheck
+  MapPin
 } from 'lucide-react';
 import { Offering } from '../types';
 import { QuickViewModal } from './QuickViewModal';
 import { ApplicationModal } from './ApplicationModal';
 import { CheckoutModal } from './CheckoutModal';
+import gsap from 'gsap';
 
 const FeesCard = ({ course, className }: { course: any, className?: string }) => {
     const { addToCart } = useCart();
@@ -57,32 +54,32 @@ const FeesCard = ({ course, className }: { course: any, className?: string }) =>
     };
 
     return (
-        <div className={`bg-white border border-gray-200 rounded-sm overflow-hidden shadow-sm ${className}`}>
-            <div className="bg-[#002B4E] p-4 text-center">
+        <div className={`bg-brand-card border border-white/10 rounded-sm overflow-hidden shadow-2xl ${className}`}>
+            <div className="bg-brand-gold p-4 text-center">
                 <span className="text-white font-bold uppercase tracking-widest text-sm">2025 Fees</span>
             </div>
             <div className="p-6 md:p-8 text-center">
-                <p className="text-gray-600 text-xs uppercase tracking-wider mb-2">Per Year</p>
-                <p className="text-4xl font-serif text-[#002B4E] font-bold mb-6">{course.fees.tuition}</p>
-
-                <div className="border-t border-gray-200 pt-4 mb-6">
+                <p className="text-brand-muted text-xs uppercase tracking-wider mb-2">Per Year</p>
+                <p className="text-4xl font-serif text-white font-bold mb-6">{course.fees.tuition}</p>
+                
+                <div className="border-t border-white/10 pt-4 mb-6">
                     <div className="flex justify-between text-sm mb-2">
-                        <span className="text-gray-600">Registration Fee</span>
-                        <span className="text-[#002B4E] font-bold">{course.fees.registration}</span>
+                        <span className="text-gray-400">Registration Fee</span>
+                        <span className="text-white font-bold">{course.fees.registration}</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Payment Terms</span>
-                        <span className="text-[#002B4E] font-bold">Monthly / Annually</span>
+                        <span className="text-gray-400">Payment Terms</span>
+                        <span className="text-white font-bold">Monthly / Annually</span>
                     </div>
                 </div>
-
-                <p className="text-xs text-gray-600 mb-8 italic">
+                
+                <p className="text-xs text-gray-400 mb-8 italic">
                     *{course.fees.note}
                 </p>
 
                 <div className="space-y-3">
-                    <Button
-                        variant="primary"
+                    <Button 
+                        variant="primary" 
                         className="w-full"
                         onClick={handleAction}
                         icon={isEcommerce ? <ShoppingBag size={16} /> : undefined}
@@ -283,7 +280,7 @@ const CourseCard: React.FC<{ offering: Offering }> = ({ offering }) => {
                     <p className="text-3xl font-serif text-brand-gold font-bold">
                         R {offering.price?.toLocaleString()}
                     </p>
-                    <p className="text-[10px] text-gray-400 mt-1 uppercase tracking-widest">Starting: {offering.startDate}</p>
+                    <p className="text-xs text-gray-400 mt-1 uppercase tracking-widest">Starting: {offering.startDate}</p>
                 </div>
 
                 <div className="mt-auto flex gap-3">
@@ -334,14 +331,11 @@ export const CourseDetail: React.FC = () => {
   const [formSuccess, setFormSuccess] = useState(false);
   const [activeSection, setActiveSection] = useState('overview');
   const [showStickyHeader, setShowStickyHeader] = useState(false);
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  const [isTabsSticky, setIsTabsSticky] = useState(false);
   
-  // Transition Logic
+  // Logic to handle entrance animation
   const location = useLocation();
-  const [isContentVisible, setIsContentVisible] = useState(false);
-  const isFromTransition = !!location.state?.fromTransition;
-  
+  const contentRef = useRef<HTMLDivElement>(null);
+  const heroContentRef = useRef<HTMLDivElement>(null);
   const sliderRef = useRef<HTMLDivElement>(null);
 
   // Fallback to the first course if ID not found for demo purposes
@@ -373,27 +367,44 @@ export const CourseDetail: React.FC = () => {
     window.scrollTo(0, 0);
   }, [id]);
 
+  // Entrance Animation Effect using GSAP
   useEffect(() => {
-     // Delayed Content Animation Entrance
-     // If coming from transition, wait 1000ms. If direct load, show faster.
-     const isFromTransition = !!location.state?.fromTransition;
-     setIsTransitioning(isFromTransition);
-     const delay = isFromTransition ? 100 : 100;
+      // Check if we came from a shared-element transition
+      const isFromTransition = location.state?.fromTransition;
+      
+      const tl = gsap.timeline({ defaults: { ease: "power2.out" } });
 
-     const timer = setTimeout(() => {
-         setIsContentVisible(true);
-     }, delay);
+      if (isFromTransition) {
+          // If transition occurred, the hero image is already "there" visually via the clone.
+          // We wait slightly (simulating the handoff), then animate content UP.
+          // We set initial state to hidden/offset
+          if (heroContentRef.current) gsap.set(heroContentRef.current, { y: 30, opacity: 0 });
+          if (contentRef.current) gsap.set(contentRef.current, { y: 50, opacity: 0 });
 
-     return () => clearTimeout(timer);
-  }, [location.state]);
+          // Delay slightly to allow the previous page's clone to finish lock-in
+          const startDelay = 0.05; 
+
+          tl.to(heroContentRef.current, { y: 0, opacity: 1, duration: 0.8 }, startDelay)
+            .to(contentRef.current, { y: 0, opacity: 1, duration: 0.8 }, "-=0.6");
+
+      } else {
+          // Standard Load (Fade in hero image too if desired, but sticking to content fade for consistency)
+          // For standard load, we might want to animate the image/video container too if we wanted, 
+          // but here we focus on content entrance.
+          if (heroContentRef.current) gsap.set(heroContentRef.current, { y: 30, opacity: 0 });
+          if (contentRef.current) gsap.set(contentRef.current, { y: 50, opacity: 0 });
+          
+          tl.to(heroContentRef.current, { y: 0, opacity: 1, duration: 0.8 })
+            .to(contentRef.current, { y: 0, opacity: 1, duration: 0.8 }, "-=0.6");
+      }
+
+      return () => { tl.kill(); };
+  }, [location.state, id]); // Re-run if ID changes
 
   useEffect(() => {
     const handleScroll = () => {
-        const stickyThreshold = window.innerHeight - 60;
-        setShowStickyHeader(isTransitioning || window.scrollY > stickyThreshold);
-
-        const heroHeight = window.innerHeight * 0.9;
-        setIsTabsSticky(window.scrollY >= (heroHeight - 80));
+        const stickyThreshold = window.innerHeight - 60; 
+        setShowStickyHeader(window.scrollY > stickyThreshold);
 
         const offset = 180;
         const scrollPosition = window.scrollY + offset;
@@ -420,7 +431,7 @@ export const CourseDetail: React.FC = () => {
   const scrollToSection = (id: string) => {
     const el = document.getElementById(id);
     if (el) {
-        const headerOffset = 140; 
+        const headerOffset = 130; 
         const elementPosition = el.getBoundingClientRect().top;
         const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
     
@@ -450,22 +461,22 @@ export const CourseDetail: React.FC = () => {
   if (!course) return <div className="text-white text-center pt-32">Course not found</div>;
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-0">
+    <div className="min-h-screen bg-brand-dark pt-0">
       
-      {/* Sticky Top Bar */}
-      <div
-        className={`fixed top-0 left-0 right-0 z-[60] bg-white border-b border-gray-200 h-[60px] flex items-center justify-between px-4 sm:px-6 lg:px-8 transition-transform duration-300 shadow-xl -translate-y-full`}
+      {/* Sticky Top Bar - Fixed Header (z-60) is above Hero (z-40) */}
+      <div 
+        className={`fixed top-0 left-0 right-0 z-[60] bg-brand-dark border-b border-white/10 h-[60px] flex items-center justify-between px-4 sm:px-6 lg:px-8 transition-transform duration-300 shadow-xl ${showStickyHeader ? 'translate-y-0' : '-translate-y-full'}`}
       >
          <div className="flex items-center gap-4 h-full">
-            <button onClick={() => window.history.back()} className="text-gray-500 hover:text-gray-700 flex items-center gap-2 text-sm font-medium transition-colors h-full">
+            <button onClick={() => window.history.back()} className="text-gray-400 hover:text-white flex items-center gap-2 text-sm font-medium transition-colors h-full">
                 <ChevronLeft size={18} /> Back
             </button>
-            <div className="h-6 w-px bg-gray-300"></div>
-            <h3 className="text-gray-900 font-serif font-bold text-lg truncate max-w-md">{course.title}</h3>
+            <div className="h-6 w-px bg-white/10"></div>
+            <h3 className="text-white font-serif font-bold text-lg truncate max-w-md">{course.title}</h3>
          </div>
-         <button
-            onClick={handleScrollTop}
-            className="text-gray-500 hover:text-brand-gold transition-colors p-2"
+         <button 
+            onClick={handleScrollTop} 
+            className="text-gray-400 hover:text-brand-gold transition-colors p-2"
             title="Scroll to Top"
          >
             <ArrowUpCircle size={28} strokeWidth={1.5} />
@@ -473,31 +484,29 @@ export const CourseDetail: React.FC = () => {
       </div>
 
       {/* Hero Section */}
-      <section className="relative h-[90vh] flex flex-col justify-end bg-brand-primary border-b border-white/5 pb-0 overflow-hidden pt-16">
-        {/* The video/image background here matches the final state of the transition overlay */}
-        <div className="absolute inset-0 overflow-hidden">
-            {/* Image/Video Layer - z-40 */}
-            <div className="absolute inset-0 z-40">
-                {course.video ? (
-                    <video
-                        src={course.video}
-                        autoPlay
-                        muted
-                        loop
-                        playsInline
-                        className="w-full h-full object-cover"
-                    />
-                ) : (
-                    <img src={course.image} alt={course.title} className="w-full h-full object-cover" />
-                )}
-            </div>
-            
-            {/* Blue Overlay Layer - z-45 */}
-            <div className="absolute inset-0 bg-[#0a3355]/80 z-[45]"></div>
+      <section className="relative h-screen flex flex-col justify-end bg-brand-card border-b border-white/5 pb-0 overflow-hidden">
+        {/* Z-Index 1: Background Media */}
+        <div className="absolute inset-0 overflow-hidden z-[1]">
+            <div className="absolute inset-0 bg-[#0a3355]/80 z-10"></div>
+            {course.video ? (
+                <video
+                    src={course.video}
+                    // Removed legacy poster to prevent mismatch
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    className="w-full h-full object-cover"
+                />
+            ) : (
+                <img src={course.image} alt={course.title} className="w-full h-full object-cover" />
+            )}
         </div>
 
+        {/* Z-Index 20: Content Overlay */}
         <div 
-            className={`relative z-50 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full transition-all duration-[800ms] ease-out transform ${isContentVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}
+            ref={heroContentRef}
+            className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full opacity-0 translate-y-8"
         >
             <div className="lg:w-2/3 pr-0 lg:pr-12 pb-6 md:pb-8"> 
                 
@@ -514,41 +523,41 @@ export const CourseDetail: React.FC = () => {
                     {course.title}
                 </h1>
                 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 border-t border-gray-200 pt-10 h-[115px]">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 border-t border-white/10 pt-10"> 
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-transparent flex items-center justify-center text-brand-gold shrink-0">
+                        <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-brand-gold shrink-0">
                             <Clock size={20} />
                         </div>
                         <div>
-                            <p className="text-xs text-white uppercase tracking-wider">Duration</p>
-                            <p className="text-brand-gold font-medium">{course.duration}</p>
+                            <p className="text-xs text-brand-muted uppercase tracking-wider">Duration</p>
+                            <p className="text-white font-medium">{course.duration}</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-transparent flex items-center justify-center text-brand-gold shrink-0">
+                        <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-brand-gold shrink-0">
                             <GraduationCap size={20} />
                         </div>
                         <div>
-                            <p className="text-xs text-white uppercase tracking-wider">Qualification</p>
-                            <p className="text-brand-gold font-medium">{course.qualification}</p>
+                            <p className="text-xs text-brand-muted uppercase tracking-wider">Qualification</p>
+                            <p className="text-white font-medium">{course.qualification}</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-transparent flex items-center justify-center text-brand-gold shrink-0">
+                        <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-brand-gold shrink-0">
                             <BookOpen size={20} />
                         </div>
                         <div>
-                            <p className="text-xs text-white uppercase tracking-wider">Type of Study</p>
-                            <p className="text-brand-gold font-medium">{typeOfStudy}</p>
+                            <p className="text-xs text-brand-muted uppercase tracking-wider">Type of Study</p>
+                            <p className="text-white font-medium">{typeOfStudy}</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-transparent flex items-center justify-center text-brand-gold shrink-0">
+                        <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-brand-gold shrink-0">
                             <Calendar size={20} />
                         </div>
                         <div>
-                            <p className="text-xs text-white uppercase tracking-wider">Next Intake</p>
-                            <p className="text-brand-gold font-medium">{course.intake || course.startDate}</p>
+                            <p className="text-xs text-brand-muted uppercase tracking-wider">Next Intake</p>
+                            <p className="text-white font-medium">{course.intake || course.startDate}</p>
                         </div>
                     </div>
                 </div>
@@ -556,61 +565,59 @@ export const CourseDetail: React.FC = () => {
         </div>
       </section>
 
-      {/* Sticky Tabbed Navigation */}
-      <div className={`sticky top-[80px] bg-brand-dark shadow-lg border-b border-white/10 ${isTabsSticky ? 'z-[1]' : 'z-0'}`}>
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-4">
-                   {SECTIONS.map(sec => (
-                       <button
-                          key={sec.id}
-                          onClick={() => scrollToSection(sec.id)}
-                          className={`px-6 py-3 rounded-full text-xs font-bold uppercase tracking-widest transition-all duration-300 whitespace-nowrap ${
-                              activeSection === sec.id
-                              ? 'bg-[#1289fe] text-white shadow-md'
-                              : 'text-gray-400 hover:bg-white/10 hover:text-white'
-                          }`}
-                       >
-                          {sec.label}
-                       </button>
-                   ))}
-              </div>
-          </div>
-      </div>
-
       {/* Main Content */}
       <div 
-        className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 transition-all duration-[800ms] ease-out delay-100 transform ${isContentVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}
+        ref={contentRef}
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20 opacity-0 translate-y-12"
       >
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
             
             {/* Left Content Column */}
-            <div className="lg:col-span-2 pb-12 pt-12">
+            <div className="lg:col-span-2 pb-12">
                 
+                {/* Sticky Tabbed Navigation */}
+                <div 
+                    className={`sticky z-50 bg-brand-dark/95 backdrop-blur border-b border-white/10 mb-8 -mx-4 px-4 md:mx-0 md:px-0 transition-[top] duration-300 ${showStickyHeader ? 'top-[60px]' : 'top-0'}`}
+                >
+                     <div className="flex overflow-x-auto scrollbar-hide gap-8">
+                         {SECTIONS.map(sec => (
+                             <button 
+                                key={sec.id}
+                                onClick={() => scrollToSection(sec.id)}
+                                className={`whitespace-nowrap py-4 relative text-[11px] md:text-xs font-bold uppercase tracking-widest transition-colors ${activeSection === sec.id ? 'text-brand-gold' : 'text-gray-500 hover:text-white'}`}
+                             >
+                                {sec.label}
+                                {activeSection === sec.id && (
+                                    <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-brand-gold rounded-full"></div>
+                                )}
+                             </button>
+                         ))}
+                     </div>
+                </div>
+
                 {/* Overview */}
-                <div id="overview" className="scroll-mt-[140px] mb-16">
-                    <div className="bg-white border border-gray-200 p-8 rounded-sm shadow-sm">
-                        <h2 className="text-2xl font-serif text-[#002B4E] mb-6 font-semibold">Overview</h2>
-                        <p className="text-lg text-gray-600 leading-relaxed font-light">
-                            {course.fullDescription}
-                        </p>
-                    </div>
+                <div id="overview" className="scroll-mt-48 mb-16">
+                    <h2 className="text-2xl font-serif text-white mb-6 font-semibold">Overview</h2>
+                    <p className="text-lg text-brand-muted leading-relaxed mb-8 font-light">
+                        {course.fullDescription}
+                    </p>
                 </div>
                 
                 {/* Content */}
-                <div id="content" className="scroll-mt-[140px] mb-16">
+                <div id="content" className="scroll-mt-48 mb-16">
                     {course.programContentIncludes && (
-                        <div className="mb-12 bg-white border border-gray-200 p-8 rounded-sm shadow-sm">
-                            <h3 className="text-[#002B4E] font-serif text-2xl mb-6 flex items-center gap-3 font-semibold">
+                        <div className="mb-12">
+                            <h3 className="text-white font-serif text-2xl mb-6 flex items-center gap-3 font-semibold">
                                 <span className="w-8 h-1 bg-brand-gold rounded-full"></span>
                                 Programme Content Includes:
                             </h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {course.programContentIncludes.map((item, idx) => (
-                                    <div key={idx} className="bg-gray-50 border border-gray-200 p-4 rounded-sm flex items-center gap-3 hover:border-brand-gold/30 transition-colors">
+                                    <div key={idx} className="bg-brand-card border border-white/5 p-4 rounded-sm flex items-center gap-3 hover:border-brand-gold/30 transition-colors">
                                         <div className="w-8 h-8 rounded-full border border-brand-gold/30 flex items-center justify-center text-brand-gold shrink-0">
                                             <Circle size={10} fill="currentColor" />
                                         </div>
-                                        <span className="text-[#002B4E] font-medium">{item}</span>
+                                        <span className="text-white font-medium">{item}</span>
                                     </div>
                                 ))}
                             </div>
@@ -618,8 +625,8 @@ export const CourseDetail: React.FC = () => {
                     )}
 
                     {!course.extendedFocusAreas && (
-                        <div className="bg-white border border-gray-200 p-8 rounded-sm shadow-sm">
-                            <h3 className="text-[#002B4E] font-serif text-2xl mb-6 flex items-center gap-3 font-semibold">
+                        <>
+                            <h3 className="text-white font-serif text-2xl mb-6 flex items-center gap-3 font-semibold">
                                 <span className="w-8 h-1 bg-brand-gold rounded-full"></span>
                                 Programme Curriculum
                             </h3>
@@ -634,9 +641,9 @@ export const CourseDetail: React.FC = () => {
                                     >
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             {year.modules.map((mod, mIdx) => (
-                                                <div key={mIdx} className="bg-gray-50 p-4 rounded-sm border border-gray-200">
+                                                <div key={mIdx} className="bg-brand-dark p-4 rounded-sm border border-white/5">
                                                     <h5 className="text-brand-gold font-bold mb-2">{mod.title}</h5>
-                                                    <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
+                                                    <ul className="list-disc list-inside text-sm text-gray-400 space-y-1">
                                                         {mod.topics.map((t, tIdx) => (
                                                             <li key={tIdx}>{t}</li>
                                                         ))}
@@ -647,27 +654,27 @@ export const CourseDetail: React.FC = () => {
                                     </AccordionItem>
                                 ))}
                             </div>
-                        </div>
+                        </>
                     )}
                 </div>
 
                 {/* Focus Areas */}
-                <div id="focus" className="scroll-mt-[140px] mb-16">
+                <div id="focus" className="scroll-mt-48 mb-16">
                     {course.extendedFocusAreas ? (
                         <div>
-                             <h3 className="text-[#002B4E] font-serif text-2xl mb-2 flex items-center gap-3 font-semibold">
+                             <h3 className="text-white font-serif text-2xl mb-2 flex items-center gap-3 font-semibold">
                                 <span className="w-8 h-1 bg-brand-gold rounded-full"></span>
                                 Choose Your Degree Focus Area:
                             </h3>
-                            <p className="text-gray-600 mb-8 text-sm italic font-medium">
+                            <p className="text-brand-gold mb-8 text-sm italic font-medium">
                                 All the below focus areas include masterclass specialisation sessions and Work Integrated Learning projects.
                             </p>
 
-                            <div className="space-y-8">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {course.extendedFocusAreas.map((area, idx) => (
-                                    <div key={idx} className="sticky top-[160px] bg-white p-8 rounded-sm border border-gray-200 shadow-lg flex flex-col h-full z-10">
+                                    <div key={idx} className="bg-brand-card p-6 rounded-sm border-l-4 border-brand-gold/50 hover:border-brand-gold transition-colors flex flex-col h-full">
                                         <h4 className="text-brand-gold font-serif font-bold text-xl mb-3">{area.title}</h4>
-                                        <p className="text-gray-600 text-sm leading-relaxed flex-1">
+                                        <p className="text-gray-400 text-sm leading-relaxed flex-1">
                                             {area.description}
                                         </p>
                                     </div>
@@ -675,14 +682,14 @@ export const CourseDetail: React.FC = () => {
                             </div>
                         </div>
                     ) : course.focusAreas ? (
-                        <div className="bg-white border border-gray-200 p-8 rounded-sm shadow-sm">
-                            <h3 className="text-[#002B4E] font-serif text-2xl mb-6 flex items-center gap-3 font-semibold">
+                        <div>
+                            <h3 className="text-white font-serif text-2xl mb-6 flex items-center gap-3 font-semibold">
                                 <span className="w-8 h-1 bg-brand-gold rounded-full"></span>
                                 Focus Areas
                             </h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {course.focusAreas.map((area, idx) => (
-                                    <div key={idx} className="flex flex-col gap-2 bg-gray-50 p-6 rounded-sm border border-gray-200 hover:border-brand-gold transition-colors">
+                                    <div key={idx} className="flex flex-col gap-2 bg-brand-card p-6 rounded-sm border border-brand-gold/20 hover:border-brand-gold transition-colors">
                                         <h4 className="text-brand-gold font-bold text-lg">{area}</h4>
                                     </div>
                                 ))}
@@ -692,17 +699,17 @@ export const CourseDetail: React.FC = () => {
                 </div>
 
                 {/* Requirements */}
-                <div id="requirements" className="scroll-mt-[140px] mb-16">
-                    <div className="bg-white p-8 rounded-sm border border-gray-200 shadow-sm">
-                        <h3 className="text-[#002B4E] font-serif text-2xl mb-6 flex items-center gap-3 font-semibold">
-                            <span className="w-8 h-1 bg-brand-gold rounded-full"></span>
-                            Entry Requirements
-                        </h3>
+                <div id="requirements" className="scroll-mt-48 mb-16">
+                    <h3 className="text-white font-serif text-2xl mb-6 flex items-center gap-3 font-semibold">
+                        <span className="w-8 h-1 bg-brand-gold rounded-full"></span>
+                        Entry Requirements
+                    </h3>
+                    <div className="bg-brand-card p-8 rounded-sm border-l-4 border-brand-gold">
                         <ul className="space-y-4">
                             {course.requirements.map((req, idx) => (
                                 <li key={idx} className="flex items-start gap-3">
                                     <CheckCircle className="text-brand-gold shrink-0 mt-1" size={18} />
-                                    <span className="text-gray-600">{req}</span>
+                                    <span className="text-brand-muted">{req}</span>
                                 </li>
                             ))}
                         </ul>
@@ -711,33 +718,33 @@ export const CourseDetail: React.FC = () => {
 
                 {/* Certification */}
                 {course.certification && (
-                    <div id="certification" className="scroll-mt-[140px] mb-16">
-                        <div className="bg-white border border-gray-200 p-8 rounded-sm shadow-sm">
-                             <h3 className="text-[#002B4E] font-serif text-2xl mb-6 flex items-center gap-3 font-semibold">
-                                <span className="w-8 h-1 bg-brand-gold rounded-full"></span>
-                                Certification
-                             </h3>
+                    <div id="certification" className="scroll-mt-48 mb-16">
+                        <h3 className="text-white font-serif text-2xl mb-6 flex items-center gap-3 font-semibold">
+                            <span className="w-8 h-1 bg-brand-gold rounded-full"></span>
+                            Certification
+                        </h3>
+                        <div className="bg-brand-card border border-white/5 p-8 rounded-sm">
                              <div className="flex items-start gap-4 mb-6">
                                  <div className="w-12 h-12 bg-brand-gold/10 rounded-full flex items-center justify-center text-brand-gold shrink-0">
                                      <Award size={24} />
                                  </div>
                                  <div>
-                                     <h4 className="text-[#002B4E] font-bold text-lg mb-2">Qualification Awarded</h4>
-                                     <p className="text-gray-600 text-base leading-relaxed whitespace-pre-line">
+                                     <h4 className="text-white font-bold text-lg mb-2">Qualification Awarded</h4>
+                                     <p className="text-brand-muted text-base leading-relaxed whitespace-pre-line">
                                         {course.certification}
                                      </p>
                                  </div>
                              </div>
                              
-                             <div className="border-t border-gray-200 pt-6">
-                                <h5 className="text-xs text-gray-500 uppercase tracking-widest font-bold mb-4">Accredited By:</h5>
+                             <div className="border-t border-white/5 pt-6">
+                                <h5 className="text-xs text-brand-muted uppercase tracking-widest font-bold mb-4">Accredited By:</h5>
                                 <div className="flex flex-wrap gap-4">
                                     {course.accreditations.map((acc, idx) => (
-                                        <div key={idx} className="bg-gray-100 rounded-sm p-3 flex items-center justify-center h-14 px-4 hover:bg-gray-200 transition-colors border border-gray-200">
+                                        <div key={idx} className="bg-white/10 backdrop-blur-sm rounded-sm p-3 flex items-center justify-center h-14 px-4 hover:bg-white/15 transition-colors">
                                             {ACCREDITATION_LOGOS[acc] ? (
-                                                <img src={ACCREDITATION_LOGOS[acc]} alt={acc} className="max-h-full w-auto brightness-0 opacity-80" />
+                                                <img src={ACCREDITATION_LOGOS[acc]} alt={acc} className="max-h-full w-auto brightness-0 invert opacity-90" />
                                             ) : (
-                                                <span className="text-xs text-center font-bold text-gray-600 uppercase tracking-wider">{acc}</span>
+                                                <span className="text-xs text-center font-bold text-white uppercase tracking-wider">{acc}</span>
                                             )}
                                         </div>
                                     ))}
@@ -748,13 +755,12 @@ export const CourseDetail: React.FC = () => {
                 )}
                 
                 {/* FAQs */}
-                <div id="faq" className="scroll-mt-[140px] mb-16">
-                    <div className="bg-white border border-gray-200 p-8 rounded-sm shadow-sm">
-                        <h3 className="text-[#002B4E] font-serif text-2xl mb-6 flex items-center gap-3 font-semibold">
-                            <span className="w-8 h-1 bg-brand-gold rounded-full"></span>
-                            Frequently Asked Questions
-                        </h3>
-                        <div className="space-y-4 text-[#002B4E]">
+                <div id="faq" className="scroll-mt-48 mb-16">
+                     <h3 className="text-white font-serif text-2xl mb-6 flex items-center gap-3 font-semibold">
+                        <span className="w-8 h-1 bg-brand-gold rounded-full"></span>
+                        Frequently Asked Questions
+                    </h3>
+                    <div className="space-y-4">
                         <AccordionItem 
                             title="What is the difference between the Diploma and Degree?" 
                             isOpen={activeFaq === 0} 
@@ -762,18 +768,18 @@ export const CourseDetail: React.FC = () => {
                         >
                             <div className="space-y-6 text-sm">
                                 <div>
-                                    <h4 className="font-bold text-[#002B4E] mb-2 text-base">IHS Diploma Programmes (NQF Level 6, 3 years)</h4>
-                                    <p className="mb-3 text-gray-600">Focuses primarily on the service delivery & operations management of the different departments of a hospitality establishment, namely:</p>
-                                    <ul className="grid grid-cols-2 gap-2 list-disc list-inside text-gray-600 mb-3 bg-gray-50 p-4 rounded-sm border border-gray-200">
+                                    <h4 className="font-bold text-white mb-2 text-base">IHS Diploma Programmes (NQF Level 6, 3 years)</h4>
+                                    <p className="mb-3 text-brand-muted">Focuses primarily on the service delivery & operations management of the different departments of a hospitality establishment, namely:</p>
+                                    <ul className="grid grid-cols-2 gap-2 list-disc list-inside text-gray-400 mb-3 bg-white/5 p-4 rounded-sm">
                                         <li>Front Office</li>
                                         <li>Food & Beverage</li>
                                         <li>Kitchens</li>
                                         <li>Housekeeping</li>
                                     </ul>
                                 </div>
-                                <div className="border-t border-gray-200 pt-4">
-                                    <h4 className="font-bold text-[#002B4E] mb-2 text-base">IHS Bachelor of Business Administration (NQF Level 7, 3 years)</h4>
-                                    <p className="mb-3 text-gray-600">Focuses primarily on the strategic management of a hospitality establishment and its operations.</p>
+                                <div className="border-t border-white/10 pt-4">
+                                    <h4 className="font-bold text-white mb-2 text-base">IHS Bachelor of Business Administration (NQF Level 7, 3 years)</h4>
+                                    <p className="mb-3 text-brand-muted">Focuses primarily on the strategic management of a hospitality establishment and its operations.</p>
                                 </div>
                             </div>
                         </AccordionItem>
@@ -785,35 +791,59 @@ export const CourseDetail: React.FC = () => {
                         >
                              <div className="space-y-6 text-sm">
                                 <div>
-                                    <h4 className="font-bold text-[#002B4E] mb-2 text-base">Bachelor of Business Administration (BBA)</h4>
-                                    <p className="text-gray-600">A BBA Degree covers the fundamentals of business management and prepares a student for a career in leadership.</p>
+                                    <h4 className="font-bold text-white mb-2 text-base">Bachelor of Business Administration (BBA)</h4>
+                                    <p className="text-brand-muted">A BBA Degree covers the fundamentals of business management and prepares a student for a career in leadership.</p>
                                 </div>
                              </div>
                         </AccordionItem>
-                        </div>
                     </div>
+                </div>
+
+                {/* Application Form */}
+                <div id="apply-form" className="bg-brand-card border border-white/10 rounded-sm p-8 scroll-mt-32">
+                    {formSuccess ? (
+                        <div className="text-center py-12">
+                            <div className="w-16 h-16 bg-green-500/20 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <Check size={32} />
+                            </div>
+                            <h3 className="text-2xl font-serif text-white mb-4">Application Received</h3>
+                            <p className="text-gray-400 mb-8 max-w-md mx-auto">
+                                Thank you for your interest. Our admissions team will review your application and contact you within 24-48 hours.
+                            </p>
+                            <Button variant="outline" onClick={() => setFormSuccess(false)}>
+                                Submit Another Application
+                            </Button>
+                        </div>
+                    ) : (
+                        <>
+                            <div className="text-center mb-8">
+                                <h3 className="text-2xl font-serif text-white mb-2 font-semibold">Apply for this Programme</h3>
+                                <p className="text-brand-muted text-sm">Start your journey today. Fill in your details below.</p>
+                            </div>
+
+                            <MultiStepForm onComplete={() => setFormSuccess(true)} />
+                        </>
+                    )}
                 </div>
 
             </div>
 
             {/* Sticky Sidebar (Fees) */}
-            <div className="lg:col-span-1 hidden lg:block relative z-50">
-                <div className="sticky top-[85px] lg:-mt-[30rem] transition-[top] duration-300 z-20">
+            <div className="lg:col-span-1 hidden lg:block relative">
+                <div className="sticky top-[130px] space-y-6 lg:-mt-72 transition-[top] duration-300">
                     <FeesCard course={course} className="shadow-2xl shadow-black/50" />
-                </div>
-                
-                <div className="mt-6 relative z-10">
-                    <div className="bg-[#002B4E] p-6 rounded-sm shadow-lg">
-                        <div className="flex items-center gap-4 mb-6">
-                            <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-brand-gold shrink-0">
-                                <HelpCircle size={24} />
+                    
+                    <div className="bg-brand-card border border-white/5 p-6 rounded-sm">
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-brand-gold">
+                                <HelpCircle size={20} />
                             </div>
                             <div>
-                                <h4 className="text-white font-serif font-bold text-lg leading-tight">Need Guidance?</h4>
-                                <p className="text-sm text-gray-400 mt-1">Our admissions team is here to help.</p>
+                                <h4 className="text-white font-bold text-sm">Need Guidance?</h4>
+                                <p className="text-xs text-gray-400">Our admissions team is here to help.</p>
                             </div>
                         </div>
-                        <a href="tel:+27123456789" className="block w-full bg-brand-gold hover:bg-white hover:text-[#002B4E] text-white font-bold text-center py-3 rounded-sm transition-colors uppercase tracking-widest text-xs">
+                        <a href="tel:+123456789" className="text-brand-gold text-sm font-bold hover:underline flex items-center justify-center gap-2 w-full border border-brand-gold/20 py-3 rounded-sm hover:bg-brand-gold hover:text-white transition-all">
                             Call +27 12 345 6789
                         </a>
                     </div>
@@ -821,61 +851,30 @@ export const CourseDetail: React.FC = () => {
             </div>
 
         </div>
-      </div>
 
-      {/* Application Form - Full Width */}
-      <div id="apply-form" className="bg-[#002B4E] py-20 scroll-mt-[60px]">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            {formSuccess ? (
-                <div className="text-center py-12">
-                    <div className="w-16 h-16 bg-green-500/20 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <Check size={32} />
-                    </div>
-                    <h3 className="text-2xl font-serif text-white mb-4">Application Received</h3>
-                    <p className="text-gray-400 mb-8 max-w-md mx-auto">
-                        Thank you for your interest. Our admissions team will review your application and contact you within 24-48 hours.
-                    </p>
-                    <Button variant="outline" onClick={() => setFormSuccess(false)}>
-                        Submit Another Application
-                    </Button>
-                </div>
-            ) : (
-                <>
-                    <div className="text-center mb-12">
-                        <h3 className="text-3xl font-serif text-white mb-4 font-semibold">Apply for this Programme</h3>
-                        <p className="text-brand-muted text-base">Start your journey today. Fill in your details below.</p>
-                    </div>
-
-                    <MultiStepForm onComplete={() => setFormSuccess(true)} />
-                </>
-            )}
-        </div>
-      </div>
-
-      {/* Related Programmes Section */}
-      {relatedCourses.length > 0 && (
-            <div className="bg-gray-100 py-16 border-t border-gray-200">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
+        {/* Related Programmes Section */}
+        {relatedCourses.length > 0 && (
+             <div className="border-t border-white/5 pt-16 pb-24 mt-8">
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
                     
                     <div className="lg:col-span-1 lg:sticky lg:top-[150px]">
-                        <h3 className="text-[#002B4E] font-serif text-3xl leading-tight mb-6 font-semibold">
+                        <h3 className="text-white font-serif text-3xl leading-tight mb-6 font-semibold">
                             Courses related to <br/>
                             <span className="text-brand-gold italic">{course.title}</span>
                         </h3>
-                        <p className="text-gray-600 text-sm mb-8">
+                        <p className="text-gray-400 text-sm mb-8">
                             Explore other programmes in {course.category} that might interest you.
                         </p>
                         <div className="flex gap-2">
                             <button 
                                 onClick={slideLeft}
-                                className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-brand-gold hover:text-white transition-all"
+                                className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center text-white hover:bg-brand-gold hover:text-white transition-all"
                             >
                                 <ChevronLeft size={20} />
                             </button>
                             <button 
                                 onClick={slideRight}
-                                className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-brand-gold hover:text-white transition-all"
+                                className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center text-white hover:bg-brand-gold hover:text-white transition-all"
                             >
                                 <ChevronRight size={20} />
                             </button>
@@ -893,9 +892,10 @@ export const CourseDetail: React.FC = () => {
                         </div>
                     </div>
                 </div>
-                </div>
-            </div>
-      )}
+             </div>
+        )}
+
+      </div>
       
       <MobileFeesDrawer course={course} />
       <div className="h-20 lg:hidden"></div>
