@@ -3,15 +3,15 @@ import React, { useState, useEffect, useRef } from 'react';
 import { OFFERINGS, STUDY_LEVELS, FOCUS_AREAS, ACCREDITATIONS } from '../constants';
 import { Button } from './ui/Button';
 import { CheckboxGroup } from './ui/CheckboxGroup';
-import { 
-    Clock, 
-    GraduationCap, 
-    ArrowRight, 
-    Eye, 
-    BarChart2, 
-    ShoppingBag, 
-    X, 
-    SlidersHorizontal, 
+import {
+    Clock,
+    GraduationCap,
+    ArrowRight,
+    Eye,
+    BarChart2,
+    ShoppingBag,
+    X,
+    SlidersHorizontal,
     ChevronLeft,
     ChevronRight,
     Search
@@ -23,6 +23,7 @@ import { useCart } from '../context/CartContext';
 import { useCompare } from '../context/CompareContext';
 import { ApplicationModal } from './ApplicationModal';
 import { CheckoutModal } from './CheckoutModal';
+import gsap from 'gsap'; // Animation from old AI Studio files
 
 const TABS = [
     { id: 'All', label: 'All Programmes' },
@@ -34,23 +35,23 @@ const TABS = [
 ];
 
 // --- Sub-Component for Individual Course Card to handle Video Refs ---
-const CourseCardItem: React.FC<{ 
-    offering: Offering; 
-    onExpand: (offering: Offering, rect: DOMRect) => void; 
+const CourseCardItem: React.FC<{
+    offering: Offering;
+    onExpand: (offering: Offering, rect: DOMRect) => void;
 }> = ({ offering, onExpand }) => {
     const videoRef = useRef<HTMLVideoElement>(null);
-    const cardRef = useRef<HTMLDivElement>(null);
+    const mediaRef = useRef<HTMLDivElement>(null); // Ref for media container (for GSAP animation)
     const { addToCart } = useCart();
     const { addToCompare, isInCompare, removeFromCompare } = useCompare();
-    
+
     // Local state for modals specific to this card's actions
     const [selectedOffering, setSelectedOffering] = useState<Offering | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [modalOrigin, setModalOrigin] = useState<{x: number, y: number} | null>(null);
+    const [modalOrigin, setModalOrigin] = useState<{ x: number, y: number } | null>(null);
     const [showApplication, setShowApplication] = useState(false);
     const [showCheckout, setShowCheckout] = useState(false);
 
-    const isEcommerce = offering.programmeTypes.some((type: string) => 
+    const isEcommerce = offering.programmeTypes.some((type: string) =>
         ['Online Learning', 'Part Time Learning'].includes(type)
     );
     const inCompare = isInCompare(offering.id);
@@ -93,32 +94,32 @@ const CourseCardItem: React.FC<{
     const handleCardClick = (e: React.MouseEvent) => {
         // If clicking buttons, don't expand
         if ((e.target as HTMLElement).closest('button')) return;
-        
+
         e.preventDefault();
-        if (cardRef.current) {
-            const rect = cardRef.current.getBoundingClientRect();
+        // Use mediaRef for expansion start point to match visual content that expands
+        if (mediaRef.current) {
+            const rect = mediaRef.current.getBoundingClientRect();
             onExpand(offering, rect);
         }
     };
 
     return (
         <>
-            <div 
+            <div
                 className="flex flex-col h-full cursor-pointer"
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
                 onClick={handleCardClick}
-                ref={cardRef}
             >
                 <div className="bg-white w-full group rounded-2xl overflow-hidden transition-all duration-300 flex flex-col h-full shadow-lg hover:shadow-2xl hover:-translate-y-1 relative">
                     {/* Media Area (Video/Image) */}
-                    <div className="relative h-60 overflow-hidden shrink-0 bg-gray-100">
+                    <div ref={mediaRef} className="relative h-60 overflow-hidden shrink-0 bg-gray-100">
                         <div className="absolute top-4 left-4 z-10">
                             <span className="bg-[#f8fafc] border border-[#eff4f7] text-[#002a4e] text-[10px] font-bold px-3 py-1.5 uppercase tracking-widest rounded-sm shadow-md hover:bg-[#c2b068] hover:border-[#d4c999] hover:text-[#fff] transition-colors">
                                 {offering.category}
                             </span>
                         </div>
-                        
+
                         {/* Video Element (Plays on Hover) */}
                         <video
                             ref={videoRef}
@@ -128,12 +129,12 @@ const CourseCardItem: React.FC<{
                             playsInline
                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                         />
-                        
+
                         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                        
+
                         {/* Hover Actions Panel */}
                         <div className="absolute bottom-0 left-0 right-0 bg-[#002B4E]/90 backdrop-blur-sm p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 flex gap-2 z-20">
-                            <button 
+                            <button
                                 onClick={handleAction}
                                 className="flex-[2] bg-white text-[#002B4E] hover:bg-[#C2B067] hover:text-white text-[10px] font-bold uppercase tracking-wider py-2.5 rounded-sm transition-all flex items-center justify-center gap-2 border border-transparent"
                             >
@@ -143,7 +144,7 @@ const CourseCardItem: React.FC<{
                                     <>Apply Now <ArrowRight size={14} /></>
                                 )}
                             </button>
-                            <button 
+                            <button
                                 onClick={(e) => {
                                     e.preventDefault();
                                     e.stopPropagation();
@@ -179,7 +180,7 @@ const CourseCardItem: React.FC<{
                                 {offering.title}
                             </h3>
                         </div>
-                        
+
                         {/* Spacer to push content to bottom */}
                         <div className="mt-auto"></div>
 
@@ -227,21 +228,21 @@ const CourseCardItem: React.FC<{
             </div>
 
             {selectedOffering && (
-                <QuickViewModal 
-                    offering={selectedOffering} 
-                    isOpen={isModalOpen} 
-                    onClose={() => setIsModalOpen(false)} 
+                <QuickViewModal
+                    offering={selectedOffering}
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
                     origin={modalOrigin}
                 />
             )}
 
-            <ApplicationModal 
-                isOpen={showApplication} 
-                onClose={() => setShowApplication(false)} 
+            <ApplicationModal
+                isOpen={showApplication}
+                onClose={() => setShowApplication(false)}
                 courseTitle={offering.title}
             />
-            
-            <CheckoutModal 
+
+            <CheckoutModal
                 isOpen={showCheckout}
                 onClose={() => setShowCheckout(false)}
             />
@@ -258,11 +259,10 @@ export const CoreOfferings: React.FC = () => {
     const sliderRef = useRef<HTMLDivElement>(null);
     const navigate = useNavigate();
 
-    // --- Transition States ---
+    // --- Transition States (GSAP Animation from old AI Studio files) ---
     const [expandingOffering, setExpandingOffering] = useState<Offering | null>(null);
-    const [expansionStyle, setExpansionStyle] = useState<React.CSSProperties | null>(null);
-    const [isTransitioning, setIsTransitioning] = useState(false);
-    const [overlayVisible, setOverlayVisible] = useState(false);
+    const overlayRef = useRef<HTMLDivElement>(null);
+    const cloneRef = useRef<HTMLDivElement>(null);
 
     // Filters
     const [searchQuery, setSearchQuery] = useState('');
@@ -278,22 +278,22 @@ export const CoreOfferings: React.FC = () => {
 
         // 1. Tab Filter
         if (activeTab !== 'All') {
-             filtered = filtered.filter(o => o.programmeTypes.includes(activeTab));
+            filtered = filtered.filter(o => o.programmeTypes.includes(activeTab));
         }
 
         // 2. Search Query
         if (searchQuery) {
             const lowerQuery = searchQuery.toLowerCase();
-            filtered = filtered.filter(o => 
-                o.title.toLowerCase().includes(lowerQuery) || 
+            filtered = filtered.filter(o =>
+                o.title.toLowerCase().includes(lowerQuery) ||
                 o.description.toLowerCase().includes(lowerQuery)
             );
         }
 
         // 3. Study Level
         if (selectedStudyLevels.length > 0) {
-            filtered = filtered.filter(o => 
-                selectedStudyLevels.some(level => 
+            filtered = filtered.filter(o =>
+                selectedStudyLevels.some(level =>
                     o.programmeTypes.includes(level) || o.qualification === level
                 )
             );
@@ -302,21 +302,21 @@ export const CoreOfferings: React.FC = () => {
         // 4. Focus Area (AND Logic)
         if (selectedFocusAreas.length > 0) {
             filtered = filtered.filter(o => {
-                 return selectedFocusAreas.every(area => {
-                     if (area === 'Hospitality') return o.category === 'Hospitality';
-                     if (area === 'Culinary') return o.category === 'Culinary';
-                     if (area === 'Food & Beverage') return o.title.includes('Food') || o.title.includes('Beverage');
-                     if (area === 'Business') return o.title.includes('Business') || o.programmeTypes.includes('Degrees');
-                     if (area === 'Human Resources') return o.description.includes('Human Resources');
-                     if (area === 'Conference & Events') return o.description.includes('Events');
-                     return false; 
-                 });
+                return selectedFocusAreas.every(area => {
+                    if (area === 'Hospitality') return o.category === 'Hospitality';
+                    if (area === 'Culinary') return o.category === 'Culinary';
+                    if (area === 'Food & Beverage') return o.title.includes('Food') || o.title.includes('Beverage');
+                    if (area === 'Business') return o.title.includes('Business') || o.programmeTypes.includes('Degrees');
+                    if (area === 'Human Resources') return o.description.includes('Human Resources');
+                    if (area === 'Conference & Events') return o.description.includes('Events');
+                    return false;
+                });
             });
         }
 
         // 5. Accreditation (AND Logic)
         if (selectedAccreditations.length > 0) {
-            filtered = filtered.filter(o => 
+            filtered = filtered.filter(o =>
                 selectedAccreditations.every(acc => o.accreditations.includes(acc))
             );
         }
@@ -327,7 +327,7 @@ export const CoreOfferings: React.FC = () => {
 
 
     const toggleFilter = (setter: React.Dispatch<React.SetStateAction<string[]>>, value: string) => {
-        setter(prev => 
+        setter(prev =>
             prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value]
         );
     };
@@ -349,45 +349,64 @@ export const CoreOfferings: React.FC = () => {
         }
     };
 
-    // --- Transition Handler ---
+    // --- Transition Handler (GSAP Animation from old AI Studio files) ---
     const handleCardExpand = (offering: Offering, rect: DOMRect) => {
-        // 1. Set initial state (match card position)
         setExpandingOffering(offering);
-        setOverlayVisible(false);
-        setExpansionStyle({
-            position: 'fixed',
-            top: rect.top,
-            left: rect.left,
-            width: rect.width,
-            height: rect.height,
-            zIndex: 40, // Below header
-            transition: 'all 0.5s ease-in-out', // Faster transition
-            borderRadius: '2px', // Match card border radius initially
-        });
-        setIsTransitioning(true);
-    
-        // 2. Trigger expansion (match hero position)
-        // Using double requestAnimationFrame to ensure browser paints initial state first
-        requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-                setExpansionStyle({
-                    position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    width: '100vw',
-                    height: '100vh',
-                    zIndex: 40,
-                    transition: 'all 0.5s ease-in-out',
-                    borderRadius: '0px',
-                });
-                setTimeout(() => setOverlayVisible(true), 250);
-            });
-        });
 
-        // 3. Navigate after animation completes
-        setTimeout(() => {
-            navigate(`/course/${offering.id}`, { state: { fromTransition: true } });
-        }, 1000); // Wait for transition to finish
+        // Wait for render so refs are populated
+        requestAnimationFrame(() => {
+            if (!cloneRef.current || !overlayRef.current) return;
+
+            const clone = cloneRef.current;
+            const overlay = overlayRef.current;
+
+            // 1. Set Initial State
+            gsap.set(clone, {
+                position: 'fixed',
+                top: rect.top,
+                left: rect.left,
+                width: rect.width,
+                height: rect.height,
+                zIndex: 40, // Below Header (50), Above Content
+                borderRadius: '2px' // Match card radius
+            });
+            gsap.set(overlay, { opacity: 0 });
+
+            // 2. Animate with GSAP Timeline
+            const tl = gsap.timeline({
+                onComplete: () => {
+                    navigate(`/course/${offering.id}`, { state: { fromTransition: true } });
+                    // Cleanup happens via page unmount
+                    setTimeout(() => setExpandingOffering(null), 100);
+                }
+            });
+
+            // Phase 1: Horizontal Expansion (0-400ms)
+            // Stays at same Y, but expands to full width
+            tl.to(clone, {
+                left: 0,
+                width: '100vw',
+                borderRadius: 0,
+                duration: 0.4,
+                ease: "power2.inOut"
+            });
+
+            // Phase 2: Vertical Expansion + Overlay (400-800ms)
+            // Moves up to cover hero area
+            tl.to(clone, {
+                top: 0,
+                height: '100vh',
+                duration: 0.4,
+                ease: "power2.inOut"
+            }, "-=0.1"); // Slight overlap for fluidity
+
+            // Animate overlay opacity during vertical phase
+            tl.to(overlay, {
+                opacity: 1,
+                duration: 0.4,
+                ease: "power1.inOut"
+            }, "<");
+        });
     };
 
     const activeFilterCount = selectedStudyLevels.length + selectedFocusAreas.length + selectedAccreditations.length;
@@ -395,40 +414,46 @@ export const CoreOfferings: React.FC = () => {
     return (
         <section className="bg-white relative min-h-screen" id="offerings">
 
-            <style dangerouslySetInnerHTML={{__html: `.programmes-slider::-webkit-scrollbar { height: 4px; }`}} />
+            <style dangerouslySetInnerHTML={{ __html: `.programmes-slider::-webkit-scrollbar { height: 4px; }` }} />
 
-            {/* --- EXPANSION OVERLAY --- */}
-            {isTransitioning && expandingOffering && expansionStyle && (
-                <div 
-                    style={expansionStyle}
-                    className="overflow-hidden bg-brand-dark shadow-2xl"
+            {/* --- EXPANSION CLONE (GSAP Animation from old AI Studio files) --- */}
+            {expandingOffering && (
+                <div
+                    ref={cloneRef}
+                    className="overflow-hidden bg-brand-dark shadow-2xl pointer-events-none"
+                    style={{ position: 'fixed', zIndex: 40 }}
                 >
                     <div className="relative w-full h-full">
-                          <video
-                             src={expandingOffering.video}
-                             poster={expandingOffering.image}
-                             muted
-                             autoPlay
-                             loop
-                             playsInline
-                             className="w-full h-full object-cover"
-                         />
-                         <div className={`absolute inset-0 bg-[#0a3355]/80 z-10 transition-opacity duration-500 ${overlayVisible ? 'opacity-80' : 'opacity-0'}`}></div>
-                     </div>
+                        {/* Blue Overlay (Fades in during Phase 2) */}
+                        <div
+                            ref={overlayRef}
+                            className="absolute inset-0 bg-[#0a3355]/80 z-20"
+                        ></div>
+
+                        {/* Media */}
+                        <video
+                            src={expandingOffering.video}
+                            muted
+                            autoPlay
+                            loop
+                            playsInline
+                            className="w-full h-full object-cover z-10"
+                        />
+                    </div>
                 </div>
             )}
 
             {/* Filter Drawer Overlay */}
-            <div 
+            <div
                 className={`fixed inset-0 z-[55] bg-black/60 backdrop-blur-sm transition-opacity duration-500 ${isFilterOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
                 onClick={() => setIsFilterOpen(false)}
             />
 
             {/* Left Filter Drawer */}
             <div className={`fixed top-0 left-0 bottom-0 w-[320px] z-[60] bg-[#0d1424] border-r border-brand-gold/30 shadow-[10px_0_40px_rgba(0,0,0,0.5)] transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${isFilterOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-                 <div className="flex flex-col h-full">
-                     {/* Header */}
-                     <div className="flex items-center justify-between p-6 border-b border-white/10 bg-[#162036] shrink-0">
+                <div className="flex flex-col h-full">
+                    {/* Header */}
+                    <div className="flex items-center justify-between p-6 border-b border-white/10 bg-[#162036] shrink-0">
                         <div className="flex items-center gap-3">
                             <SlidersHorizontal className="text-brand-gold" size={20} />
                             <h3 className="text-white font-serif font-bold text-lg">Filters</h3>
@@ -436,24 +461,24 @@ export const CoreOfferings: React.FC = () => {
                         <button onClick={() => setIsFilterOpen(false)} className="bg-white/10 hover:bg-white/20 p-2 rounded-full text-white transition-colors">
                             <X size={18} />
                         </button>
-                     </div>
+                    </div>
 
-                     {/* Content */}
-                     <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col">
+                    {/* Content */}
+                    <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col">
                         {/* Search Bar */}
                         <div className="p-6 pb-2">
                             <label className="text-xs uppercase font-bold text-gray-500 mb-2 block">Search</label>
                             <div className="relative">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-                                <input 
-                                    type="text" 
-                                    placeholder="Keywords..." 
+                                <input
+                                    type="text"
+                                    placeholder="Keywords..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     className="w-full bg-black/20 border border-white/10 rounded-sm py-2.5 pl-10 pr-4 text-sm text-white focus:border-brand-gold outline-none transition-colors"
                                 />
                                 {searchQuery && (
-                                    <button 
+                                    <button
                                         onClick={() => setSearchQuery('')}
                                         className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white"
                                     >
@@ -465,48 +490,48 @@ export const CoreOfferings: React.FC = () => {
 
                         {/* Filter Groups */}
                         <div className="divide-y divide-white/10 mt-4">
-                            <CheckboxGroup 
-                                title="Study Level" 
-                                options={STUDY_LEVELS} 
-                                selectedValues={selectedStudyLevels} 
+                            <CheckboxGroup
+                                title="Study Level"
+                                options={STUDY_LEVELS}
+                                selectedValues={selectedStudyLevels}
                                 onChange={(val) => toggleFilter(setSelectedStudyLevels, val)}
                                 variant="accordion"
                                 defaultOpen={true}
                             />
-                            <CheckboxGroup 
-                                title="Focus Areas" 
-                                options={FOCUS_AREAS} 
-                                selectedValues={selectedFocusAreas} 
+                            <CheckboxGroup
+                                title="Focus Areas"
+                                options={FOCUS_AREAS}
+                                selectedValues={selectedFocusAreas}
                                 onChange={(val) => toggleFilter(setSelectedFocusAreas, val)}
                                 variant="accordion"
                                 defaultOpen={false}
                             />
-                            <CheckboxGroup 
-                                title="Accreditation" 
-                                options={ACCREDITATIONS} 
-                                selectedValues={selectedAccreditations} 
-                                onChange={(val) => toggleFilter(setSelectedAccreditations, val)} 
+                            <CheckboxGroup
+                                title="Accreditation"
+                                options={ACCREDITATIONS}
+                                selectedValues={selectedAccreditations}
+                                onChange={(val) => toggleFilter(setSelectedAccreditations, val)}
                                 variant="accordion"
                                 defaultOpen={false}
                             />
                         </div>
-                     </div>
-                     
-                     {/* Footer */}
-                     <div className="p-4 bg-[#162036] border-t border-white/10 shrink-0 flex flex-col gap-3">
-                         <div className="flex justify-between items-center text-xs text-gray-400">
-                             <span>{displayedOfferings.length} Results</span>
-                             {activeFilterCount > 0 && (
-                                 <button onClick={resetFilters} className="text-brand-gold hover:text-white underline">
-                                     Reset All
-                                 </button>
-                             )}
-                         </div>
-                         <Button variant="primary" className="w-full justify-center" onClick={() => setIsFilterOpen(false)}>
-                             View Results
-                         </Button>
-                     </div>
-                 </div>
+                    </div>
+
+                    {/* Footer */}
+                    <div className="p-4 bg-[#162036] border-t border-white/10 shrink-0 flex flex-col gap-3">
+                        <div className="flex justify-between items-center text-xs text-gray-400">
+                            <span>{displayedOfferings.length} Results</span>
+                            {activeFilterCount > 0 && (
+                                <button onClick={resetFilters} className="text-brand-gold hover:text-white underline">
+                                    Reset All
+                                </button>
+                            )}
+                        </div>
+                        <Button variant="primary" className="w-full justify-center" onClick={() => setIsFilterOpen(false)}>
+                            View Results
+                        </Button>
+                    </div>
+                </div>
             </div>
 
             {/* --- TOP WHITE SECTION --- */}
@@ -517,7 +542,7 @@ export const CoreOfferings: React.FC = () => {
                         <h2 className="font-serif text-4xl md:text-6xl text-brand-primary mb-6">
                             Our <span className="text-brand-accent">Programmes</span>
                         </h2>
-                        
+
                         <p className="text-brand-textSecondary max-w-3xl mx-auto mb-8 leading-relaxed">
                             World-class hospitality and culinary programmes designed to launch your career. All programmes include practical work experience and employment support.
                         </p>
@@ -560,11 +585,10 @@ export const CoreOfferings: React.FC = () => {
                                                     }
                                                 }, 0);
                                             }}
-                                            className={`px-6 py-3 rounded-full text-xs font-bold uppercase tracking-widest transition-all duration-300 whitespace-nowrap ${
-                                                activeTab === tab.id
-                                                ? 'bg-[#1289fe] text-white shadow-md'
-                                                : 'text-gray-500 hover:bg-gray-100 hover:text-[#1289fe]'
-                                            }`}
+                                            className={`px-6 py-3 rounded-full text-xs font-bold uppercase tracking-widest transition-all duration-300 whitespace-nowrap ${activeTab === tab.id
+                                                    ? 'bg-[#1289fe] text-white shadow-md'
+                                                    : 'text-gray-500 hover:bg-gray-100 hover:text-[#1289fe]'
+                                                }`}
                                         >
                                             {tab.label}
                                         </button>
@@ -598,10 +622,10 @@ export const CoreOfferings: React.FC = () => {
             {/* --- BOTTOM BLUE GRID SECTION --- */}
             <div className="bg-[#072136] pt-24 pb-20">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    
+
                     {/* Mobile Controls (Visible only on small screens) */}
                     <div className="flex md:hidden justify-between items-center mb-6">
-                        <button 
+                        <button
                             onClick={() => setIsFilterOpen(!isFilterOpen)}
                             className="bg-white/10 text-white rounded-full p-3"
                         >
