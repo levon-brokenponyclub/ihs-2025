@@ -9,7 +9,7 @@ A high-conversion, premium homepage for the International Hotel School built wit
 ```bash
 chmod +x start.sh
 ./start.sh
-```
+```   
 
 ---
 
