@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect, useRef } from 'react';
-import { OFFERINGS, STUDY_LEVELS, FOCUS_AREAS, ACCREDITATIONS } from '../constants';
+import { OFFERINGS } from '../constants.tsx';
 import { Button } from './ui/Button';
 import { CheckboxGroup } from './ui/CheckboxGroup';
 import {
@@ -14,17 +13,21 @@ import {
     SlidersHorizontal,
     ChevronLeft,
     ChevronRight,
-    Search
+    Search,
+    Filter
 } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
 import { QuickViewModal } from './QuickViewModal';
 import { Offering } from '../types';
 import { useCart } from '../context/CartContext';
 import { useCompare } from '../context/CompareContext';
+import { useTransition } from '../context/TransitionContext';
 import { ApplicationModal } from './ApplicationModal';
 import { CheckoutModal } from './CheckoutModal';
-import gsap from 'gsap'; // Animation from old AI Studio files
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+gsap.registerPlugin(ScrollTrigger);
 
+// --- Tabs / Filter Options ---
 const TABS = [
     { id: 'All', label: 'All Programmes' },
     { id: 'Full Time Learning', label: 'Full Time' },
@@ -34,20 +37,51 @@ const TABS = [
     { id: 'Online Learning', label: 'Online' }
 ];
 
-// --- Sub-Component for Individual Course Card to handle Video Refs ---
-const CourseCardItem: React.FC<{
-    offering: Offering;
-    onExpand: (offering: Offering, rect: DOMRect) => void;
-}> = ({ offering, onExpand }) => {
+const STUDY_LEVELS = [
+    'AHLEI Professional Certification',
+    'Credit Bearing Short Courses',
+    'Degrees',
+    'Diplomas',
+    'Higher Certificates',
+    'Specialisations',
+    'Non-credit Bearing Short Courses'
+];
+
+const FOCUS_AREAS = [
+    'Business',
+    'Conference & Events',
+    'Food & Beverage',
+    'Hospitality Management',
+    'Human Resources',
+    'Culinary'
+];
+
+const ACCREDITATIONS = [
+    'AHLEI',
+    'CATHSSETA',
+    'City & Guilds',
+    'QCTO',
+    'École Ducasse',
+    'CHE',
+    'International Hotel School'
+];
+
+// Helper to convert strings to options for CheckboxGroup
+const toOptions = (items: string[]) => items.map(item => ({ label: item, value: item }));
+
+// --- Sub-component for individual course cards ---
+const CourseCardItem: React.FC<{ offering: Offering; onExpand: (o: Offering, img: DOMRect, txt: DOMRect, cat: DOMRect) => void }> = ({ offering, onExpand }) => {
     const videoRef = useRef<HTMLVideoElement>(null);
-    const mediaRef = useRef<HTMLDivElement>(null); // Ref for media container (for GSAP animation)
+    const mediaRef = useRef<HTMLDivElement>(null);
+    const titleRef = useRef<HTMLHeadingElement>(null);
+    const categoryRef = useRef<HTMLSpanElement>(null);
+    
     const { addToCart } = useCart();
     const { addToCompare, isInCompare, removeFromCompare } = useCompare();
 
-    // Local state for modals specific to this card's actions
     const [selectedOffering, setSelectedOffering] = useState<Offering | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [modalOrigin, setModalOrigin] = useState<{ x: number, y: number } | null>(null);
+    const [modalOrigin, setModalOrigin] = useState<{ x: number; y: number } | null>(null);
     const [showApplication, setShowApplication] = useState(false);
     const [showCheckout, setShowCheckout] = useState(false);
 
@@ -57,15 +91,13 @@ const CourseCardItem: React.FC<{
     const inCompare = isInCompare(offering.id);
 
     const handleMouseEnter = () => {
-        if (videoRef.current) {
-            videoRef.current.play().catch(e => console.log('Autoplay prevented', e));
-        }
+        if (videoRef.current) videoRef.current.play().catch(() => {});
     };
 
     const handleMouseLeave = () => {
         if (videoRef.current) {
             videoRef.current.pause();
-            videoRef.current.currentTime = 0; // Reset video
+            videoRef.current.currentTime = 0;
         }
     };
 
@@ -73,9 +105,7 @@ const CourseCardItem: React.FC<{
         e.preventDefault();
         e.stopPropagation();
         const rect = (e.currentTarget as HTMLElement).closest('.group')?.getBoundingClientRect();
-        if (rect) {
-            setModalOrigin({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 });
-        }
+        if (rect) setModalOrigin({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 });
         setSelectedOffering(offering);
         setIsModalOpen(true);
     };
@@ -91,75 +121,42 @@ const CourseCardItem: React.FC<{
         }
     };
 
+    // Refactored to allow "Course Details" button to trigger transition via bubbling
     const handleCardClick = (e: React.MouseEvent) => {
-        // If clicking buttons, don't expand
-        if ((e.target as HTMLElement).closest('button')) return;
-
+        // We do NOT check for closest('button') here anymore.
+        // The other buttons (QuickView, Action, Compare) all have e.stopPropagation(),
+        // so they will never trigger this handler.
+        // This allows the "Course Details" button to bubble up and trigger this handler naturally.
+        
         e.preventDefault();
-        // Use mediaRef for expansion start point to match visual content that expands
-        if (mediaRef.current) {
-            const rect = mediaRef.current.getBoundingClientRect();
-            onExpand(offering, rect);
+        if (mediaRef.current && titleRef.current && categoryRef.current) {
+            const imgRect = mediaRef.current.getBoundingClientRect();
+            const txtRect = titleRef.current.getBoundingClientRect();
+            const catRect = categoryRef.current.getBoundingClientRect();
+            onExpand(offering, imgRect, txtRect, catRect);
         }
     };
 
     return (
         <>
-            <div
-                className="flex flex-col h-full cursor-pointer"
-                onMouseEnter={handleMouseEnter}
-                onMouseLeave={handleMouseLeave}
-                onClick={handleCardClick}
-            >
-                <div className="bg-white w-full group rounded-2xl overflow-hidden transition-all duration-300 flex flex-col h-full shadow-lg hover:shadow-2xl hover:-translate-y-1 relative">
-                    {/* Media Area (Video/Image) */}
+            <div className="flex flex-col h-full course-card cursor-pointer" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} onClick={handleCardClick}>
+                <div className="bg-white w-full group rounded-2xl overflow-hidden flex flex-col h-full shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 relative">
                     <div ref={mediaRef} className="relative h-60 overflow-hidden shrink-0 bg-gray-100">
+                        <video ref={videoRef} src={offering.video} muted loop playsInline className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                         <div className="absolute top-4 left-4 z-10">
-                            <span className="bg-[#f8fafc] border border-[#eff4f7] text-[#002a4e] text-[10px] font-bold px-3 py-1.5 uppercase tracking-widest rounded-sm shadow-md hover:bg-[#c2b068] hover:border-[#d4c999] hover:text-[#fff] transition-colors">
+                            <span ref={categoryRef} className="bg-[#f8fafc] border border-[#eff4f7] text-[#002a4e] text-[10px] font-bold px-3 py-1.5 uppercase tracking-widest rounded-sm shadow-md hover:bg-[#c2b068] hover:border-[#d4c999] hover:text-[#fff] transition-colors inline-block">
                                 {offering.category}
                             </span>
                         </div>
-
-                        {/* Video Element (Plays on Hover) */}
-                        <video
-                            ref={videoRef}
-                            src={offering.video}
-                            muted
-                            loop
-                            playsInline
-                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                        />
-
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-
-                        {/* Hover Actions Panel */}
                         <div className="absolute bottom-0 left-0 right-0 bg-[#002B4E]/90 backdrop-blur-sm p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 flex gap-2 z-20">
-                            <button
-                                onClick={handleAction}
-                                className="flex-[2] bg-white text-[#002B4E] hover:bg-[#C2B067] hover:text-white text-[10px] font-bold uppercase tracking-wider py-2.5 rounded-sm transition-all flex items-center justify-center gap-2 border border-transparent"
-                            >
-                                {isEcommerce ? (
-                                    <><ShoppingBag size={14} /> Buy Now</>
-                                ) : (
-                                    <>Apply Now <ArrowRight size={14} /></>
-                                )}
+                            <button onClick={handleAction} className="flex-[2] bg-white text-[#002B4E] hover:bg-[#C2B067] hover:text-white text-[10px] font-bold uppercase tracking-wider py-2.5 rounded-sm flex items-center justify-center gap-2 border border-transparent">
+                                {isEcommerce ? (<><ShoppingBag size={14} /> Buy Now</>) : (<>Apply Now <ArrowRight size={14} /></>)}
                             </button>
-                            <button
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    if (inCompare) removeFromCompare(offering.id);
-                                    else addToCompare(offering);
-                                }}
-                                className={`flex-1 bg-transparent border border-white/30 hover:bg-white/10 text-white text-[10px] font-bold uppercase tracking-wider py-2.5 rounded-sm transition-all flex items-center justify-center gap-2 ${inCompare ? 'bg-white text-[#002B4E]' : ''}`}
-                            >
-                                {inCompare ? <X size={16} /> : <BarChart2 size={16} />}
-                                {inCompare ? 'Remove' : 'Compare'}
+                            <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); inCompare ? removeFromCompare(offering.id) : addToCompare(offering); }} className={`flex-1 bg-transparent border border-white/30 hover:bg-white/10 text-white text-[10px] font-bold uppercase tracking-wider py-2.5 rounded-sm flex items-center justify-center gap-2 ${inCompare ? 'bg-white text-[#002B4E]' : ''}`}>
+                                {inCompare ? <X size={16} /> : <BarChart2 size={16} />} {inCompare ? 'Remove' : 'Compare'}
                             </button>
                         </div>
                     </div>
-
-                    {/* Content Area */}
                     <div className="p-6 flex-1 flex flex-col relative z-10 bg-white">
                         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-gray-500 font-medium mb-4">
                             <div className="flex items-center gap-1.5">
@@ -170,56 +167,27 @@ const CourseCardItem: React.FC<{
                                 <GraduationCap size={16} className="text-[#002B4E]" />
                                 <span>{offering.qualification}</span>
                             </div>
-                            <div className="flex items-center gap-1.5">
-                                <span className="text-[#002B4E] font-semibold">{offering.category}</span>
-                            </div>
                         </div>
-
-                        <div className="block">
-                            <h3 className="text-lg lg:text-xl font-serif font-bold text-[#002B4E] mb-4 leading-tight group-hover:text-[#1289fe] transition-colors">
-                                {offering.title}
-                            </h3>
-                        </div>
-
-                        {/* Spacer to push content to bottom */}
+                        <h3 ref={titleRef} className="text-lg lg:text-xl font-serif font-bold text-[#002B4E] mb-4 leading-tight group-hover:text-[#1289fe] transition-colors origin-top-left">
+                            {offering.title}
+                        </h3>
                         <div className="mt-auto"></div>
-
-                        {/* Price Block: Always visible */}
-                        <div className="mb-4">
-                            <div className="flex justify-between items-end border-t border-gray-100 pt-3">
-                                <div>
-                                    <p className="text-[10px] uppercase tracking-widest text-gray-400 font-bold mb-1">Tuition</p>
-                                    <p className="text-lg font-bold text-[#002B4E]">
-                                        R {offering.price?.toLocaleString()}
-                                    </p>
-                                </div>
-                                <div className="text-right">
-                                    <p className="text-[10px] uppercase tracking-widest text-gray-400 font-bold mb-1">Next Intake</p>
-                                    <p className="text-xs font-bold text-[#002B4E]">{offering.startDate}</p>
-                                </div>
+                        <div className="mb-4 flex justify-between items-end border-t border-gray-100 pt-3">
+                            <div>
+                                <p className="text-[10px] uppercase tracking-widest text-gray-400 font-bold mb-1">Tuition</p>
+                                <p className="text-lg font-bold text-[#002B4E]">R {offering.price?.toLocaleString()}</p>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-[10px] uppercase tracking-widest text-gray-400 font-bold mb-1">Next Intake</p>
+                                <p className="text-xs font-bold text-[#002B4E]">{offering.startDate}</p>
                             </div>
                         </div>
-
-                        {/* Action Buttons */}
                         <div className="flex gap-3 relative z-20 bg-white">
-                            <button
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    if (cardRef.current) {
-                                        const rect = cardRef.current.getBoundingClientRect();
-                                        onExpand(offering, rect);
-                                    }
-                                }}
-                                className="flex-1 bg-[#002845] border border-[#002845] text-white hover:bg-[#002845]/90 font-bold transition-all duration-300 text-xs uppercase tracking-widest px-4 py-3 rounded-md flex items-center justify-center"
-                            >
+                            {/* Removed onClick here to let it bubble to the container handler, preventing double-fire */}
+                            <button className="flex-1 bg-[#002845] border border-[#002845] text-white hover:bg-[#002845]/90 font-bold transition-all duration-300 text-xs uppercase tracking-widest px-4 py-3 rounded-md flex items-center justify-center">
                                 Course Details
                             </button>
-                            <button
-                                onClick={handleQuickView}
-                                className="w-12 flex items-center justify-center bg-[#c2b068] border border-[#c2b068] text-white hover:bg-[#d4c999] rounded-none transition-all duration-300"
-                                aria-label="Quick View"
-                            >
+                            <button onClick={handleQuickView} className="w-12 flex items-center justify-center bg-[#c2b068] border border-[#c2b068] text-white hover:bg-[#d4c999] rounded-none transition-all duration-300" aria-label="Quick View">
                                 <Eye size={18} />
                             </button>
                         </div>
@@ -227,111 +195,118 @@ const CourseCardItem: React.FC<{
                 </div>
             </div>
 
-            {selectedOffering && (
-                <QuickViewModal
-                    offering={selectedOffering}
-                    isOpen={isModalOpen}
-                    onClose={() => setIsModalOpen(false)}
-                    origin={modalOrigin}
-                />
-            )}
-
-            <ApplicationModal
-                isOpen={showApplication}
-                onClose={() => setShowApplication(false)}
-                courseTitle={offering.title}
-            />
-
-            <CheckoutModal
-                isOpen={showCheckout}
-                onClose={() => setShowCheckout(false)}
-            />
+            {selectedOffering && <QuickViewModal offering={selectedOffering} isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} origin={modalOrigin} />}
+            <ApplicationModal isOpen={showApplication} onClose={() => setShowApplication(false)} courseTitle={offering.title} />
+            <CheckoutModal isOpen={showCheckout} onClose={() => setShowCheckout(false)} />
         </>
     );
 };
 
+// --- Main CoreOfferings Component ---
 export const CoreOfferings: React.FC = () => {
-    // --- State ---
     const [activeTab, setActiveTab] = useState('All');
     const [isFilterOpen, setIsFilterOpen] = useState(false);
+    
+    // Animation Refs
+    const drawerRef = useRef<HTMLDivElement>(null);
+    const backdropRef = useRef<HTMLDivElement>(null);
     const tabsRef = useRef<HTMLDivElement>(null);
-    const desktopTabsRef = useRef<HTMLDivElement>(null);
     const sliderRef = useRef<HTMLDivElement>(null);
-    const navigate = useNavigate();
+    const cardsContainerRef = useRef<HTMLDivElement>(null);
+    
+    // Use Global Transition
+    const { startTransition } = useTransition();
 
-    // --- Transition States (GSAP Animation from old AI Studio files) ---
-    const [expandingOffering, setExpandingOffering] = useState<Offering | null>(null);
-    const overlayRef = useRef<HTMLDivElement>(null);
-    const cloneRef = useRef<HTMLDivElement>(null);
-
-    // Filters
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedStudyLevels, setSelectedStudyLevels] = useState<string[]>([]);
     const [selectedFocusAreas, setSelectedFocusAreas] = useState<string[]>([]);
     const [selectedAccreditations, setSelectedAccreditations] = useState<string[]>([]);
-
     const [displayedOfferings, setDisplayedOfferings] = useState<Offering[]>([]);
 
-    // --- Filtering Logic ---
+    // --- GSAP Drawer Animation ---
+    useEffect(() => {
+        const ctx = gsap.context(() => {
+            if (isFilterOpen) {
+                // Open sequence
+                gsap.to(backdropRef.current, { 
+                    autoAlpha: 1, 
+                    duration: 0.4, 
+                    ease: "power2.out" 
+                });
+                gsap.fromTo(drawerRef.current, 
+                    { x: '-100%' }, 
+                    { x: '0%', duration: 0.5, ease: "expo.out", delay: 0.1 }
+                );
+            } else {
+                // Close sequence
+                gsap.to(drawerRef.current, { 
+                    x: '-100%', 
+                    duration: 0.4, 
+                    ease: "power2.in" 
+                });
+                gsap.to(backdropRef.current, { 
+                    autoAlpha: 0, 
+                    duration: 0.3, 
+                    delay: 0.1,
+                    ease: "power2.in" 
+                });
+            }
+        });
+        return () => ctx.revert();
+    }, [isFilterOpen]);
+
+    // --- Filtering Logic (Data only) ---
     useEffect(() => {
         let filtered = OFFERINGS;
 
-        // 1. Tab Filter
-        if (activeTab !== 'All') {
-            filtered = filtered.filter(o => o.programmeTypes.includes(activeTab));
-        }
-
-        // 2. Search Query
+        if (activeTab !== 'All') filtered = filtered.filter((o: Offering) => o.programmeTypes.includes(activeTab));
         if (searchQuery) {
-            const lowerQuery = searchQuery.toLowerCase();
-            filtered = filtered.filter(o =>
-                o.title.toLowerCase().includes(lowerQuery) ||
-                o.description.toLowerCase().includes(lowerQuery)
-            );
+            const q = searchQuery.toLowerCase();
+            filtered = filtered.filter((o: Offering) => o.title.toLowerCase().includes(q) || o.description.toLowerCase().includes(q));
         }
-
-        // 3. Study Level
-        if (selectedStudyLevels.length > 0) {
-            filtered = filtered.filter(o =>
-                selectedStudyLevels.some(level =>
-                    o.programmeTypes.includes(level) || o.qualification === level
-                )
-            );
+        if (selectedStudyLevels.length) {
+            filtered = filtered.filter((o: Offering) => selectedStudyLevels.some(level => o.programmeTypes.includes(level) || o.qualification === level));
         }
-
-        // 4. Focus Area (AND Logic)
-        if (selectedFocusAreas.length > 0) {
-            filtered = filtered.filter(o => {
-                return selectedFocusAreas.every(area => {
-                    if (area === 'Hospitality') return o.category === 'Hospitality';
-                    if (area === 'Culinary') return o.category === 'Culinary';
-                    if (area === 'Food & Beverage') return o.title.includes('Food') || o.title.includes('Beverage');
-                    if (area === 'Business') return o.title.includes('Business') || o.programmeTypes.includes('Degrees');
-                    if (area === 'Human Resources') return o.description.includes('Human Resources');
-                    if (area === 'Conference & Events') return o.description.includes('Events');
-                    return false;
-                });
-            });
+        if (selectedFocusAreas.length) {
+            filtered = filtered.filter((o: Offering) => selectedFocusAreas.every(area => {
+                 if (area === 'Hospitality') return o.category === 'Hospitality';
+                 if (area === 'Culinary') return o.category === 'Culinary';
+                 if (area === 'Food & Beverage') return o.title.includes('Food') || o.title.includes('Beverage');
+                 if (area === 'Business') return o.title.includes('Business') || o.programmeTypes.includes('Degrees');
+                 if (area === 'Human Resources') return o.description.includes('Human Resources');
+                 if (area === 'Conference & Events') return o.description.includes('Events');
+                 return false;
+            }));
         }
-
-        // 5. Accreditation (AND Logic)
-        if (selectedAccreditations.length > 0) {
-            filtered = filtered.filter(o =>
-                selectedAccreditations.every(acc => o.accreditations.includes(acc))
-            );
+        if (selectedAccreditations.length) {
+            filtered = filtered.filter((o: Offering) => selectedAccreditations.every(acc => o.accreditations?.includes(acc)));
         }
-
+        
         setDisplayedOfferings(filtered);
-
     }, [activeTab, searchQuery, selectedStudyLevels, selectedFocusAreas, selectedAccreditations]);
+
+    // --- Animation Logic (Runs when displayedOfferings updates) ---
+    useEffect(() => {
+        // We use gsap.context scoped to cardsContainerRef to prevent memory leaks and "selector not found" errors
+        const ctx = gsap.context(() => {
+            const cards = document.querySelectorAll('.course-card');
+            
+            // Only animate if cards actually exist in DOM
+            if (cards.length > 0) {
+                gsap.fromTo(cards, 
+                    { opacity: 0, y: 20 },
+                    { opacity: 1, y: 0, duration: 0.4, stagger: 0.05, ease: "power2.out", clearProps: "all" }
+                );
+            }
+        }, cardsContainerRef); // Scope
+
+        return () => ctx.revert();
+    }, [displayedOfferings]);
 
 
     const toggleFilter = (setter: React.Dispatch<React.SetStateAction<string[]>>, value: string) => {
-        setter(prev =>
-            prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value]
-        );
+        setter(prev => prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value]);
     };
-
     const resetFilters = () => {
         setSearchQuery('');
         setSelectedStudyLevels([]);
@@ -339,74 +314,13 @@ export const CoreOfferings: React.FC = () => {
         setSelectedAccreditations([]);
     };
 
-    const scrollSlider = (direction: 'left' | 'right') => {
-        if (sliderRef.current) {
-            const scrollAmount = 340; // 320px card + 20px gap
-            sliderRef.current.scrollBy({
-                left: direction === 'left' ? -scrollAmount : scrollAmount,
-                behavior: 'smooth'
-            });
-        }
+    const scrollSlider = (dir: 'left' | 'right') => {
+        if (sliderRef.current) sliderRef.current.scrollBy({ left: dir === 'left' ? -340 : 340, behavior: 'smooth' });
     };
 
-    // --- Transition Handler (GSAP Animation from old AI Studio files) ---
-    const handleCardExpand = (offering: Offering, rect: DOMRect) => {
-        setExpandingOffering(offering);
-
-        // Wait for render so refs are populated
-        requestAnimationFrame(() => {
-            if (!cloneRef.current || !overlayRef.current) return;
-
-            const clone = cloneRef.current;
-            const overlay = overlayRef.current;
-
-            // 1. Set Initial State
-            gsap.set(clone, {
-                position: 'fixed',
-                top: rect.top,
-                left: rect.left,
-                width: rect.width,
-                height: rect.height,
-                zIndex: 40, // Below Header (50), Above Content
-                borderRadius: '2px' // Match card radius
-            });
-            gsap.set(overlay, { opacity: 0 });
-
-            // 2. Animate with GSAP Timeline
-            const tl = gsap.timeline({
-                onComplete: () => {
-                    navigate(`/course/${offering.id}`, { state: { fromTransition: true } });
-                    // Cleanup happens via page unmount
-                    setTimeout(() => setExpandingOffering(null), 100);
-                }
-            });
-
-            // Phase 1: Horizontal Expansion (0-400ms)
-            // Stays at same Y, but expands to full width
-            tl.to(clone, {
-                left: 0,
-                width: '100vw',
-                borderRadius: 0,
-                duration: 0.4,
-                ease: "power2.inOut"
-            });
-
-            // Phase 2: Vertical Expansion + Overlay (400-800ms)
-            // Moves up to cover hero area
-            tl.to(clone, {
-                top: 0,
-                height: '100vh',
-                duration: 0.4,
-                ease: "power2.inOut"
-            }, "-=0.1"); // Slight overlap for fluidity
-
-            // Animate overlay opacity during vertical phase
-            tl.to(overlay, {
-                opacity: 1,
-                duration: 0.4,
-                ease: "power1.inOut"
-            }, "<");
-        });
+    const handleCardExpand = (offering: Offering, imgRect: DOMRect, txtRect: DOMRect, catRect: DOMRect) => {
+        // Trigger Global Shared Element Transition with specific refs
+        startTransition(offering, imgRect, txtRect, catRect);
     };
 
     const activeFilterCount = selectedStudyLevels.length + selectedFocusAreas.length + selectedAccreditations.length;
@@ -414,243 +328,192 @@ export const CoreOfferings: React.FC = () => {
     return (
         <section className="bg-white relative min-h-screen" id="offerings">
 
-            <style dangerouslySetInnerHTML={{ __html: `.programmes-slider::-webkit-scrollbar { height: 4px; }` }} />
+            {/* Filter Pills */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-wrap gap-2">
+                {[...selectedStudyLevels, ...selectedFocusAreas, ...selectedAccreditations].map(filter => (
+                    <span 
+                        key={filter} 
+                        className="inline-flex items-center gap-1 bg-brand-accent text-brand-primary px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider cursor-pointer hover:bg-brand-primary hover:text-white transition-colors" 
+                        onClick={() => { 
+                            toggleFilter(selectedStudyLevels.includes(filter) ? setSelectedStudyLevels : selectedFocusAreas.includes(filter) ? setSelectedFocusAreas : setSelectedAccreditations, filter);
+                        }}
+                    >
+                        {filter} <X size={10} strokeWidth={3} />
+                    </span>
+                ))}
+            </div>
 
-            {/* --- EXPANSION CLONE (GSAP Animation from old AI Studio files) --- */}
-            {expandingOffering && (
-                <div
-                    ref={cloneRef}
-                    className="overflow-hidden bg-brand-dark shadow-2xl pointer-events-none"
-                    style={{ position: 'fixed', zIndex: 40 }}
-                >
-                    <div className="relative w-full h-full">
-                        {/* Blue Overlay (Fades in during Phase 2) */}
-                        <div
-                            ref={overlayRef}
-                            className="absolute inset-0 bg-[#0a3355]/80 z-20"
-                        ></div>
-
-                        {/* Media */}
-                        <video
-                            src={expandingOffering.video}
-                            muted
-                            autoPlay
-                            loop
-                            playsInline
-                            className="w-full h-full object-cover z-10"
-                        />
-                    </div>
-                </div>
-            )}
-
-            {/* Filter Drawer Overlay */}
-            <div
-                className={`fixed inset-0 z-[55] bg-black/60 backdrop-blur-sm transition-opacity duration-500 ${isFilterOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-                onClick={() => setIsFilterOpen(false)}
+            {/* GSAP Animated Backdrop */}
+            <div 
+                ref={backdropRef}
+                className="fixed inset-0 z-[55] bg-black/40 backdrop-blur-sm opacity-0 invisible"
+                onClick={() => setIsFilterOpen(false)} 
             />
 
-            {/* Left Filter Drawer */}
-            <div className={`fixed top-0 left-0 bottom-0 w-[320px] z-[60] bg-[#0d1424] border-r border-brand-gold/30 shadow-[10px_0_40px_rgba(0,0,0,0.5)] transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${isFilterOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-                <div className="flex flex-col h-full">
-                    {/* Header */}
-                    <div className="flex items-center justify-between p-6 border-b border-white/10 bg-[#162036] shrink-0">
-                        <div className="flex items-center gap-3">
-                            <SlidersHorizontal className="text-brand-gold" size={20} />
-                            <h3 className="text-white font-serif font-bold text-lg">Filters</h3>
+            {/* GSAP Animated Light Theme Drawer */}
+            <div 
+                ref={drawerRef}
+                className="fixed top-0 left-0 bottom-0 w-[340px] z-[60] bg-white shadow-2xl transform -translate-x-full will-change-transform flex flex-col border-r border-gray-200"
+            >
+                {/* Header */}
+                <div className="flex items-center justify-between p-6 border-b border-gray-100 bg-white shrink-0">
+                    <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-brand-accent/10 flex items-center justify-center text-brand-primary">
+                            <Filter size={18} />
                         </div>
-                        <button onClick={() => setIsFilterOpen(false)} className="bg-white/10 hover:bg-white/20 p-2 rounded-full text-white transition-colors">
-                            <X size={18} />
-                        </button>
+                        <h3 className="text-brand-primary font-serif font-bold text-xl">Filters</h3>
                     </div>
+                    <button 
+                        onClick={() => setIsFilterOpen(false)} 
+                        className="bg-gray-100 hover:bg-gray-200 p-2 rounded-full text-gray-500 transition-colors"
+                    >
+                        <X size={20} />
+                    </button>
+                </div>
 
-                    {/* Content */}
-                    <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col">
-                        {/* Search Bar */}
-                        <div className="p-6 pb-2">
-                            <label className="text-xs uppercase font-bold text-gray-500 mb-2 block">Search</label>
-                            <div className="relative">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-                                <input
-                                    type="text"
-                                    placeholder="Keywords..."
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full bg-black/20 border border-white/10 rounded-sm py-2.5 pl-10 pr-4 text-sm text-white focus:border-brand-gold outline-none transition-colors"
-                                />
-                                {searchQuery && (
-                                    <button
-                                        onClick={() => setSearchQuery('')}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white"
-                                    >
-                                        <X size={14} />
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Filter Groups */}
-                        <div className="divide-y divide-white/10 mt-4">
-                            <CheckboxGroup
-                                title="Study Level"
-                                options={STUDY_LEVELS}
-                                selectedValues={selectedStudyLevels}
-                                onChange={(val) => toggleFilter(setSelectedStudyLevels, val)}
-                                variant="accordion"
-                                defaultOpen={true}
+                {/* Content */}
+                <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col bg-white">
+                    {/* Search Input */}
+                    <div className="p-6 pb-2">
+                        <label className="text-xs uppercase font-bold text-gray-400 mb-2 block tracking-wider">Search</label>
+                        <div className="relative group">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-brand-accent transition-colors" size={18} />
+                            <input 
+                                type="text" 
+                                placeholder="Keywords..." 
+                                value={searchQuery} 
+                                onChange={(e) => setSearchQuery(e.target.value)} 
+                                className="w-full bg-gray-50 border border-gray-200 rounded-sm py-3 pl-10 pr-4 text-sm text-brand-primary focus:border-brand-accent focus:bg-white outline-none transition-all placeholder:text-gray-400" 
                             />
-                            <CheckboxGroup
-                                title="Focus Areas"
-                                options={FOCUS_AREAS}
-                                selectedValues={selectedFocusAreas}
-                                onChange={(val) => toggleFilter(setSelectedFocusAreas, val)}
-                                variant="accordion"
-                                defaultOpen={false}
-                            />
-                            <CheckboxGroup
-                                title="Accreditation"
-                                options={ACCREDITATIONS}
-                                selectedValues={selectedAccreditations}
-                                onChange={(val) => toggleFilter(setSelectedAccreditations, val)}
-                                variant="accordion"
-                                defaultOpen={false}
-                            />
-                        </div>
-                    </div>
-
-                    {/* Footer */}
-                    <div className="p-4 bg-[#162036] border-t border-white/10 shrink-0 flex flex-col gap-3">
-                        <div className="flex justify-between items-center text-xs text-gray-400">
-                            <span>{displayedOfferings.length} Results</span>
-                            {activeFilterCount > 0 && (
-                                <button onClick={resetFilters} className="text-brand-gold hover:text-white underline">
-                                    Reset All
+                            {searchQuery && (
+                                <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500">
+                                    <X size={14} />
                                 </button>
                             )}
                         </div>
-                        <Button variant="primary" className="w-full justify-center" onClick={() => setIsFilterOpen(false)}>
-                            View Results
-                        </Button>
                     </div>
+
+                    {/* Accordions */}
+                    <div className="divide-y divide-gray-50 mt-4">
+                        <CheckboxGroup 
+                            title="Study Level" 
+                            options={toOptions(STUDY_LEVELS)} 
+                            selectedValues={selectedStudyLevels} 
+                            onChange={(val) => toggleFilter(setSelectedStudyLevels, val)} 
+                            variant="accordion"
+                            theme="light"
+                            defaultOpen={true} 
+                        />
+                        <CheckboxGroup 
+                            title="Focus Areas" 
+                            options={toOptions(FOCUS_AREAS)} 
+                            selectedValues={selectedFocusAreas} 
+                            onChange={(val) => toggleFilter(setSelectedFocusAreas, val)} 
+                            variant="accordion" 
+                            theme="light"
+                            defaultOpen={false} 
+                        />
+                        <CheckboxGroup 
+                            title="Accreditation" 
+                            options={toOptions(ACCREDITATIONS)} 
+                            selectedValues={selectedAccreditations} 
+                            onChange={(val) => toggleFilter(setSelectedAccreditations, val)} 
+                            variant="accordion" 
+                            theme="light"
+                            defaultOpen={false} 
+                        />
+                    </div>
+                </div>
+
+                {/* Footer */}
+                <div className="p-6 bg-gray-50 border-t border-gray-100 shrink-0 flex flex-col gap-3">
+                    <div className="flex justify-between items-center text-xs text-gray-500 font-medium uppercase tracking-wide">
+                        <span>{displayedOfferings.length} Programmes Found</span>
+                        {activeFilterCount > 0 && (
+                            <button onClick={resetFilters} className="text-red-500 hover:text-red-700 underline decoration-red-200 hover:decoration-red-700 underline-offset-2">
+                                Reset Filters
+                            </button>
+                        )}
+                    </div>
+                    <Button variant="primary" className="w-full justify-center py-4" onClick={() => setIsFilterOpen(false)}>
+                        View Results
+                    </Button>
                 </div>
             </div>
 
-            {/* --- TOP WHITE SECTION --- */}
+            {/* --- TOP SECTION --- */}
             <div className="relative bg-white pt-20 pb-20">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    {/* Main Heading Area */}
                     <div className="mb-10 text-center">
                         <h2 className="font-serif text-4xl md:text-6xl text-brand-primary mb-6">
                             Our <span className="text-brand-accent">Programmes</span>
                         </h2>
-
                         <p className="text-brand-textSecondary max-w-3xl mx-auto mb-8 leading-relaxed">
                             World-class hospitality and culinary programmes designed to launch your career. All programmes include practical work experience and employment support.
                         </p>
                     </div>
                 </div>
 
-                {/* Floating Tabs & Controls - Positioned to overlap the boundary */}
                 <div className="absolute bottom-0 left-0 right-0 translate-y-1/2 z-20">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="flex items-center gap-6">
-
-                            {/* Filter Toggle (Left) */}
-                            <button
-                                onClick={() => setIsFilterOpen(!isFilterOpen)}
-                                className="flex items-center justify-center bg-white hover:bg-gray-50 text-gray-500 hover:text-[#1289fe] rounded-full h-[50px] w-[50px] shadow-lg transition-all duration-300 relative z-10"
+                            {/* Filter Toggle Button */}
+                            <button 
+                                onClick={() => setIsFilterOpen(true)} 
+                                className="flex items-center justify-center bg-white hover:bg-gray-50 text-brand-primary hover:text-brand-accent rounded-full h-[50px] w-[50px] shadow-lg transition-all duration-300 relative z-10 group" 
                                 aria-label="Toggle Filters"
                             >
-                                <SlidersHorizontal size={20} />
+                                <SlidersHorizontal size={20} className="group-hover:scale-110 transition-transform" />
+                                {activeFilterCount > 0 && (
+                                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-sm">
+                                        {activeFilterCount}
+                                    </span>
+                                )}
                             </button>
 
-                            {/* Tabs Menu (Center) */}
                             <div className="flex-1 flex justify-center">
-                                <div
-                                    ref={tabsRef}
-                                    className="bg-white rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.1)] p-1.5 flex items-center gap-1 overflow-x-auto max-w-full no-scrollbar"
-                                >
+                                <div ref={tabsRef} className="bg-white rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.1)] p-1.5 flex items-center gap-1 overflow-x-auto max-w-full no-scrollbar">
                                     {TABS.map(tab => (
-                                        <button
-                                            key={tab.id}
-                                            data-tab={tab.id}
-                                            onClick={() => {
-                                                setActiveTab(tab.id);
-                                                // Scroll to the clicked tab if not in view
-                                                setTimeout(() => {
-                                                    if (tabsRef.current) {
-                                                        const button = tabsRef.current.querySelector(`[data-tab="${tab.id}"]`);
-                                                        if (button) {
-                                                            button.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-                                                        }
-                                                    }
-                                                }, 0);
-                                            }}
-                                            className={`px-6 py-3 rounded-full text-xs font-bold uppercase tracking-widest transition-all duration-300 whitespace-nowrap ${activeTab === tab.id
-                                                    ? 'bg-[#1289fe] text-white shadow-md'
-                                                    : 'text-gray-500 hover:bg-gray-100 hover:text-[#1289fe]'
-                                                }`}
-                                        >
+                                        <button key={tab.id} data-tab={tab.id} onClick={() => { setActiveTab(tab.id); setTimeout(() => { const btn = tabsRef.current?.querySelector(`[data-tab="${tab.id}"]`); if (btn) btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' }); }, 0); }} className={`px-6 py-3 rounded-full text-xs font-bold uppercase tracking-widest transition-all duration-300 whitespace-nowrap ${activeTab === tab.id ? 'bg-[#1289fe] text-white shadow-md' : 'text-gray-500 hover:bg-gray-100 hover:text-[#1289fe]'}`}>
                                             {tab.label}
                                         </button>
                                     ))}
                                 </div>
                             </div>
 
-                            {/* Navigation Arrows (Right) */}
                             <div className="hidden md:flex gap-2">
-                                <button
-                                    onClick={() => scrollSlider('left')}
-                                    className="w-[50px] h-[50px] bg-white rounded-full text-[#002B4E] flex items-center justify-center shadow-lg hover:bg-[#1289fe] hover:text-white transition-all duration-300"
-                                    aria-label="Previous programmes"
-                                >
+                                <button onClick={() => scrollSlider('left')} className="w-[50px] h-[50px] bg-white rounded-full text-[#002B4E] flex items-center justify-center shadow-lg hover:bg-[#1289fe] hover:text-white transition-all duration-300" aria-label="Previous programmes">
                                     <ChevronLeft size={20} />
                                 </button>
-                                <button
-                                    onClick={() => scrollSlider('right')}
-                                    className="w-[50px] h-[50px] bg-white rounded-full text-[#002B4E] flex items-center justify-center shadow-lg hover:bg-[#1289fe] hover:text-white transition-all duration-300"
-                                    aria-label="Next programmes"
-                                >
+                                <button onClick={() => scrollSlider('right')} className="w-[50px] h-[50px] bg-white rounded-full text-[#002B4E] flex items-center justify-center shadow-lg hover:bg-[#1289fe] hover:text-white transition-all duration-300" aria-label="Next programmes">
                                     <ChevronRight size={20} />
                                 </button>
                             </div>
-
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* --- BOTTOM BLUE GRID SECTION --- */}
-            <div className="bg-[#072136] pt-24 pb-20">
+            {/* --- RESULTS SLIDER --- */}
+            <div ref={cardsContainerRef} className="bg-[#072136] pt-24 pb-20">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-                    {/* Mobile Controls (Visible only on small screens) */}
                     <div className="flex md:hidden justify-between items-center mb-6">
-                        <button
-                            onClick={() => setIsFilterOpen(!isFilterOpen)}
-                            className="bg-white/10 text-white rounded-full p-3"
-                        >
+                        <button onClick={() => setIsFilterOpen(!isFilterOpen)} className="bg-white/10 text-white rounded-full p-3">
                             <SlidersHorizontal size={20} />
                         </button>
                     </div>
 
-                    {/* Results Slider */}
                     <div className="relative">
                         {displayedOfferings.length > 0 && (
-                            <>
-                                {/* Slider Container */}
-                                <div ref={sliderRef} className="overflow-x-auto programmes-slider snap-x snap-mandatory">
-                                    <div className="flex gap-6 pb-4" style={{ width: `calc(${displayedOfferings.length} * (340px + 1.5rem))` }}>
-                                        {displayedOfferings.map((offering) => (
-                                            <div key={offering.id} className="flex-shrink-0 snap-center" style={{ width: '340px' }}>
-                                                <CourseCardItem
-                                                    offering={offering}
-                                                    onExpand={handleCardExpand}
-                                                />
-                                            </div>
-                                        ))}
-                                    </div>
+                            <div ref={sliderRef} className="overflow-x-auto programmes-slider snap-x snap-mandatory">
+                                <div className="flex gap-6 pb-4" style={{ width: `calc(${displayedOfferings.length} * (340px + 1.5rem))` }}>
+                                    {displayedOfferings.map((offering) => (
+                                        <div key={offering.id} className="flex-shrink-0 snap-center" style={{ width: '340px' }}>
+                                            <CourseCardItem offering={offering} onExpand={handleCardExpand} />
+                                        </div>
+                                    ))}
                                 </div>
-                            </>
+                            </div>
                         )}
 
                         {displayedOfferings.length === 0 && (
@@ -662,13 +525,7 @@ export const CoreOfferings: React.FC = () => {
                                 <p className="text-blue-100 max-w-md mx-auto mb-8 leading-relaxed">
                                     We couldn't find any courses matching your current selection. Try switching categories or adjusting filters.
                                 </p>
-                                <button
-                                    onClick={() => {
-                                        setActiveTab('All');
-                                        resetFilters();
-                                    }}
-                                    className="text-white hover:text-brand-accent transition-colors border-b border-white pb-1 font-bold uppercase tracking-widest text-sm"
-                                >
+                                <button onClick={() => { setActiveTab('All'); resetFilters(); }} className="text-white hover:text-brand-accent transition-colors border-b border-white pb-1 font-bold uppercase tracking-widest text-sm">
                                     Reset All Filters
                                 </button>
                             </div>
@@ -679,4 +536,3 @@ export const CoreOfferings: React.FC = () => {
         </section>
     );
 };
-

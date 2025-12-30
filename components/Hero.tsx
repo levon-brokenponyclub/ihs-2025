@@ -57,7 +57,7 @@ export const Hero: React.FC = () => {
   const currentSlide = SLIDES[activeSlide];
 
   return (
-    <section className="relative h-[90vh] flex flex-col bg-brand-primary">
+    <section className="relative h-[550px] lg:h-[90vh] flex flex-col bg-brand-primary">
       {/* Background Layer */}
       <div className="absolute inset-0 z-0 bg-brand-primary overflow-hidden">
         {SLIDES.map((slide, index) => (
@@ -109,14 +109,14 @@ export const Hero: React.FC = () => {
             {SLIDES.map((slide, index) => (
               <div
                 key={slide.id}
-                className={`max-w-3xl transition-all duration-700 ease-out transform ${
+                className={`w-full max-w-3xl mx-auto lg:mx-0 text-center lg:text-left transition-all duration-700 ease-out transform ${
                   activeSlide === index
                     ? 'relative opacity-100 translate-x-0 z-10'
-                    : 'absolute top-0 left-0 opacity-0 -translate-x-10 z-0 pointer-events-none'
+                    : 'absolute top-0 left-0 right-0 lg:left-0 lg:right-auto opacity-0 -translate-x-10 z-0 pointer-events-none'
                 }`}
               >
                 {/* Eyebrow */}
-                <div className="flex items-center gap-3 mb-6">
+                <div className="flex items-center justify-center lg:justify-start gap-3 mb-6">
                   <span className="w-12 h-[2px] bg-brand-accent"></span>
                   <span className="text-sm font-bold tracking-widest uppercase text-brand-accent">
                     {slide.preTitle}
@@ -129,12 +129,12 @@ export const Hero: React.FC = () => {
                 </h1>
 
                 {/* Description */}
-                <p className="text-lg md:text-xl leading-relaxed mb-10 max-w-xl text-white/90 font-light">
+                <p className="text-lg md:text-xl leading-relaxed mb-10 max-w-xl mx-auto lg:mx-0 text-white/90 font-light">
                   {slide.description}
                 </p>
 
                 {/* CTA Buttons */}
-                <div className="flex flex-wrap gap-4">
+                <div className="flex flex-wrap justify-center lg:justify-start gap-4">
                   <Button
                     variant="primary"
                     icon={<slide.primaryBtn.icon size={16} />}

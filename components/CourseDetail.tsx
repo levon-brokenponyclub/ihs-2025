@@ -1,9 +1,8 @@
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { useParams, Link, useLocation } from 'react-router-dom';
-import { COURSE_DETAILS, OFFERINGS, ACCREDITATION_LOGOS } from '../constants';
+import { useParams, Link } from 'react-router-dom';
+import { COURSE_DETAILS } from '../constants.tsx';
 import { Button } from './ui/Button';
-import { AccordionItem } from './ui/Accordion';
 import { useCart } from '../context/CartContext';
 import { useCompare } from '../context/CompareContext';
 import { MultiStepForm } from './ui/MultiStepForm';
@@ -15,7 +14,6 @@ import {
     CheckCircle,
     Download,
     ArrowLeft,
-    Briefcase,
     Award,
     Check,
     ChevronUp,
@@ -30,21 +28,213 @@ import {
     X,
     ArrowRight,
     BookOpen,
-    Target,
     Circle,
     FileText,
-    ShieldCheck
+    MessageSquare
 } from 'lucide-react';
-import { Offering } from '../types';
+import { Offering, CourseDetail as CourseDetailType } from '../types';
 import { QuickViewModal } from './QuickViewModal';
 import { ApplicationModal } from './ApplicationModal';
 import { CheckoutModal } from './CheckoutModal';
-import gsap from 'gsap'; // Animation from old AI Studio files
+import gsap from 'gsap';
 
-const FeesCard = ({ course, className }: { course: any, className?: string }) => {
+// --- Light Theme Accordion for Mobile Course Detail ---
+interface LightAccordionProps {
+    title: string;
+    children: React.ReactNode;
+    isOpen?: boolean;
+    onToggle?: () => void;
+    id?: string;
+}
+
+const LightAccordionItem: React.FC<LightAccordionProps> = ({ title, children, isOpen, onToggle, id }) => {
+    const itemRef = useRef<HTMLDivElement>(null);
+    const wasOpen = useRef(isOpen);
+
+    useEffect(() => {
+        // Only scroll if we are transitioning from CLOSED to OPEN
+        // This prevents auto-scrolling on initial render when defaultOpen is true
+        if (isOpen && !wasOpen.current && itemRef.current) {
+            setTimeout(() => {
+                itemRef.current?.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+            }, 300);
+        }
+        // Update ref for next render
+        wasOpen.current = isOpen;
+    }, [isOpen]);
+
+    return (
+        <div ref={itemRef} id={id} className={`border-b border-gray-200 bg-white ${isOpen ? 'scroll-mt-[180px]' : ''}`}>
+            <button
+                className="w-full flex justify-between items-center py-5 px-4 text-left focus:outline-none"
+                onClick={onToggle}
+            >
+                <span className={`font-serif font-bold text-lg ${isOpen ? 'text-brand-primary' : 'text-gray-700'}`}>
+                    {title}
+                </span>
+                {isOpen ? <ChevronUp className="text-brand-accent" /> : <ChevronDown className="text-gray-400" />}
+            </button>
+            <div
+                className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-[2000px] opacity-100 mb-6' : 'max-h-0 opacity-0'}`}
+            >
+                <div className="px-4 text-gray-600 text-sm leading-relaxed">
+                    {children}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// --- Bottom Drawer Component (Mobile Conversion) ---
+const MobileFeesDrawer = ({ 
+    course, 
+    isOpen, 
+    onToggle, 
+    onApply 
+}: { 
+    course: CourseDetailType, 
+    isOpen: boolean, 
+    onToggle: () => void, 
+    onApply: () => void 
+}) => {
+    // 1. Determine CTA Label / Type
+    const isEcommerce = course.programmeTypes.some((type: string) =>
+        ['Online Learning', 'Part Time Learning'].includes(type)
+    );
+    const ctaLabel = isEcommerce ? 'Buy Now' : 'Apply Now';
+
+    // 2. Accessibility: Handle Escape Key
+    useEffect(() => {
+        const handleEsc = (e: KeyboardEvent) => {
+            if (e.key === 'Escape' && isOpen) onToggle();
+        };
+        window.addEventListener('keydown', handleEsc);
+        return () => window.removeEventListener('keydown', handleEsc);
+    }, [isOpen, onToggle]);
+
+    return (
+        <div 
+            className="group fixed bottom-0 left-0 right-0 z-[100] lg:hidden bg-white shadow-[0_-5px_40px_rgba(0,0,0,0.15)] rounded-t-3xl flex flex-col items-center mx-auto max-w-4xl border-t border-x border-slate-100 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
+            data-state={isOpen ? 'open' : 'closed'}
+            role="region"
+            aria-label="Course Fees Details"
+        >
+            {/* Handle / Drag Area */}
+            <button
+                onClick={onToggle}
+                className="w-full h-8 flex items-center justify-center cursor-pointer hover:bg-slate-50 rounded-t-3xl transition-colors focus:outline-none"
+                aria-label={isOpen ? "Collapse details" : "Expand details"}
+                aria-expanded={isOpen}
+            >
+                <span className="w-12 h-1.5 bg-slate-300 rounded-full"></span>
+            </button>
+
+            {/* Header Interactive Area */}
+            <div 
+                className="w-full px-6 md:px-10 pb-2 cursor-pointer flex flex-col"
+                onClick={onToggle}
+            >
+                {/* Row 1: Title & Chevron (Always Visible) */}
+                <div className="flex justify-between items-center w-full gap-4 h-12">
+                    <h3 
+                        className="font-serif text-lg font-bold text-[#002B4E] truncate"
+                        title={course.title}
+                    >
+                        {course.title}
+                    </h3>
+                    {/* Chevron - Rotates 180deg when open */}
+                    <div className="text-[#C2B067] transition-transform duration-500 group-data-[state=open]:rotate-180 shrink-0">
+                         <ChevronUp size={24} />
+                    </div>
+                </div>
+
+                {/* Row 2: Price & Label - "Roll Fade" Reveal on Hover/Open */}
+                <div className="
+                    flex flex-col items-center justify-center text-center gap-1
+                    overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]
+                    max-h-0 opacity-0 -translate-y-4
+                    group-hover:max-h-24 group-hover:opacity-100 group-hover:translate-y-0
+                    group-data-[state=open]:max-h-24 group-data-[state=open]:opacity-100 group-data-[state=open]:translate-y-0
+                    pb-2
+                ">
+                    <p className="text-gray-500 text-[10px] uppercase tracking-wider">Per Year</p>
+                    <p className="text-3xl font-serif text-[#002B4E] font-bold">{course.fees.tuition}</p>
+                </div>
+            </div>
+
+            {/* Expanded Content */}
+            <div className="w-full px-6 md:px-10 overflow-hidden transition-[max-height,opacity,padding] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] max-h-0 opacity-0 pb-0 group-data-[state=open]:max-h-[85vh] group-data-[state=open]:opacity-100 group-data-[state=open]:pb-10">
+                <div className="pt-2 border-t border-slate-100 mt-2">
+                    
+                    {/* Fees Breakdown - Styled to match Sidebar Fees Card */}
+                    <div className="mb-8 mt-2">
+                        <div className="space-y-4">
+                            <div className="flex justify-between text-sm border-b border-gray-100 pb-3">
+                                <span className="text-gray-600">Registration Fee</span>
+                                <span className="text-[#002B4E] font-bold">{course.fees.registration}</span>
+                            </div>
+                            <div className="flex justify-between text-sm border-b border-gray-100 pb-3">
+                                <span className="text-gray-600">Payment Terms</span>
+                                <span className="text-[#002B4E] font-bold">Monthly / Annually</span>
+                            </div>
+                        </div>
+                         <p className="text-[10px] text-slate-400 mt-4 italic leading-relaxed">
+                            *{course.fees.note}
+                        </p>
+                    </div>
+
+                    {/* Stacked Actions */}
+                    <div className="flex flex-col gap-3">
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onApply();
+                            }}
+                            className="inline-flex items-center justify-center font-bold uppercase tracking-widest transition-all duration-300 text-xs px-6 py-4 rounded-sm bg-[#C2B067] text-[#002B4E] hover:bg-white hover:text-[#002B4E] border border-transparent hover:border-[#C2B067] w-full shadow-md"
+                        >
+                            {ctaLabel}
+                        </button>
+                        
+                        <button className="w-full border border-[#002B4E] text-[#002B4E] bg-white hover:bg-slate-50 font-bold uppercase tracking-widest text-xs py-4 rounded-sm transition-colors flex items-center justify-center gap-2">
+                            Download Prospectus <Download size={14} />
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// --- Need Guidance Card ---
+const NeedGuidanceCard = () => {
+    return (
+        <div className="bg-[#002B4E] rounded-sm p-8 relative overflow-hidden shadow-xl border border-white/10">
+            {/* Background Icon */}
+            <div className="absolute -right-6 -top-6 text-white/5 transform rotate-12">
+                <MessageSquare size={140} fill="currentColor" />
+            </div>
+            
+            <div className="relative z-10">
+                <h3 className="font-serif text-2xl font-bold text-white mb-3">Need Guidance?</h3>
+                <p className="text-white/80 text-sm leading-relaxed mb-8">
+                    Speak to our admissions team to find the perfect fit for your career goals.
+                </p>
+                
+                <button className="flex items-center gap-3 text-brand-gold font-bold text-xs uppercase tracking-widest hover:text-white transition-colors group">
+                    Start Live Chat 
+                    <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                </button>
+            </div>
+        </div>
+    );
+};
+
+// --- Desktop Fees Card ---
+const FeesCard = ({ course }: { course: CourseDetailType }) => {
     const { addToCart } = useCart();
-
-    // Check if this course is eligible for direct eCommerce purchase
     const isEcommerce = course.programmeTypes.some((type: string) =>
         ['Online Learning', 'Part Time Learning'].includes(type)
     );
@@ -58,12 +248,12 @@ const FeesCard = ({ course, className }: { course: any, className?: string }) =>
     };
 
     return (
-        <div className={`bg-white border border-gray-200 rounded-sm overflow-hidden shadow-sm ${className}`}>
+        <div className="bg-white border border-gray-200 rounded-sm overflow-hidden shadow-xl">
             <div className="bg-[#002B4E] p-4 text-center">
                 <span className="text-white font-bold uppercase tracking-widest text-sm">2025 Fees</span>
             </div>
-            <div className="p-6 md:p-8 text-center">
-                <p className="text-gray-600 text-xs uppercase tracking-wider mb-2">Per Year</p>
+            <div className="p-8 text-center">
+                <p className="text-gray-500 text-xs uppercase tracking-wider mb-2">Per Year</p>
                 <p className="text-4xl font-serif text-[#002B4E] font-bold mb-6">{course.fees.tuition}</p>
 
                 <div className="border-t border-gray-200 pt-4 mb-6">
@@ -77,7 +267,7 @@ const FeesCard = ({ course, className }: { course: any, className?: string }) =>
                     </div>
                 </div>
 
-                <p className="text-xs text-gray-600 mb-8 italic">
+                <p className="text-xs text-gray-500 mb-8 italic">
                     *{course.fees.note}
                 </p>
 
@@ -99,253 +289,30 @@ const FeesCard = ({ course, className }: { course: any, className?: string }) =>
     );
 };
 
-const MobileFeesDrawer = ({ course }: { course: any }) => {
-    const [isOpen, setIsOpen] = useState(false);
-    const { addToCart } = useCart();
+export const CourseDetail: React.FC = () => {
+    const { id } = useParams<{ id: string }>();
+    const [activeSection, setActiveSection] = useState('overview');
+    const [isTabsSticky, setIsTabsSticky] = useState(false);
+    
+    // Mobile Accordion State (Overview open by default)
+    const [openMobileSection, setOpenMobileSection] = useState<string | null>('overview');
+    
+    // Drawer State
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
-    const isEcommerce = course.programmeTypes.some((type: string) =>
-        ['Online Learning', 'Part Time Learning'].includes(type)
-    );
-
-    const handleAction = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        if (isEcommerce) {
-            addToCart(course);
-            setIsOpen(false);
-        } else {
-            document.getElementById('apply-form')?.scrollIntoView({ behavior: 'smooth' });
-            setIsOpen(false);
-        }
-    };
-
-    return (
-        <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden">
-            {/* Backdrop */}
-            {isOpen && (
-                <div
-                    className="fixed inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in"
-                    onClick={() => setIsOpen(false)}
-                />
-            )}
-
-            <div className="bg-brand-card border-t border-brand-gold shadow-[0_-10px_40px_rgba(0,0,0,0.5)] relative z-10 max-h-[80vh] overflow-y-auto">
-                {/* Header Bar */}
-                <div className="p-4 flex items-center justify-between bg-brand-card cursor-pointer" onClick={() => setIsOpen(!isOpen)}>
-                    <div className="flex flex-col">
-                        <span className="text-xs text-brand-muted uppercase tracking-wider mb-0.5">Annual Tuition</span>
-                        <span className="text-white font-serif font-bold text-xl">{course.fees.tuition}</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                        <Button
-                            variant="primary"
-                            className="!py-2 !px-4 !text-xs uppercase font-bold"
-                            onClick={handleAction}
-                            icon={isEcommerce ? <ShoppingBag size={14} /> : undefined}
-                        >
-                            {isEcommerce ? 'Buy Now' : 'Apply Now'}
-                        </Button>
-                        <button className="text-brand-gold p-1 bg-white/5 rounded-full hover:bg-white/10 transition-colors">
-                            {isOpen ? <ChevronDown size={20} /> : <ChevronUp size={20} />}
-                        </button>
-                    </div>
-                </div>
-
-                {/* Expanded Content */}
-                {isOpen && (
-                    <div className="p-6 border-t border-white/10 space-y-6 bg-brand-dark animate-in slide-in-from-bottom-5">
-                        <div className="space-y-4">
-                            <div className="flex justify-between text-sm border-b border-white/5 pb-2">
-                                <span className="text-gray-400">Registration Fee</span>
-                                <span className="text-white font-bold">{course.fees.registration}</span>
-                            </div>
-                            <div className="flex justify-between text-sm border-b border-white/5 pb-2">
-                                <span className="text-gray-400">Payment Terms</span>
-                                <span className="text-white font-bold">Monthly / Annually</span>
-                            </div>
-                            <div className="bg-white/5 p-4 rounded-sm border border-white/5">
-                                <p className="text-xs text-gray-400 italic leading-relaxed">
-                                    *{course.fees.note}
-                                </p>
-                            </div>
-                        </div>
-                        <Button variant="outline" className="w-full" icon={<Download size={16} />}>
-                            Download Prospectus
-                        </Button>
-                    </div>
-                )}
-            </div>
-        </div>
-    );
-};
-
-// --- Helper Components for Related Programmes ---
-const CourseCard: React.FC<{ offering: Offering }> = ({ offering }) => {
-    const { addToCart } = useCart();
-    const { addToCompare, isInCompare, removeFromCompare } = useCompare();
-    const [selectedOffering, setSelectedOffering] = useState<Offering | null>(null);
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    // Modals
+    const [formSuccess, setFormSuccess] = useState(false);
     const [showApplication, setShowApplication] = useState(false);
     const [showCheckout, setShowCheckout] = useState(false);
 
-    const isEcommerce = offering.programmeTypes.some((type: string) =>
-        ['Online Learning', 'Part Time Learning'].includes(type)
-    );
-    const typeOfStudy = offering.programmeTypes.some(t => t.includes('Online')) ? 'Online' : 'Full-Time';
-    const inCompare = isInCompare(offering.id);
-
-    const handleQuickView = (e: React.MouseEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setSelectedOffering(offering);
-        setIsModalOpen(true);
-    };
-
-    const handleAction = (e: React.MouseEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (isEcommerce) {
-            addToCart(offering);
-            setShowCheckout(true);
-        } else {
-            setShowApplication(true);
-        }
-    };
-
-    return (
-        <>
-            <div className="bg-brand-card group rounded-sm overflow-hidden border border-white/10 hover:border-brand-gold/30 transition-all duration-300 flex flex-col h-full hover:shadow-[0_15px_40px_rgba(0,0,0,0.3)] hover:-translate-y-1 relative min-w-[280px] md:min-w-[300px] lg:min-w-[320px] snap-center">
-                {/* Image Area */}
-                <div className="relative h-64 overflow-hidden shrink-0">
-                    <div className="absolute top-4 left-4 z-10">
-                        <span className="bg-brand-gold text-white text-[10px] font-bold px-3 py-1.5 uppercase tracking-widest rounded-sm shadow-md">
-                            {offering.category}
-                        </span>
-                    </div>
-                    <img
-                        src={offering.image}
-                        alt={offering.title}
-                        className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-brand-card via-transparent to-transparent opacity-80"></div>
-
-                    {/* Hover Actions Panel */}
-                    <div className="absolute bottom-0 left-0 right-0 bg-[#004b78]/90 backdrop-blur-sm p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 flex gap-2">
-                        <button
-                            onClick={handleAction}
-                            className="flex-[2] bg-brand-gold text-white hover:bg-brand-goldHover text-[11px] font-bold uppercase tracking-widest py-2.5 rounded-sm transition-all flex items-center justify-center gap-2"
-                        >
-                            {isEcommerce ? (
-                                <><ShoppingBag size={14} /> Buy Now</>
-                            ) : (
-                                <>Apply Now <ArrowRight size={14} /></>
-                            )}
-                        </button>
-                        <button
-                            onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                if (inCompare) removeFromCompare(offering.id);
-                                else addToCompare(offering);
-                            }}
-                            className={`flex-1 bg-transparent border border-white/20 hover:bg-white/5 text-white/70 text-[11px] font-bold uppercase tracking-widest py-2.5 rounded-sm transition-all flex items-center justify-center gap-2 ${inCompare ? 'bg-white/10 border-brand-gold text-brand-gold' : ''}`}
-                        >
-                            {inCompare ? <X size={16} /> : <BarChart2 size={16} />}
-                            {inCompare ? 'Remove' : 'Compare'}
-                        </button>
-                    </div>
-                </div>
-
-                {/* Content Area */}
-                <div className="p-6 flex-1 flex flex-col relative z-10 bg-brand-card">
-                    <Link to={`/course/${offering.id}`} className="block">
-                        <h3 className="text-xl md:text-2xl font-serif font-semibold text-white mb-3 leading-tight group-hover:text-brand-gold transition-colors">{offering.title}</h3>
-                    </Link>
-
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-brand-muted uppercase tracking-wider mb-4">
-                        <div className="flex items-center gap-2">
-                            <Clock size={14} className="text-brand-gold/80" />
-                            <span>{offering.duration}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <GraduationCap size={14} className="text-brand-gold/80" />
-                            <span>{offering.qualification}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <MapPin size={14} className="text-brand-gold/80" />
-                            <span>{typeOfStudy}</span>
-                        </div>
-                    </div>
-
-                    <p className="text-brand-muted text-sm mb-4 flex-1 line-clamp-3 leading-relaxed font-light">
-                        {offering.description}
-                    </p>
-
-                    <div className="mb-6 pt-4 border-t border-white/10">
-                        <p className="text-3xl font-serif text-brand-gold font-bold">
-                            R {offering.price?.toLocaleString()}
-                        </p>
-                        <p className="text-[10px] text-gray-400 mt-1 uppercase tracking-widest">Starting: {offering.startDate}</p>
-                    </div>
-
-                    <div className="mt-auto flex gap-3">
-                        <Link
-                            to={`/course/${offering.id}`}
-                            className="flex-1 bg-transparent border border-white/20 hover:border-brand-gold text-white hover:text-brand-gold font-bold transition-all duration-300 text-[11px] uppercase tracking-widest px-4 py-3 rounded-sm flex items-center justify-center gap-2"
-                        >
-                            View More
-                        </Link>
-                        <button
-                            onClick={handleQuickView}
-                            className="h-full aspect-square flex items-center justify-center bg-transparent border border-white/20 hover:border-brand-gold hover:text-brand-gold text-white rounded-sm transition-all"
-                            aria-label="Quick View"
-                        >
-                            <Eye size={20} />
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            {selectedOffering && (
-                <QuickViewModal
-                    offering={selectedOffering}
-                    isOpen={isModalOpen}
-                    onClose={() => setIsModalOpen(false)}
-                />
-            )}
-
-            <ApplicationModal
-                isOpen={showApplication}
-                onClose={() => setShowApplication(false)}
-                courseTitle={offering.title}
-            />
-
-            <CheckoutModal
-                isOpen={showCheckout}
-                onClose={() => setShowCheckout(false)}
-            />
-        </>
-    );
-};
-
-
-export const CourseDetail: React.FC = () => {
-    const { id } = useParams<{ id: string }>();
-    const [activeYear, setActiveYear] = useState<number | null>(0);
-    const [activeFaq, setActiveFaq] = useState<number | null>(null);
-    const [formSuccess, setFormSuccess] = useState(false);
-    const [activeSection, setActiveSection] = useState('overview');
-    const [showStickyHeader, setShowStickyHeader] = useState(false);
-    const [isTabsSticky, setIsTabsSticky] = useState(false);
-
-    // Refs for GSAP Animation (from old AI Studio files)
-    const location = useLocation();
-    const contentRef = useRef<HTMLDivElement>(null);
-    const heroContentRef = useRef<HTMLDivElement>(null);
-    const sliderRef = useRef<HTMLDivElement>(null);
-
-    // Fallback to the first course if ID not found for demo purposes
+    // Refs
+    const heroRef = useRef<HTMLDivElement>(null);
+    const { addToCart } = useCart();
+    
+    // Data
     const course = id && COURSE_DETAILS[id] ? COURSE_DETAILS[id] : COURSE_DETAILS['1'];
-
+    
+    // Sections configuration
     const SECTIONS = useMemo(() => [
         { id: 'overview', label: 'Overview' },
         { id: 'content', label: 'Programme Content' },
@@ -353,82 +320,40 @@ export const CourseDetail: React.FC = () => {
         { id: 'requirements', label: 'Entry Requirements' },
         { id: 'certification', label: 'Certification' },
         { id: 'faq', label: 'FAQs' },
+        { id: 'fees', label: 'Fees' }, // Fees added for tab navigation
     ], [course.qualification]);
 
-    const typeOfStudy = course.programmeTypes.some(t => t.includes('Full Time')) ? 'Full Time' :
-        course.programmeTypes.some(t => t.includes('Part Time')) ? 'Part Time' : 'Online';
-
-    let relatedCourses = OFFERINGS.filter(o => o.category === course.category && o.id !== course.id);
-
-    if (relatedCourses.length < 5) {
-        const padding = OFFERINGS.filter(o => o.id !== course.id && !relatedCourses.find(r => r.id === o.id));
-        relatedCourses = [...relatedCourses, ...padding].slice(0, 5);
-        while (relatedCourses.length < 5 && relatedCourses.length > 0) {
-            relatedCourses = [...relatedCourses, relatedCourses[0]];
-        }
-    }
+    const isEcommerce = course.programmeTypes.some((type: string) => 
+        ['Online Learning', 'Part Time Learning'].includes(type)
+    );
 
     useEffect(() => {
+        // Ensure page starts at top
         window.scrollTo(0, 0);
     }, [id]);
 
-    // Entrance Animation Effect using GSAP (from old AI Studio files)
-    useEffect(() => {
-        // Check if we came from a shared-element transition
-        const isFromTransition = location.state?.fromTransition;
-
-        const tl = gsap.timeline({ defaults: { ease: "power2.out" } });
-
-        if (isFromTransition) {
-            // If transition occurred, the hero image is already "there" visually via the clone.
-            // We wait slightly (simulating the handoff), then animate content UP.
-            // We set initial state to hidden/offset
-            if (heroContentRef.current) gsap.set(heroContentRef.current, { y: 30, opacity: 0 });
-            if (contentRef.current) gsap.set(contentRef.current, { y: 50, opacity: 0 });
-
-            // Delay slightly to allow the previous page's clone to finish lock-in
-            const startDelay = 0.05;
-
-            tl.to(heroContentRef.current, { y: 0, opacity: 1, duration: 0.8 }, startDelay)
-                .to(contentRef.current, { y: 0, opacity: 1, duration: 0.8 }, "-=0.6");
-
-        } else {
-            // Standard Load (Fade in hero image too if desired, but sticking to content fade for consistency)
-            // For standard load, we might want to animate the image/video container too if we wanted, 
-            // but here we focus on content entrance.
-            if (heroContentRef.current) gsap.set(heroContentRef.current, { y: 30, opacity: 0 });
-            if (contentRef.current) gsap.set(contentRef.current, { y: 50, opacity: 0 });
-
-            tl.to(heroContentRef.current, { y: 0, opacity: 1, duration: 0.8 })
-                .to(contentRef.current, { y: 0, opacity: 1, duration: 0.8 }, "-=0.6");
-        }
-
-        return () => { tl.kill(); };
-    }, [location.state, id]); // Re-run if ID changes
-
     useEffect(() => {
         const handleScroll = () => {
-            const stickyThreshold = window.innerHeight - 60;
-            setShowStickyHeader(window.scrollY > stickyThreshold);
-
-            const heroHeight = window.innerHeight * 0.9;
+            const heroHeight = heroRef.current?.offsetHeight || 400;
+            // Sticky logic triggers when we scroll PAST the hero
             setIsTabsSticky(window.scrollY >= (heroHeight - 80));
 
-            const offset = 180;
-            const scrollPosition = window.scrollY + offset;
-
-            let current = SECTIONS[0].id;
-            for (const section of SECTIONS) {
-                const element = document.getElementById(section.id);
-                if (element) {
-                    const rect = element.getBoundingClientRect();
-                    const absoluteTop = rect.top + window.scrollY;
-                    if (scrollPosition >= absoluteTop) {
-                        current = section.id;
+            // Update active section based on scroll position (Desktop mainly)
+            if (window.innerWidth >= 1024) {
+                const offset = 200;
+                const scrollPosition = window.scrollY + offset;
+                
+                for (const section of SECTIONS) {
+                    const element = document.getElementById(section.id);
+                    if (element) {
+                        const rect = element.getBoundingClientRect();
+                        const absoluteTop = rect.top + window.scrollY;
+                        if (scrollPosition >= absoluteTop && (rect.height + absoluteTop) > scrollPosition) {
+                            setActiveSection(section.id);
+                        }
                     }
                 }
             }
-            setActiveSection(current);
         };
 
         window.addEventListener('scroll', handleScroll, { passive: true });
@@ -436,159 +361,137 @@ export const CourseDetail: React.FC = () => {
         return () => window.removeEventListener('scroll', handleScroll);
     }, [SECTIONS]);
 
-    const scrollToSection = (id: string) => {
-        const el = document.getElementById(id);
-        if (el) {
-            const headerOffset = 140;
-            const elementPosition = el.getBoundingClientRect().top;
-            const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+    const handleTabClick = (sectionId: string) => {
+        setActiveSection(sectionId);
+        
+        if (sectionId === 'fees') {
+            if (window.innerWidth < 1024) {
+                setIsDrawerOpen(true);
+            } else {
+                // Desktop: Fees are sticky, maybe scroll to top of content
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+            return;
+        }
 
-            window.scrollTo({
-                top: offsetPosition,
-                behavior: "smooth"
-            });
+        if (window.innerWidth < 1024) {
+            // Mobile: Expand the accordion
+            setOpenMobileSection(sectionId);
+            setIsDrawerOpen(false); // Close drawer if navigating elsewhere
+            
+            // Scroll to element
+            setTimeout(() => {
+                const el = document.getElementById(`mobile-${sectionId}`);
+                if (el) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 100);
+        } else {
+            // Desktop Scroll
+            const el = document.getElementById(sectionId);
+            if (el) {
+                const headerOffset = 160;
+                const elementPosition = el.getBoundingClientRect().top;
+                const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                window.scrollTo({ top: offsetPosition, behavior: "smooth" });
+            }
         }
     };
 
-    const handleScrollTop = () => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
-
-    const slideLeft = () => {
-        if (sliderRef.current) {
-            sliderRef.current.scrollBy({ left: -340, behavior: 'smooth' });
+    const handleApply = () => {
+        setIsDrawerOpen(false);
+        if (isEcommerce) {
+            addToCart(course);
+            setShowCheckout(true);
+        } else {
+            setShowApplication(true);
         }
     };
 
-    const slideRight = () => {
-        if (sliderRef.current) {
-            sliderRef.current.scrollBy({ left: 340, behavior: 'smooth' });
-        }
-    };
+    if (!course) return <div>Loading...</div>;
 
-    if (!course) return <div className="text-white text-center pt-32">Course not found</div>;
+    const typeOfStudy = course.programmeTypes.some(t => t.includes('Full Time')) ? 'Full Time' :
+        course.programmeTypes.some(t => t.includes('Part Time')) ? 'Part Time' : 'Online';
 
     return (
-        <div className="min-h-screen bg-gray-50 pt-0">
-
-            {/* Sticky Top Bar */}
-            <div
-                className={`fixed top-0 left-0 right-0 z-[60] bg-white border-b border-gray-200 h-[60px] flex items-center justify-between px-4 sm:px-6 lg:px-8 transition-transform duration-300 shadow-xl -translate-y-full`}
-            >
-                <div className="flex items-center gap-4 h-full">
-                    <button onClick={() => window.history.back()} className="text-gray-500 hover:text-gray-700 flex items-center gap-2 text-sm font-medium transition-colors h-full">
-                        <ChevronLeft size={18} /> Back
-                    </button>
-                    <div className="h-6 w-px bg-gray-300"></div>
-                    <h3 className="text-gray-900 font-serif font-bold text-lg truncate max-w-md">{course.title}</h3>
+        <div className="min-h-screen bg-gray-50 pt-0 pb-20 lg:pb-0">
+            
+            {/* Hero Section - First element for smooth transition */}
+            <section ref={heroRef} className="relative bg-brand-primary h-[50vh] lg:h-[80vh] flex items-end pb-8 lg:pb-16 overflow-hidden">
+                <div className="absolute inset-0 z-0">
+                    <img src={course.image} alt={course.title} className="w-full h-full object-cover opacity-60" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-brand-primary via-brand-primary/60 to-transparent"></div>
                 </div>
-                <button
-                    onClick={handleScrollTop}
-                    className="text-gray-500 hover:text-brand-gold transition-colors p-2"
-                    title="Scroll to Top"
-                >
-                    <ArrowUpCircle size={28} strokeWidth={1.5} />
-                </button>
-            </div>
-
-            {/* Hero Section */}
-            <section className="relative z-0 h-[90vh] max-h-[550px] md:max-h-none flex flex-col justify-center md:justify-end bg-brand-primary border-b border-white/5 pb-0 overflow-hidden pt-16">
-                {/* The video/image background here matches the final state of the transition overlay */}
-                <div className="absolute inset-0 overflow-hidden z-0">
-                    {/* Image/Video Layer - z-40 */}
-                    <div className="absolute inset-0 z-40">
-                        {course.video ? (
-                            <video
-                                src={course.video}
-                                autoPlay
-                                muted
-                                loop
-                                playsInline
-                                className="w-full h-full object-cover"
-                            />
-                        ) : (
-                            <img src={course.image} alt={course.title} className="w-full h-full object-cover" />
-                        )}
-                    </div>
-
-                    {/* Blue Overlay Layer - z-45 */}
-                    <div className="absolute inset-0 bg-[#0a3355]/80 z-[45]"></div>
-                </div>
-
-                {/* Z-Index 20: Content Overlay (GSAP Animation from old AI Studio files) */}
-                <div
-                    ref={heroContentRef}
-                    className="relative z-50 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full opacity-0 translate-y-8"
-                >
-                    <div className="lg:w-2/3 pr-0 lg:pr-12 pb-6 md:pb-8 flex flex-col items-center md:items-start text-center md:text-left mx-auto md:mx-0">
-
-                        <div className="flex flex-col items-center md:items-start gap-4 mb-6">
-                            <Link to="/" className="inline-flex items-center text-brand-muted hover:text-white text-sm transition-colors">
-                                <ArrowLeft size={16} className="mr-2" /> Back to Programmes
-                            </Link>
-                            <div className="bg-brand-gold text-white text-[10px] font-bold px-3 py-1 uppercase rounded-sm tracking-widest">
+                
+                <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+                    <div className="lg:w-2/3">
+                        <Link to="/" className="inline-flex items-center text-white/70 hover:text-white mb-6 text-xs font-bold uppercase tracking-widest">
+                            <ArrowLeft size={14} className="mr-2" /> Back to Programmes
+                        </Link>
+                        
+                        <div className="flex flex-wrap gap-2 mb-4">
+                            <span className="bg-brand-gold text-brand-primary text-[10px] font-bold px-2 py-1 uppercase rounded-sm">
                                 {course.category}
-                            </div>
+                            </span>
+                            <span className="bg-white/20 text-white text-[10px] font-bold px-2 py-1 uppercase rounded-sm">
+                                {course.qualification}
+                            </span>
                         </div>
 
-                        <h1 className="font-serif text-3xl md:text-5xl lg:text-[3rem] lg:leading-[1.1] text-white mb-14 font-semibold">
+                        <h1 className="font-serif text-3xl lg:text-6xl text-white font-bold leading-tight mb-6 lg:mb-8 line-clamp-3 lg:line-clamp-none">
                             {course.title}
                         </h1>
 
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 border-t border-gray-200 pt-10 h-auto md:h-[115px] w-full">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-transparent flex items-center justify-center text-brand-gold shrink-0">
-                                    <Clock size={20} />
-                                </div>
-                                <div>
-                                    <p className="text-xs text-white uppercase tracking-wider">Duration</p>
-                                    <p className="text-brand-gold font-medium">{course.duration}</p>
-                                </div>
+                        {/* Mobile: Simple CTA, Desktop: Hidden (Sidebar handles it) */}
+                        <div className="lg:hidden flex flex-col gap-3">
+                            <div className="flex items-center gap-4 text-white/80 text-xs mb-2">
+                                <span className="flex items-center gap-1"><Clock size={14} /> {course.duration}</span>
+                                <span className="flex items-center gap-1"><MapPin size={14} /> {typeOfStudy}</span>
                             </div>
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-transparent flex items-center justify-center text-brand-gold shrink-0">
-                                    <GraduationCap size={20} />
-                                </div>
-                                <div>
-                                    <p className="text-xs text-white uppercase tracking-wider">Qualification</p>
-                                    <p className="text-brand-gold font-medium">{course.qualification}</p>
-                                </div>
+                            <Button variant="primary" onClick={handleApply} className="w-full justify-center">
+                                {isEcommerce ? 'Buy Now' : 'Apply Now'}
+                            </Button>
+                            <Button variant="secondary" className="w-full justify-center text-xs py-3">
+                                Download Prospectus
+                            </Button>
+                        </div>
+
+                        {/* Desktop Meta Grid */}
+                        <div className="hidden lg:grid grid-cols-4 gap-8 border-t border-white/20 pt-8">
+                            <div>
+                                <p className="text-brand-gold text-xs uppercase font-bold mb-1">Duration</p>
+                                <p className="text-white font-semibold">{course.duration}</p>
                             </div>
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-transparent flex items-center justify-center text-brand-gold shrink-0">
-                                    <BookOpen size={20} />
-                                </div>
-                                <div>
-                                    <p className="text-xs text-white uppercase tracking-wider">Type of Study</p>
-                                    <p className="text-brand-gold font-medium">{typeOfStudy}</p>
-                                </div>
+                            <div>
+                                <p className="text-brand-gold text-xs uppercase font-bold mb-1">Study Mode</p>
+                                <p className="text-white font-semibold">{typeOfStudy}</p>
                             </div>
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-transparent flex items-center justify-center text-brand-gold shrink-0">
-                                    <Calendar size={20} />
-                                </div>
-                                <div>
-                                    <p className="text-xs text-white uppercase tracking-wider">Next Intake</p>
-                                    <p className="text-brand-gold font-medium">{course.intake || course.startDate}</p>
-                                </div>
+                            <div>
+                                <p className="text-brand-gold text-xs uppercase font-bold mb-1">Next Intake</p>
+                                <p className="text-white font-semibold">{course.intake || course.startDate}</p>
+                            </div>
+                            <div>
+                                <p className="text-brand-gold text-xs uppercase font-bold mb-1">Level</p>
+                                <p className="text-white font-semibold">{course.level}</p>
                             </div>
                         </div>
                     </div>
                 </div>
             </section>
 
-            {/* Sticky Tabbed Navigation */}
-            <div className={`sticky top-[80px] bg-brand-dark shadow-lg border-b border-white/10 ${isTabsSticky ? 'z-[99]' : 'z-0'}`}>
+            {/* Sticky Header Tabs - Now Below Hero */}
+            <div className={`sticky top-[80px] bg-white border-b border-gray-200 z-40 transition-shadow ${isTabsSticky ? 'shadow-md' : ''}`}>
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-4">
+                    <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-3">
                         {SECTIONS.map(sec => (
                             <button
                                 key={sec.id}
-                                onClick={() => scrollToSection(sec.id)}
-                                className={`px-6 py-3 rounded-full text-xs font-bold uppercase tracking-widest transition-all duration-300 whitespace-nowrap ${activeSection === sec.id
-                                        ? 'bg-[#1289fe] text-white shadow-md'
-                                        : 'text-gray-400 hover:bg-white/10 hover:text-white'
-                                    }`}
+                                onClick={() => handleTabClick(sec.id)}
+                                className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest whitespace-nowrap transition-colors ${
+                                    activeSection === sec.id 
+                                    ? 'bg-brand-primary text-white' 
+                                    : 'text-gray-500 hover:bg-gray-100'
+                                }`}
                             >
                                 {sec.label}
                             </button>
@@ -597,329 +500,241 @@ export const CourseDetail: React.FC = () => {
                 </div>
             </div>
 
-            {/* Main Content (GSAP Animation from old AI Studio files) */}
-            <div
-                ref={contentRef}
-                className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 opacity-0 translate-y-12"
-            >
+            {/* Content Container */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-
-                    {/* Left Content Column */}
-                    <div className="lg:col-span-2 pb-12 pt-12">
-
-                        {/* Overview */}
-                        <div id="overview" className="scroll-mt-[140px] mb-16">
-                            <div className="bg-white border border-gray-200 p-8 rounded-sm shadow-sm">
-                                <h2 className="text-2xl font-serif text-[#002B4E] mb-6 font-semibold">Overview</h2>
-                                <p className="text-lg text-gray-600 leading-relaxed font-light">
-                                    {course.fullDescription}
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* Content */}
-                        <div id="content" className="scroll-mt-[140px] mb-16">
-                            {course.programContentIncludes && (
-                                <div className="mb-12 bg-white border border-gray-200 p-8 rounded-sm shadow-sm">
-                                    <h3 className="text-[#002B4E] font-serif text-2xl mb-6 flex items-center gap-3 font-semibold">
-                                        <span className="w-8 h-1 bg-brand-gold rounded-full"></span>
-                                        Programme Content Includes:
-                                    </h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        {course.programContentIncludes.map((item, idx) => (
-                                            <div key={idx} className="bg-gray-50 border border-gray-200 p-4 rounded-sm flex items-center gap-3 hover:border-brand-gold/30 transition-colors">
-                                                <div className="w-8 h-8 rounded-full border border-brand-gold/30 flex items-center justify-center text-brand-gold shrink-0">
-                                                    <Circle size={10} fill="currentColor" />
-                                                </div>
-                                                <span className="text-[#002B4E] font-medium">{item}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            {!course.extendedFocusAreas && (
-                                <div className="bg-white border border-gray-200 p-8 rounded-sm shadow-sm">
-                                    <h3 className="text-[#002B4E] font-serif text-2xl mb-6 flex items-center gap-3 font-semibold">
-                                        <span className="w-8 h-1 bg-brand-gold rounded-full"></span>
-                                        Programme Curriculum
-                                    </h3>
-
-                                    <div className="space-y-4">
-                                        {course.curriculum.map((year, idx) => (
-                                            <AccordionItem
-                                                key={idx}
-                                                title={year.year}
-                                                isOpen={activeYear === idx}
-                                                onToggle={() => setActiveYear(activeYear === idx ? null : idx)}
-                                            >
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                    {year.modules.map((mod, mIdx) => (
-                                                        <div key={mIdx} className="bg-gray-50 p-4 rounded-sm border border-gray-200">
-                                                            <h5 className="text-brand-gold font-bold mb-2">{mod.title}</h5>
-                                                            <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
-                                                                {mod.topics.map((t, tIdx) => (
-                                                                    <li key={tIdx}>{t}</li>
-                                                                ))}
-                                                            </ul>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </AccordionItem>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Focus Areas */}
-                        <div id="focus" className="scroll-mt-[140px] mb-16">
-                            {course.extendedFocusAreas ? (
-                                <div>
-                                    <h3 className="text-[#002B4E] font-serif text-2xl mb-2 flex items-center gap-3 font-semibold">
-                                        <span className="w-8 h-1 bg-brand-gold rounded-full"></span>
-                                        Choose Your Degree Focus Area:
-                                    </h3>
-                                    <p className="text-gray-600 mb-8 text-sm italic font-medium">
-                                        All the below focus areas include masterclass specialisation sessions and Work Integrated Learning projects.
+                    
+                    {/* Left Column: Content */}
+                    <div className="lg:col-span-2 space-y-4 lg:space-y-16">
+                        
+                        {/* 1. Overview */}
+                        <div className="lg:block">
+                            <LightAccordionItem 
+                                id="mobile-overview"
+                                title="Overview" 
+                                isOpen={window.innerWidth < 1024 ? openMobileSection === 'overview' : true} 
+                                onToggle={() => setOpenMobileSection(openMobileSection === 'overview' ? null : 'overview')}
+                            >
+                                <div id="overview" className="bg-white lg:p-8 lg:rounded-sm lg:shadow-sm lg:border lg:border-gray-100">
+                                    <h2 className="hidden lg:block text-2xl font-serif text-brand-primary mb-6 font-bold">Overview</h2>
+                                    <p className="text-base leading-relaxed text-gray-600">
+                                        {course.fullDescription}
                                     </p>
-
-                                    <div className="space-y-8">
-                                        {course.extendedFocusAreas.map((area, idx) => (
-                                            <div key={idx} className="sticky top-[160px] bg-white p-8 rounded-sm border border-gray-200 shadow-lg flex flex-col h-full z-10">
-                                                <h4 className="text-brand-gold font-serif font-bold text-xl mb-3">{area.title}</h4>
-                                                <p className="text-gray-600 text-sm leading-relaxed flex-1">
-                                                    {area.description}
-                                                </p>
-                                            </div>
-                                        ))}
-                                    </div>
                                 </div>
-                            ) : course.focusAreas ? (
-                                <div className="bg-white border border-gray-200 p-8 rounded-sm shadow-sm">
-                                    <h3 className="text-[#002B4E] font-serif text-2xl mb-6 flex items-center gap-3 font-semibold">
-                                        <span className="w-8 h-1 bg-brand-gold rounded-full"></span>
-                                        Focus Areas
-                                    </h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        {course.focusAreas.map((area, idx) => (
-                                            <div key={idx} className="flex flex-col gap-2 bg-gray-50 p-6 rounded-sm border border-gray-200 hover:border-brand-gold transition-colors">
-                                                <h4 className="text-brand-gold font-bold text-lg">{area}</h4>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            ) : null}
+                            </LightAccordionItem>
                         </div>
 
-                        {/* Requirements */}
-                        <div id="requirements" className="scroll-mt-[140px] mb-16">
-                            <div className="bg-white p-8 rounded-sm border border-gray-200 shadow-sm">
-                                <h3 className="text-[#002B4E] font-serif text-2xl mb-6 flex items-center gap-3 font-semibold">
+                        {/* 2. Content / Curriculum */}
+                        <LightAccordionItem 
+                            id="mobile-content"
+                            title="Programme Content" 
+                            isOpen={window.innerWidth < 1024 ? openMobileSection === 'content' : true} 
+                            onToggle={() => setOpenMobileSection(openMobileSection === 'content' ? null : 'content')}
+                        >
+                            <div id="content" className="lg:bg-white lg:p-8 lg:rounded-sm lg:shadow-sm lg:border lg:border-gray-100">
+                                <h3 className="hidden lg:flex text-brand-primary font-serif text-2xl mb-6 items-center gap-3 font-bold">
+                                    <span className="w-8 h-1 bg-brand-gold rounded-full"></span>
+                                    Programme Curriculum
+                                </h3>
+                                
+                                {course.programContentIncludes && (
+                                    <div className="mb-8">
+                                        <h4 className="font-bold text-gray-800 mb-4 text-sm uppercase tracking-wider">What you will learn</h4>
+                                        <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                            {course.programContentIncludes.map((item, i) => (
+                                                <li key={i} className="flex items-center gap-3 text-sm text-gray-600 bg-gray-50 p-3 rounded-sm">
+                                                    <Circle size={8} className="text-brand-gold shrink-0" fill="currentColor" />
+                                                    {item}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+
+                                <div className="space-y-4">
+                                    {course.curriculum.map((year, idx) => (
+                                        <div key={idx} className="border border-gray-200 rounded-sm">
+                                            <div className="bg-gray-50 px-4 py-3 font-bold text-brand-primary border-b border-gray-200">
+                                                {year.year}
+                                            </div>
+                                            <div className="p-4 grid grid-cols-1 gap-4">
+                                                {year.modules.map((mod, mIdx) => (
+                                                    <div key={mIdx}>
+                                                        <span className="font-bold text-gray-700 text-sm block mb-1">{mod.title}</span>
+                                                        <p className="text-xs text-gray-500">{mod.topics.join(', ')}</p>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </LightAccordionItem>
+
+                        {/* 3. Focus Areas */}
+                        <LightAccordionItem 
+                            id="mobile-focus"
+                            title={course.qualification === 'Degree' ? 'Degree Focus Area' : 'Focus Areas'}
+                            isOpen={window.innerWidth < 1024 ? openMobileSection === 'focus' : true} 
+                            onToggle={() => setOpenMobileSection(openMobileSection === 'focus' ? null : 'focus')}
+                        >
+                            <div id="focus" className="lg:bg-white lg:p-0 lg:shadow-none lg:border-0">
+                                <h3 className="hidden lg:flex text-brand-primary font-serif text-2xl mb-6 items-center gap-3 font-bold">
+                                    <span className="w-8 h-1 bg-brand-gold rounded-full"></span>
+                                    Focus Areas
+                                </h3>
+                                
+                                {course.extendedFocusAreas ? (
+                                    <div className="space-y-4">
+                                        {course.extendedFocusAreas.map((area, idx) => (
+                                            <div key={idx} className="bg-gray-50 p-5 rounded-sm border border-gray-200">
+                                                <h4 className="text-brand-primary font-bold mb-2">{area.title}</h4>
+                                                <p className="text-sm text-gray-600">{area.description}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : course.focusAreas ? (
+                                    <div className="flex flex-wrap gap-2">
+                                        {course.focusAreas.map((area, idx) => (
+                                            <span key={idx} className="bg-gray-100 text-gray-700 px-3 py-2 rounded-sm text-sm font-medium border border-gray-200">
+                                                {area}
+                                            </span>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p className="text-sm text-gray-500 italic">No specific focus areas for this course.</p>
+                                )}
+                            </div>
+                        </LightAccordionItem>
+
+                        {/* 4. Requirements */}
+                        <LightAccordionItem 
+                            id="mobile-requirements"
+                            title="Entry Requirements" 
+                            isOpen={window.innerWidth < 1024 ? openMobileSection === 'requirements' : true} 
+                            onToggle={() => setOpenMobileSection(openMobileSection === 'requirements' ? null : 'requirements')}
+                        >
+                            <div id="requirements" className="lg:bg-white lg:p-8 lg:rounded-sm lg:shadow-sm lg:border lg:border-gray-100">
+                                <h3 className="hidden lg:flex text-brand-primary font-serif text-2xl mb-6 items-center gap-3 font-bold">
                                     <span className="w-8 h-1 bg-brand-gold rounded-full"></span>
                                     Entry Requirements
                                 </h3>
-                                <ul className="space-y-4">
+                                <ul className="space-y-3">
                                     {course.requirements.map((req, idx) => (
                                         <li key={idx} className="flex items-start gap-3">
-                                            <CheckCircle className="text-brand-gold shrink-0 mt-1" size={18} />
-                                            <span className="text-gray-600">{req}</span>
+                                            <CheckCircle size={18} className="text-brand-gold shrink-0 mt-0.5" />
+                                            <span className="text-sm text-gray-700">{req}</span>
                                         </li>
                                     ))}
                                 </ul>
                             </div>
-                        </div>
+                        </LightAccordionItem>
 
-                        {/* Certification */}
+                        {/* 5. Certification */}
                         {course.certification && (
-                            <div id="certification" className="scroll-mt-[140px] mb-16">
-                                <div className="bg-white border border-gray-200 p-8 rounded-sm shadow-sm">
-                                    <h3 className="text-[#002B4E] font-serif text-2xl mb-6 flex items-center gap-3 font-semibold">
+                            <LightAccordionItem 
+                                id="mobile-certification"
+                                title="Certification" 
+                                isOpen={window.innerWidth < 1024 ? openMobileSection === 'certification' : true} 
+                                onToggle={() => setOpenMobileSection(openMobileSection === 'certification' ? null : 'certification')}
+                            >
+                                <div id="certification" className="lg:bg-white lg:p-8 lg:rounded-sm lg:shadow-sm lg:border lg:border-gray-100">
+                                    <h3 className="hidden lg:flex text-brand-primary font-serif text-2xl mb-6 items-center gap-3 font-bold">
                                         <span className="w-8 h-1 bg-brand-gold rounded-full"></span>
                                         Certification
                                     </h3>
-                                    <div className="flex items-start gap-4 mb-6">
-                                        <div className="w-12 h-12 bg-brand-gold/10 rounded-full flex items-center justify-center text-brand-gold shrink-0">
+                                    <div className="flex items-start gap-4">
+                                        <div className="w-12 h-12 bg-brand-primary/5 rounded-full flex items-center justify-center text-brand-primary shrink-0">
                                             <Award size={24} />
                                         </div>
                                         <div>
-                                            <h4 className="text-[#002B4E] font-bold text-lg mb-2">Qualification Awarded</h4>
-                                            <p className="text-gray-600 text-base leading-relaxed whitespace-pre-line">
-                                                {course.certification}
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <div className="border-t border-gray-200 pt-6">
-                                        <h5 className="text-xs text-gray-500 uppercase tracking-widest font-bold mb-4">Accredited By:</h5>
-                                        <div className="flex flex-wrap gap-4">
-                                            {course.accreditations.map((acc, idx) => (
-                                                <div key={idx} className="bg-gray-100 rounded-sm p-3 flex items-center justify-center h-14 px-4 hover:bg-gray-200 transition-colors border border-gray-200">
-                                                    {ACCREDITATION_LOGOS[acc] ? (
-                                                        <img src={ACCREDITATION_LOGOS[acc]} alt={acc} className="max-h-full w-auto brightness-0 opacity-80" />
-                                                    ) : (
-                                                        <span className="text-xs text-center font-bold text-gray-600 uppercase tracking-wider">{acc}</span>
-                                                    )}
+                                            <h4 className="font-bold text-gray-900 mb-2">Qualification Awarded</h4>
+                                            <p className="text-sm text-gray-600 leading-relaxed mb-6">{course.certification}</p>
+                                            
+                                            <div>
+                                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Accredited By</p>
+                                                <div className="flex flex-wrap gap-3">
+                                                    {course.accreditations.map((acc, idx) => (
+                                                        <span key={idx} className="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-bold rounded-sm border border-gray-200">
+                                                            {acc}
+                                                        </span>
+                                                    ))}
                                                 </div>
-                                            ))}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            </LightAccordionItem>
                         )}
 
-                        {/* FAQs */}
-                        <div id="faq" className="scroll-mt-[140px] mb-16">
-                            <div className="bg-white border border-gray-200 p-8 rounded-sm shadow-sm">
-                                <h3 className="text-[#002B4E] font-serif text-2xl mb-6 flex items-center gap-3 font-semibold">
+                        {/* 6. FAQs */}
+                        <LightAccordionItem 
+                            id="mobile-faq"
+                            title="FAQs" 
+                            isOpen={window.innerWidth < 1024 ? openMobileSection === 'faq' : true} 
+                            onToggle={() => setOpenMobileSection(openMobileSection === 'faq' ? null : 'faq')}
+                        >
+                            <div id="faq" className="lg:bg-white lg:p-8 lg:rounded-sm lg:shadow-sm lg:border lg:border-gray-100">
+                                <h3 className="hidden lg:flex text-brand-primary font-serif text-2xl mb-6 items-center gap-3 font-bold">
                                     <span className="w-8 h-1 bg-brand-gold rounded-full"></span>
                                     Frequently Asked Questions
                                 </h3>
-                                <div className="space-y-4 text-[#002B4E]">
-                                    <AccordionItem
-                                        title="What is the difference between the Diploma and Degree?"
-                                        isOpen={activeFaq === 0}
-                                        onToggle={() => setActiveFaq(activeFaq === 0 ? null : 0)}
-                                    >
-                                        <div className="space-y-6 text-sm">
-                                            <div>
-                                                <h4 className="font-bold text-[#002B4E] mb-2 text-base">IHS Diploma Programmes (NQF Level 6, 3 years)</h4>
-                                                <p className="mb-3 text-gray-600">Focuses primarily on the service delivery & operations management of the different departments of a hospitality establishment, namely:</p>
-                                                <ul className="grid grid-cols-2 gap-2 list-disc list-inside text-gray-600 mb-3 bg-gray-50 p-4 rounded-sm border border-gray-200">
-                                                    <li>Front Office</li>
-                                                    <li>Food & Beverage</li>
-                                                    <li>Kitchens</li>
-                                                    <li>Housekeeping</li>
-                                                </ul>
-                                            </div>
-                                            <div className="border-t border-gray-200 pt-4">
-                                                <h4 className="font-bold text-[#002B4E] mb-2 text-base">IHS Bachelor of Business Administration (NQF Level 7, 3 years)</h4>
-                                                <p className="mb-3 text-gray-600">Focuses primarily on the strategic management of a hospitality establishment and its operations.</p>
-                                            </div>
+                                <div className="space-y-4">
+                                    <details className="group">
+                                        <summary className="flex justify-between items-center font-bold text-gray-800 cursor-pointer list-none">
+                                            <span>What is the difference between Diploma and Degree?</span>
+                                            <span className="transition group-open:rotate-180"><ChevronDown size={16} /></span>
+                                        </summary>
+                                        <div className="text-gray-600 text-sm mt-3 leading-relaxed group-open:animate-fadeIn">
+                                            Degrees focus on strategic management (NQF 7), while Diplomas focus on operational management (NQF 6).
                                         </div>
-                                    </AccordionItem>
-
-                                    <AccordionItem
-                                        title="What is the difference between completing a BBA, BCom or BA Degree?"
-                                        isOpen={activeFaq === 1}
-                                        onToggle={() => setActiveFaq(activeFaq === 1 ? null : 1)}
-                                    >
-                                        <div className="space-y-6 text-sm">
-                                            <div>
-                                                <h4 className="font-bold text-[#002B4E] mb-2 text-base">Bachelor of Business Administration (BBA)</h4>
-                                                <p className="text-gray-600">A BBA Degree covers the fundamentals of business management and prepares a student for a career in leadership.</p>
-                                            </div>
+                                    </details>
+                                    <hr className="border-gray-100" />
+                                    <details className="group">
+                                        <summary className="flex justify-between items-center font-bold text-gray-800 cursor-pointer list-none">
+                                            <span>Are payment plans available?</span>
+                                            <span className="transition group-open:rotate-180"><ChevronDown size={16} /></span>
+                                        </summary>
+                                        <div className="text-gray-600 text-sm mt-3 leading-relaxed group-open:animate-fadeIn">
+                                            Yes, we offer flexible monthly payment terms for all our programmes.
                                         </div>
-                                    </AccordionItem>
+                                    </details>
                                 </div>
                             </div>
-                        </div>
+                        </LightAccordionItem>
 
                     </div>
 
-                    {/* Sticky Sidebar (Fees) */}
-                    <div className="lg:col-span-1 hidden lg:block relative z-50">
-                        <div className="sticky top-[185px] lg:-mt-[30rem] transition-[top] duration-300 z-20">
-                            <FeesCard course={course} className="shadow-2xl shadow-black/50" />
-                        </div>
-
-                        <div className="mt-6 relative z-10">
-                            <div className="bg-[#002B4E] p-6 rounded-sm shadow-lg">
-                                <div className="flex items-center gap-4 mb-6">
-                                    <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-brand-gold shrink-0">
-                                        <HelpCircle size={24} />
-                                    </div>
-                                    <div>
-                                        <h4 className="text-white font-serif font-bold text-lg leading-tight">Need Guidance?</h4>
-                                        <p className="text-sm text-gray-400 mt-1">Our admissions team is here to help.</p>
-                                    </div>
-                                </div>
-                                <a href="tel:+27123456789" className="block w-full bg-brand-gold hover:bg-white hover:text-[#002B4E] text-white font-bold text-center py-3 rounded-sm transition-colors uppercase tracking-widest text-xs">
-                                    Call +27 12 345 6789
-                                </a>
-                            </div>
+                    {/* Right Column: Sidebar (Desktop Only) */}
+                    <div className="hidden lg:block lg:col-span-1">
+                        <div className="sticky top-[160px] space-y-6">
+                            <FeesCard course={course} />
+                            <NeedGuidanceCard />
                         </div>
                     </div>
 
                 </div>
             </div>
 
-            {/* Application Form - Full Width */}
-            <div id="apply-form" className="bg-[#002B4E] py-20 scroll-mt-[60px]">
-                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-                    {formSuccess ? (
-                        <div className="text-center py-12">
-                            <div className="w-16 h-16 bg-green-500/20 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                                <Check size={32} />
-                            </div>
-                            <h3 className="text-2xl font-serif text-white mb-4">Application Received</h3>
-                            <p className="text-gray-400 mb-8 max-w-md mx-auto">
-                                Thank you for your interest. Our admissions team will review your application and contact you within 24-48 hours.
-                            </p>
-                            <Button variant="outline" onClick={() => setFormSuccess(false)}>
-                                Submit Another Application
-                            </Button>
-                        </div>
-                    ) : (
-                        <>
-                            <div className="text-center mb-12">
-                                <h3 className="text-3xl font-serif text-white mb-4 font-semibold">Apply for this Programme</h3>
-                                <p className="text-brand-muted text-base">Start your journey today. Fill in your details below.</p>
-                            </div>
+            {/* Mobile Bottom Drawer */}
+            <MobileFeesDrawer 
+                course={course} 
+                isOpen={isDrawerOpen} 
+                onToggle={() => setIsDrawerOpen(!isDrawerOpen)}
+                onApply={handleApply}
+            />
 
-                            <MultiStepForm onComplete={() => setFormSuccess(true)} />
-                        </>
-                    )}
-                </div>
-            </div>
-
-            {/* Related Programmes Section */}
-            {relatedCourses.length > 0 && (
-                <div className="bg-gray-100 py-16 border-t border-gray-200">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
-
-                            <div className="lg:col-span-1 lg:sticky lg:top-[150px]">
-                                <h3 className="text-[#002B4E] font-serif text-3xl leading-tight mb-6 font-semibold">
-                                    Courses related to <br />
-                                    <span className="text-brand-gold italic">{course.title}</span>
-                                </h3>
-                                <p className="text-gray-600 text-sm mb-8">
-                                    Explore other programmes in {course.category} that might interest you.
-                                </p>
-                                <div className="flex gap-2">
-                                    <button
-                                        onClick={slideLeft}
-                                        className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-brand-gold hover:text-white transition-all"
-                                    >
-                                        <ChevronLeft size={20} />
-                                    </button>
-                                    <button
-                                        onClick={slideRight}
-                                        className="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-brand-gold hover:text-white transition-all"
-                                    >
-                                        <ChevronRight size={20} />
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div className="lg:col-span-3 -mx-4 px-4 sm:mx-0 sm:px-0">
-                                <div
-                                    ref={sliderRef}
-                                    className="flex overflow-x-auto gap-6 pb-8 snap-x snap-mandatory scrollbar-thin scroll-smooth items-stretch"
-                                >
-                                    {relatedCourses.map(related => (
-                                        <CourseCard key={related.id} offering={related} />
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            <MobileFeesDrawer course={course} />
-            <div className="h-20 lg:hidden"></div>
+            {/* Modals */}
+            <ApplicationModal 
+                isOpen={showApplication} 
+                onClose={() => setShowApplication(false)} 
+                courseTitle={course.title}
+            />
+            
+            <CheckoutModal 
+                isOpen={showCheckout}
+                onClose={() => setShowCheckout(false)}
+            />
 
         </div>
     );

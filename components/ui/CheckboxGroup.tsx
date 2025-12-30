@@ -13,6 +13,7 @@ interface CheckboxGroupProps {
     selectedValues: string[];
     onChange: (value: string) => void;
     variant?: 'card' | 'accordion';
+    theme?: 'dark' | 'light';
     defaultOpen?: boolean;
 }
 
@@ -22,26 +23,39 @@ export const CheckboxGroup: React.FC<CheckboxGroupProps> = ({
     selectedValues, 
     onChange,
     variant = 'card',
+    theme = 'dark',
     defaultOpen = true
 }) => {
     const [isOpen, setIsOpen] = useState(defaultOpen);
 
+    const isLight = theme === 'light';
+
+    // Styles based on theme
+    const containerBg = isLight ? 'bg-white' : 'bg-[#0d1424]';
+    const headerHover = isLight ? 'hover:bg-gray-50' : 'hover:bg-white/5';
+    const titleColor = isLight ? 'text-brand-primary' : 'text-white';
+    const textColor = isLight ? 'text-gray-600' : 'text-gray-400';
+    const textHover = isLight ? 'group-hover:text-brand-primary' : 'group-hover:text-gray-300';
+    const checkboxBase = isLight ? 'bg-gray-100 border-gray-300 group-hover:border-brand-accent' : 'bg-black/20 border-white/20 group-hover:border-brand-gold';
+    const checkboxSelected = 'bg-brand-accent border-brand-accent';
+    const checkIconColor = 'text-brand-primary';
+
     if (variant === 'accordion') {
         return (
-            <div className="flex flex-col bg-[#0d1424]">
+            <div className={`flex flex-col ${containerBg} border-b ${isLight ? 'border-gray-100' : 'border-white/10'}`}>
                 <button 
                     onClick={() => setIsOpen(!isOpen)}
-                    className="w-full flex items-center justify-between p-6 text-left hover:bg-white/5 transition-colors"
+                    className={`w-full flex items-center justify-between p-6 text-left transition-colors ${headerHover}`}
                 >
-                    <h4 className="text-white font-serif font-bold flex items-center gap-2">
+                    <h4 className={`${titleColor} font-serif font-bold flex items-center gap-2`}>
                         {title}
                         {selectedValues.length > 0 && (
-                            <span className="bg-brand-gold text-brand-dark text-[10px] px-1.5 py-0.5 rounded-full font-sans font-bold">
+                            <span className="bg-brand-accent text-brand-primary text-[10px] px-1.5 py-0.5 rounded-full font-sans font-bold">
                                 {selectedValues.length}
                             </span>
                         )}
                     </h4>
-                    {isOpen ? <ChevronUp size={16} className="text-gray-500" /> : <ChevronDown size={16} className="text-gray-500" />}
+                    {isOpen ? <ChevronUp size={16} className="text-gray-400" /> : <ChevronDown size={16} className="text-gray-400" />}
                 </button>
                 
                 {isOpen && (
@@ -53,10 +67,10 @@ export const CheckboxGroup: React.FC<CheckboxGroupProps> = ({
                                     <label key={option.value} className="flex items-start gap-3 cursor-pointer group select-none">
                                         <div className={`w-4 h-4 mt-0.5 rounded border flex items-center justify-center transition-all duration-200 shrink-0 ${
                                             isSelected 
-                                            ? 'bg-brand-gold border-brand-gold' 
-                                            : 'bg-black/20 border-white/20 group-hover:border-brand-gold'
+                                            ? checkboxSelected 
+                                            : checkboxBase
                                         }`}>
-                                            {isSelected && <Check size={10} className="text-brand-dark" strokeWidth={4} />}
+                                            {isSelected && <Check size={10} className={checkIconColor} strokeWidth={4} />}
                                         </div>
                                         <input 
                                             type="checkbox" 
@@ -65,7 +79,7 @@ export const CheckboxGroup: React.FC<CheckboxGroupProps> = ({
                                             onChange={() => onChange(option.value)}
                                         />
                                         <span className={`text-sm leading-tight transition-colors ${
-                                            isSelected ? 'text-white font-medium' : 'text-gray-400 group-hover:text-gray-300'
+                                            isSelected ? (isLight ? 'text-brand-primary font-bold' : 'text-white font-medium') : `${textColor} ${textHover}`
                                         }`}>
                                             {option.label}
                                         </span>
@@ -79,13 +93,13 @@ export const CheckboxGroup: React.FC<CheckboxGroupProps> = ({
         );
     }
 
-    // Default Card Variant
+    // Default Card Variant (Preserved mainly for dark contexts, but updated variables)
     return (
         <div className="flex flex-col h-full bg-[#162036] p-6 rounded-sm border border-white/5">
             <h4 className="text-white font-serif font-bold mb-4 border-b border-white/10 pb-2 flex items-center gap-2">
                 {title}
                 {selectedValues.length > 0 && (
-                    <span className="bg-brand-gold text-brand-dark text-[10px] px-1.5 py-0.5 rounded-full font-sans">
+                    <span className="bg-brand-accent text-brand-primary text-[10px] px-1.5 py-0.5 rounded-full font-sans">
                         {selectedValues.length}
                     </span>
                 )}
@@ -97,10 +111,10 @@ export const CheckboxGroup: React.FC<CheckboxGroupProps> = ({
                         <label key={option.value} className="flex items-start gap-3 cursor-pointer group select-none">
                             <div className={`w-4 h-4 mt-0.5 rounded border flex items-center justify-center transition-all duration-200 shrink-0 ${
                                 isSelected 
-                                ? 'bg-brand-gold border-brand-gold' 
-                                : 'bg-black/20 border-white/20 group-hover:border-brand-gold'
+                                ? 'bg-brand-accent border-brand-accent' 
+                                : 'bg-black/20 border-white/20 group-hover:border-brand-accent'
                             }`}>
-                                {isSelected && <Check size={10} className="text-brand-dark" strokeWidth={4} />}
+                                {isSelected && <Check size={10} className="text-brand-primary" strokeWidth={4} />}
                             </div>
                             <input 
                                 type="checkbox" 

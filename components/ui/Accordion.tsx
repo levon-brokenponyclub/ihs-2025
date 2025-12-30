@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
@@ -10,8 +11,15 @@ interface AccordionItemProps {
 
 export const AccordionItem: React.FC<AccordionItemProps> = ({ title, children, isOpen, onToggle }) => {
   const itemRef = useRef<HTMLDivElement>(null);
+  const isFirstRender = useRef(true);
 
   useEffect(() => {
+    // Block scroll on initial mount if item is open by default
+    if (isFirstRender.current) {
+        isFirstRender.current = false;
+        return;
+    }
+
     if (isOpen && itemRef.current) {
       // Small timeout to ensure the DOM has updated and animation started
       setTimeout(() => {

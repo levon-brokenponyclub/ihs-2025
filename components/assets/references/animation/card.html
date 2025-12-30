@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Card Page</title>
+<!-- GSAP CDN -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.2/dist/gsap.min.js"></script>
+<style>
+  body { margin: 0; font-family: sans-serif; overflow-x: hidden; }
+  .card-container { display: flex; justify-content: center; align-items: center; height: 100vh; }
+  .card { position: relative; width: 300px; border-radius: 1rem; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); cursor: pointer; }
+  .card img { width: 100%; display: block; }
+  .card-content { position: absolute; bottom: 0; left: 0; width: 100%; padding: 1.5rem; color: white; }
+  .badge { background: #f8fafc; color: #002a4e; font-size: 10px; font-weight: bold; padding: 0.25rem 0.75rem; border-radius: 2px; text-transform: uppercase; }
+  /* Overlay styles */
+  #overlay { position: fixed; top:0; left:0; width:0; height:0; pointer-events:none; z-index:50; overflow:hidden; display:none; border-radius:1rem; }
+  #overlay img { width:100%; height:100%; object-fit:cover; display:block; }
+  #overlay-content { position:absolute; bottom:0; left:0; padding:1.5rem; color:white; }
+</style>
+</head>
+<body>
+
+<div class="card-container">
+  <div class="card" id="card" onclick="openDetail()">
+    <img src="https://picsum.photos/600/400" alt="Course Image" id="cardImage">
+    <div class="card-content" id="cardContent">
+      <span class="badge">Category</span>
+      <h3>Course Title</h3>
+    </div>
+  </div>
+</div>
+
+<!-- Overlay for FLIP -->
+<div id="overlay">
+  <img id="overlayImage" src="" alt="">
+  <div id="overlay-content"></div>
+</div>
+
+<script>
+function openDetail() {
+  const card = document.getElementById('card');
+  const img = document.getElementById('cardImage');
+  const content = document.getElementById('cardContent');
+
+  const overlay = document.getElementById('overlay');
+  const overlayImg = document.getElementById('overlayImage');
+  const overlayContent = document.getElementById('overlay-content');
+
+  // Match initial rect
+  const rect = card.getBoundingClientRect();
+  overlay.style.display = 'block';
+  overlay.style.opacity = 1;
+
+  gsap.set(overlay, {
+    top: rect.top,
+    left: rect.left,
+    width: rect.width,
+    height: rect.height,
+    borderRadius: '1rem'
+  });
+
+  overlayImg.src = img.src;
+  overlayContent.innerHTML = content.innerHTML;
+  gsap.set(overlayContent, { scale: 1, transformOrigin: 'bottom left' });
+
+  // Animate to hero
+  const targetHeight = window.innerHeight * 0.6;
+
+  gsap.timeline()
+    .to(overlay, {
+      top: 80,
+      left: 0,
+      width: '100%',
+      height: targetHeight,
+      borderRadius: 0,
+      duration: 0.8,
+      ease: 'expo.inOut'
+    })
+    .to(overlayContent, {
+      scale: 2,
+      paddingLeft: '2rem',
+      paddingBottom: '3rem',
+      duration: 0.8,
+      ease: 'expo.inOut'
+    }, "<")
+    .to(overlay, {
+      opacity: 0,
+      duration: 0.4,
+      onComplete: () => {
+        window.location.href = 'detail.html';
+      }
+    }, ">"); // fade out after animation
+}
+</script>
+
+</body>
+</html>

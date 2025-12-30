@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { X, ChevronRight, ArrowLeft, Check, RefreshCw, BookOpen, GraduationCap, Laptop, ChefHat, Hotel } from 'lucide-react';
-import { OFFERINGS } from '../constants';
+import { OFFERINGS } from '../constants.tsx';
 import { Button } from './ui/Button';
 import { Link } from 'react-router-dom';
 
