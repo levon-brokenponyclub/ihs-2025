@@ -11,15 +11,22 @@ import {
 } from 'lucide-react';
 import { Offering, SuccessStep, NavLink, Metric, CourseDetail } from './types';
 
-// Updated Menu Structure
+// Updated Menu Structure for Chelsea Style Header
 export const NAV_LINKS: NavLink[] = [
   { label: 'Our Programmes', href: '#offerings' },
   { label: 'Admissions', href: '#' },
   { label: 'Experiences', href: '#' },
-  { label: 'News', href: '#' },
-  { label: 'Contact Us', href: '#' },
 ];
 
+export const MORE_MENU_LINKS: NavLink[] = [
+  { label: 'News', href: '#' },
+  { label: 'Contact Us', href: '#' },
+  { label: 'Student Portal', href: '#' },
+  { label: 'Alumni', href: '#' },
+  { label: 'Careers', href: '#' },
+];
+
+// Kept for backward compatibility if other components use it, but Header uses MORE_MENU_LINKS now
 export const SECONDARY_LINKS: NavLink[] = [
   { label: 'Student Links', href: '#' },
   { label: 'Beyond Grad', href: '#' },
@@ -114,6 +121,7 @@ export const OFFERINGS: Offering[] = [
     qualification: 'Degree',
     description: 'A prestigious NQF Level 7 qualification designed for future executives. Master the strategic, financial, and operational aspects of the global hospitality industry.',
     image: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?q=80&w=2940',
+    video: 'https://videos.pexels.com/video-files/3129671/3129671-sd_640_360_30fps.mp4',
     programmeTypes: ['Full Time Learning', 'Degrees'],
     accreditations: ['IHS'],
     price: 123000, 
@@ -134,6 +142,7 @@ export const OFFERINGS: Offering[] = [
     qualification: 'Diploma',
     description: 'Comprehensive hospitality management programme with AHLEI certification. Graduate job-ready with global skills.',
     image: 'https://picsum.photos/id/435/600/400',
+    video: 'https://videos.pexels.com/video-files/3196238/3196238-sd_640_360_25fps.mp4',
     programmeTypes: ['Full Time Learning', 'Blended Learning', 'Diplomas'],
     accreditations: ['AHLEI', 'CATHSSETA', 'CTH'],
     price: 95000,
@@ -154,6 +163,7 @@ export const OFFERINGS: Offering[] = [
     qualification: 'Diploma',
     description: 'Professional culinary training with École Ducasse certification. Learn from industry experts and gain practical skills.',
     image: 'https://picsum.photos/id/292/600/400',
+    video: 'https://videos.pexels.com/video-files/4252396/4252396-sd_640_360_30fps.mp4',
     programmeTypes: ['Full Time Learning', 'Diplomas'],
     accreditations: ['QCTO', 'CATHSSETA', 'City & Guilds', 'École Ducasse'],
     price: 110000,
@@ -174,6 +184,7 @@ export const OFFERINGS: Offering[] = [
     qualification: 'Certificate',
     description: 'Intensive culinary certificate programme for aspiring chefs. Master fundamental techniques and build your portfolio.',
     image: 'https://picsum.photos/id/225/600/400',
+    video: 'https://videos.pexels.com/video-files/5908233/5908233-sd_640_360_24fps.mp4',
     programmeTypes: ['Full Time Learning', 'In-Service Traineeship', 'Certificates'],
     accreditations: ['CATHSSETA', 'City & Guilds'],
     price: 65000,
@@ -194,6 +205,7 @@ export const OFFERINGS: Offering[] = [
     qualification: 'Certificate',
     description: 'Specialised pastry and baking programme. Master the art of French patisserie with internationally recognized methods.',
     image: 'https://picsum.photos/id/493/600/400',
+    video: 'https://videos.pexels.com/video-files/5634473/5634473-sd_640_360_30fps.mp4',
     programmeTypes: ['Full Time Learning', 'Part Time Learning', 'Certificates'],
     accreditations: ['CATHSSETA', 'City & Guilds', 'École Ducasse'],
     price: 72000,
@@ -214,6 +226,7 @@ export const OFFERINGS: Offering[] = [
     qualification: 'Certificate',
     description: 'Foundational hotel operations programme covering front office, housekeeping, and guest services.',
     image: 'https://picsum.photos/id/369/600/400',
+    video: 'https://videos.pexels.com/video-files/7578550/7578550-sd_640_360_30fps.mp4',
     programmeTypes: ['Part Time Learning', 'Online Learning', 'Certificates', 'Credit Bearing Short Courses'],
     accreditations: ['CATHSSETA', 'AHLEI'],
     price: 55000,
@@ -234,6 +247,7 @@ export const OFFERINGS: Offering[] = [
     qualification: 'Certificate',
     description: 'Specialised programme in restaurant and bar management. Learn service excellence, menu planning, and cost control.',
     image: 'https://picsum.photos/id/431/600/400',
+    video: 'https://videos.pexels.com/video-files/5450849/5450849-sd_640_360_30fps.mp4',
     programmeTypes: ['Online Learning', 'In-Service Traineeship', 'Certificates', 'AHLEI Professional Certification'],
     accreditations: ['CATHSSETA', 'AHLEI'],
     price: 58000,

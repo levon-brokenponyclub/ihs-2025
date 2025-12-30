@@ -18,10 +18,13 @@ export const GuidanceSupport: React.FC = () => {
                 {/* Left: Image */}
                 <div className="relative">
                     <div className="absolute top-4 left-4 w-full h-full border border-brand-gold/20 rounded-sm translate-x-4 translate-y-4"></div>
-                    <img 
-                        src="https://picsum.photos/id/318/800/800" 
-                        alt="Mentorship session" 
+                    <video
+                        src="https://www.shutterstock.com/shutterstock/videos/1087550930/preview/stock-footage-chef-teaching-how-to-cook-cutting-vegetables-indoors-in-commercial-kitchen.webm"
                         className="relative rounded-sm shadow-2xl w-full object-cover"
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
                     />
                 </div>
 

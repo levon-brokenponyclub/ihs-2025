@@ -8,65 +8,108 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&display=swap" rel="stylesheet">
     <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              brand: {
-                dark: '#0B1221',     // Deep Navy Background
-                card: '#131B2C',     // Card Background
-                gold: '#C5A059',     // Primary Gold Accent
-                goldHover: '#B08D45',
-                text: '#F3F4F6',     // Primary Text
-                muted: '#9CA3AF',    // Secondary Text
-                red: '#EF4444',      // Error/Warning
-              }
-            },
-            fontFamily: {
-              sans: ['Inter', 'sans-serif'],
-              serif: ['Playfair Display', 'serif'],
-            },
-            backgroundImage: {
-              'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-            },
-            animation: {
-                'pan-slow': 'pan 20s linear infinite alternate',
-                'progress-load': 'progress 8s linear infinite',
-            },
-            keyframes: {
-                pan: {
-                    '0%': { transform: 'scale(1)' },
-                    '100%': { transform: 'scale(1.1)' },
-                },
-                progress: {
-                    '0%': { width: '0%' },
-                    '100%': { width: '100%' },
-                }
-            }
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          brand: {
+            // Updated primary color
+            primary: '#002B4E',        // updated deep-space-blue
+            accent: '#C2B067',         // sand
+            highlight: '#1BA1FF',      // blue-bell
+            
+            // Backward Compatibility / Aliases
+            dark: '#002B4E',           // Maps to primary
+            soft: '#1BA1FF',           // Maps to highlight
+            gold: '#C2B067',            // Maps to accent
+            goldHover: '#B09F58',      // Slightly darker sand
+            goldMuted: '#C2B067',      // Maps to accent
+            
+            // Backgrounds
+            surface: '#F8FAFC',        // Maps to surface.main
+            alt: '#F1F5F9',            // Slightly darker surface
+            
+            // Text aliases
+            text: '#002B4E',
+            textSecondary: '#475569',
+            
+            // Border aliases
+            border: '#E2E8F0',
+            
+            // Utilities
+            red: '#EF4444'
           },
+          // New Semantic Structure
+          surface: {
+            main: '#F8FAFC',           // bright-snow
+            subtle: '#FFFFFF',         // white
+          },
+          text: {
+            primary: '#002B4E',
+            secondary: '#475569',
+            inverse: '#FFFFFF',
+            accent: '#C2B067',
+          },
+          border: {
+            subtle: '#E2E8F0',
+          }
         },
-      }
-    </script>
+        fontFamily: {
+          sans: ['Inter', 'sans-serif'],
+          serif: ['Merriweather', 'serif'],
+        },
+        backgroundImage: {
+          'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+        },
+        animation: {
+            'pan-slow': 'pan 20s linear infinite alternate',
+            'progress-load': 'progress 8s linear infinite',
+            'marquee-left': 'marquee-left 60s linear infinite',
+            'marquee-right': 'marquee-right 60s linear infinite',
+        },
+        keyframes: {
+            pan: {
+                '0%': { transform: 'scale(1)' },
+                '100%': { transform: 'scale(1.1)' },
+            },
+            progress: {
+                '0%': { width: '0%' },
+                '100%': { width: '100%' },
+            },
+            'marquee-left': {
+                '0%': { transform: 'translateX(0)' },
+                '100%': { transform: 'translateX(-50%)' },
+            },
+            'marquee-right': {
+                '0%': { transform: 'translateX(-50%)' },
+                '100%': { transform: 'translateX(0)' },
+            }
+        }
+      },
+    },
+  }
+</script>
+
     <style>
       body {
-        background-color: #0B1221;
-        color: #F3F4F6;
+        background-color: #F8FAFC; /* --surface-main */
+        color: #002845; /* --text-primary */
       }
       /* Custom Scrollbar */
       ::-webkit-scrollbar {
         width: 8px;
       }
       ::-webkit-scrollbar-track {
-        background: #0B1221; 
+        background: #002845; 
       }
       ::-webkit-scrollbar-thumb {
-        background: #1F2937; 
+        background: #1BA1FF; 
         border-radius: 4px;
       }
       ::-webkit-scrollbar-thumb:hover {
-        background: #C5A059; 
+        background: #C2B067; 
       }
       /* Hide Scrollbar Utility */
       .no-scrollbar::-webkit-scrollbar {
@@ -75,6 +118,10 @@
       .no-scrollbar {
           -ms-overflow-style: none;
           scrollbar-width: none;
+      }
+      /* Pause animation on hover */
+      .hover-pause:hover {
+        animation-play-state: paused;
       }
     </style>
 <script type="importmap">

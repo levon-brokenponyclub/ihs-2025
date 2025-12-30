@@ -1,10 +1,22 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { OFFERINGS, STUDY_LEVELS, FOCUS_AREAS, ACCREDITATIONS } from '../constants';
 import { Button } from './ui/Button';
 import { CheckboxGroup } from './ui/CheckboxGroup';
-import { Clock, GraduationCap, ArrowRight, Eye, Calendar, Tag, BarChart2, ShoppingBag, MapPin, X, SlidersHorizontal, ChevronDown, ChevronUp, Search, Filter } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { 
+    Clock, 
+    GraduationCap, 
+    ArrowRight, 
+    Eye, 
+    BarChart2, 
+    ShoppingBag, 
+    X, 
+    SlidersHorizontal, 
+    ChevronLeft,
+    ChevronRight,
+    Search
+} from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import { QuickViewModal } from './QuickViewModal';
 import { Offering } from '../types';
 import { useCart } from '../context/CartContext';
@@ -14,18 +26,242 @@ import { CheckoutModal } from './CheckoutModal';
 
 const TABS = [
     { id: 'All', label: 'All Programmes' },
-    { id: 'Full Time Learning', label: 'Full Time Learning' },
-    { id: 'Blended Learning', label: 'Blended Learning' },
-    { id: 'In-Service Traineeship', label: 'In-Service Traineeship' },
-    { id: 'Part Time Learning', label: 'Part Time Learning' },
-    { id: 'Online Learning', label: 'Online Learning' }
+    { id: 'Full Time Learning', label: 'Full Time' },
+    { id: 'Blended Learning', label: 'Blended' },
+    { id: 'In-Service Traineeship', label: 'Traineeship' },
+    { id: 'Part Time Learning', label: 'Part Time' },
+    { id: 'Online Learning', label: 'Online' }
 ];
+
+// --- Sub-Component for Individual Course Card to handle Video Refs ---
+const CourseCardItem: React.FC<{ 
+    offering: Offering; 
+    onExpand: (offering: Offering, rect: DOMRect) => void; 
+}> = ({ offering, onExpand }) => {
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const cardRef = useRef<HTMLDivElement>(null);
+    const { addToCart } = useCart();
+    const { addToCompare, isInCompare, removeFromCompare } = useCompare();
+    
+    // Local state for modals specific to this card's actions
+    const [selectedOffering, setSelectedOffering] = useState<Offering | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [modalOrigin, setModalOrigin] = useState<{x: number, y: number} | null>(null);
+    const [showApplication, setShowApplication] = useState(false);
+    const [showCheckout, setShowCheckout] = useState(false);
+
+    const isEcommerce = offering.programmeTypes.some((type: string) => 
+        ['Online Learning', 'Part Time Learning'].includes(type)
+    );
+    const inCompare = isInCompare(offering.id);
+
+    const handleMouseEnter = () => {
+        if (videoRef.current) {
+            videoRef.current.play().catch(e => console.log('Autoplay prevented', e));
+        }
+    };
+
+    const handleMouseLeave = () => {
+        if (videoRef.current) {
+            videoRef.current.pause();
+            videoRef.current.currentTime = 0; // Reset video
+        }
+    };
+
+    const handleQuickView = (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const rect = (e.currentTarget as HTMLElement).closest('.group')?.getBoundingClientRect();
+        if (rect) {
+            setModalOrigin({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 });
+        }
+        setSelectedOffering(offering);
+        setIsModalOpen(true);
+    };
+
+    const handleAction = (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (isEcommerce) {
+            addToCart(offering);
+            setShowCheckout(true);
+        } else {
+            setShowApplication(true);
+        }
+    };
+
+    const handleCardClick = (e: React.MouseEvent) => {
+        // If clicking buttons, don't expand
+        if ((e.target as HTMLElement).closest('button')) return;
+        
+        e.preventDefault();
+        if (cardRef.current) {
+            const rect = cardRef.current.getBoundingClientRect();
+            onExpand(offering, rect);
+        }
+    };
+
+    return (
+        <>
+            <div 
+                className="flex flex-col h-full cursor-pointer"
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+                onClick={handleCardClick}
+                ref={cardRef}
+            >
+                <div className="bg-white w-full group rounded-sm overflow-hidden border border-transparent hover:border-white/50 transition-all duration-300 flex flex-col h-full shadow-lg hover:shadow-2xl hover:-translate-y-1 relative">
+                    {/* Media Area (Video/Image) */}
+                    <div className="relative h-60 overflow-hidden shrink-0 bg-gray-100">
+                        <div className="absolute top-4 left-4 z-10">
+                            <span className="bg-brand-gold text-white text-[10px] font-bold px-3 py-1.5 uppercase tracking-widest rounded-sm shadow-md">
+                                {offering.category}
+                            </span>
+                        </div>
+                        
+                        {/* Video Element (Plays on Hover) */}
+                        <video
+                            ref={videoRef}
+                            src={offering.video}
+                            poster={offering.image}
+                            muted
+                            loop
+                            playsInline
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                        />
+                        
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        
+                        {/* Hover Actions Panel */}
+                        <div className="absolute bottom-0 left-0 right-0 bg-[#002B4E]/90 backdrop-blur-sm p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 flex gap-2 z-20">
+                            <button 
+                                onClick={handleAction}
+                                className="flex-[2] bg-white text-[#002B4E] hover:bg-[#C2B067] hover:text-white text-[10px] font-bold uppercase tracking-wider py-2.5 rounded-sm transition-all flex items-center justify-center gap-2 border border-transparent"
+                            >
+                                {isEcommerce ? (
+                                    <><ShoppingBag size={14} /> Buy Now</>
+                                ) : (
+                                    <>Apply Now <ArrowRight size={14} /></>
+                                )}
+                            </button>
+                            <button 
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    if (inCompare) removeFromCompare(offering.id);
+                                    else addToCompare(offering);
+                                }}
+                                className={`flex-1 bg-transparent border border-white/30 hover:bg-white/10 text-white text-[10px] font-bold uppercase tracking-wider py-2.5 rounded-sm transition-all flex items-center justify-center gap-2 ${inCompare ? 'bg-white text-[#002B4E]' : ''}`}
+                            >
+                                {inCompare ? <X size={16} /> : <BarChart2 size={16} />}
+                                {inCompare ? 'Remove' : 'Compare'}
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Content Area */}
+                    <div className="p-6 flex-1 flex flex-col relative z-10 bg-white">
+                        <div className="block">
+                            <h3 className="text-xl lg:text-2xl font-serif font-bold text-[#002B4E] mb-4 leading-tight group-hover:text-[#1289fe] transition-colors">
+                                {offering.title}
+                            </h3>
+                        </div>
+                        
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-gray-500 font-medium mb-6">
+                            <div className="flex items-center gap-1.5">
+                                <Clock size={16} className="text-[#002B4E]" />
+                                <span>{offering.duration}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                                <GraduationCap size={16} className="text-[#002B4E]" />
+                                <span>{offering.qualification}</span>
+                            </div>
+                        </div>
+
+                        {/* Excerpt with Hover Reveal */}
+                        <div className="grid grid-rows-[0fr] group-hover:grid-rows-[1fr] transition-[grid-template-rows] duration-500 ease-out">
+                            <div className="overflow-hidden">
+                                <p className="text-gray-600 text-sm mb-6 line-clamp-3 leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">
+                                    {offering.description}
+                                </p>
+                            </div>
+                        </div>
+                        
+                        {/* Spacer to push content to bottom */}
+                        <div className="mt-auto"></div>
+
+                        {/* Price Block: Collapsed above details, expands on hover */}
+                        <div className="grid grid-rows-[0fr] group-hover:grid-rows-[1fr] transition-[grid-template-rows] duration-300 ease-out mb-0 group-hover:mb-4">
+                            <div className="overflow-hidden opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100">
+                                <div className="flex justify-between items-end border-t border-gray-100 pt-3">
+                                    <div>
+                                        <p className="text-[10px] uppercase tracking-widest text-gray-400 font-bold mb-1">Tuition</p>
+                                        <p className="text-lg font-bold text-[#002B4E]">
+                                            R {offering.price?.toLocaleString()}
+                                        </p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-[10px] uppercase tracking-widest text-gray-400 font-bold mb-1">Next Intake</p>
+                                        <p className="text-xs font-bold text-[#002B4E]">{offering.startDate}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex gap-3 relative z-20 bg-white">
+                            <button 
+                                className="flex-1 bg-white border border-[#002B4E] text-[#002B4E] hover:bg-[#002B4E] hover:text-white font-bold transition-all duration-300 text-xs uppercase tracking-widest px-4 py-3 rounded-sm flex items-center justify-center gap-2"
+                            >
+                                Details
+                            </button>
+                            <button 
+                                onClick={handleQuickView}
+                                className="w-12 flex items-center justify-center bg-[#002B4E] border border-[#002B4E] text-white hover:bg-[#002B4E]/90 hover:border-[#002B4E]/90 rounded-sm transition-all duration-300"
+                                aria-label="Quick View"
+                            >
+                                <Eye size={18} />
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {selectedOffering && (
+                <QuickViewModal 
+                    offering={selectedOffering} 
+                    isOpen={isModalOpen} 
+                    onClose={() => setIsModalOpen(false)} 
+                    origin={modalOrigin}
+                />
+            )}
+
+            <ApplicationModal 
+                isOpen={showApplication} 
+                onClose={() => setShowApplication(false)} 
+                courseTitle={offering.title}
+            />
+            
+            <CheckoutModal 
+                isOpen={showCheckout}
+                onClose={() => setShowCheckout(false)}
+            />
+        </>
+    );
+};
 
 export const CoreOfferings: React.FC = () => {
     // --- State ---
     const [activeTab, setActiveTab] = useState('All');
     const [isFilterOpen, setIsFilterOpen] = useState(false);
+    const tabsRef = useRef<HTMLDivElement>(null);
+    const navigate = useNavigate();
     
+    // --- Transition States ---
+    const [expandingOffering, setExpandingOffering] = useState<Offering | null>(null);
+    const [expansionStyle, setExpansionStyle] = useState<React.CSSProperties | null>(null);
+    const [isTransitioning, setIsTransitioning] = useState(false);
+
     // Filters
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedStudyLevels, setSelectedStudyLevels] = useState<string[]>([]);
@@ -33,16 +269,6 @@ export const CoreOfferings: React.FC = () => {
     const [selectedAccreditations, setSelectedAccreditations] = useState<string[]>([]);
 
     const [displayedOfferings, setDisplayedOfferings] = useState<Offering[]>([]);
-    
-    // UI States
-    const [selectedOffering, setSelectedOffering] = useState<Offering | null>(null);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [showApplication, setShowApplication] = useState(false);
-    const [showCheckout, setShowCheckout] = useState(false);
-    const [currentCourse, setCurrentCourse] = useState<Offering | null>(null);
-    
-    const { addToCart } = useCart();
-    const { addToCompare, isInCompare, removeFromCompare } = useCompare();
 
     // --- Filtering Logic ---
     useEffect(() => {
@@ -75,7 +301,6 @@ export const CoreOfferings: React.FC = () => {
         if (selectedFocusAreas.length > 0) {
             filtered = filtered.filter(o => {
                  return selectedFocusAreas.every(area => {
-                     // Mapping logic for demo data
                      if (area === 'Hospitality') return o.category === 'Hospitality';
                      if (area === 'Culinary') return o.category === 'Culinary';
                      if (area === 'Food & Beverage') return o.title.includes('Food') || o.title.includes('Beverage');
@@ -99,29 +324,6 @@ export const CoreOfferings: React.FC = () => {
     }, [activeTab, searchQuery, selectedStudyLevels, selectedFocusAreas, selectedAccreditations]);
 
 
-    // --- Handlers ---
-    const handleQuickView = (offering: Offering, e: React.MouseEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setSelectedOffering(offering);
-        setIsModalOpen(true);
-    };
-
-    const handleAction = (offering: Offering, e: React.MouseEvent) => {
-        e.preventDefault();
-        setCurrentCourse(offering);
-        const isEcommerce = offering.programmeTypes.some((type: string) => 
-            ['Online Learning', 'Part Time Learning'].includes(type)
-        );
-
-        if (isEcommerce) {
-            addToCart(offering);
-            setShowCheckout(true);
-        } else {
-            setShowApplication(true);
-        }
-    };
-
     const toggleFilter = (setter: React.Dispatch<React.SetStateAction<string[]>>, value: string) => {
         setter(prev => 
             prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value]
@@ -135,15 +337,91 @@ export const CoreOfferings: React.FC = () => {
         setSelectedAccreditations([]);
     };
 
+    const scrollTabs = (direction: 'left' | 'right') => {
+        if (tabsRef.current) {
+            const scrollAmount = 200;
+            tabsRef.current.scrollBy({ 
+                left: direction === 'left' ? -scrollAmount : scrollAmount, 
+                behavior: 'smooth' 
+            });
+        }
+    };
+
+    // --- Transition Handler ---
+    const handleCardExpand = (offering: Offering, rect: DOMRect) => {
+        // 1. Set initial state (match card position)
+        setExpandingOffering(offering);
+        setExpansionStyle({
+            position: 'fixed',
+            top: rect.top,
+            left: rect.left,
+            width: rect.width,
+            height: rect.height,
+            zIndex: 9999, // High z-index to overlay everything including header
+            transition: 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)', // Smooth ease-out
+            borderRadius: '2px', // Match card border radius initially
+        });
+        setIsTransitioning(true);
+
+        // 2. Trigger expansion (match hero position)
+        // Using double requestAnimationFrame to ensure browser paints initial state first
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                setExpansionStyle({
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    width: '100vw',
+                    height: '100vh',
+                    zIndex: 9999,
+                    transition: 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
+                    borderRadius: '0px',
+                });
+            });
+        });
+
+        // 3. Navigate after animation completes
+        setTimeout(() => {
+            navigate(`/course/${offering.id}`, { state: { fromTransition: true } });
+        }, 800); // Wait for transition to finish
+    };
+
     const activeFilterCount = selectedStudyLevels.length + selectedFocusAreas.length + selectedAccreditations.length;
 
     return (
-        <section className="py-24 bg-brand-dark relative min-h-screen" id="offerings">
+        <section className="bg-white relative min-h-screen" id="offerings">
             
+            {/* --- EXPANSION OVERLAY --- */}
+            {isTransitioning && expandingOffering && expansionStyle && (
+                <div 
+                    style={expansionStyle}
+                    className="overflow-hidden bg-brand-dark shadow-2xl"
+                >
+                    <div className="relative w-full h-full">
+                         {/* Fade in blue overlay to match Detail Page Hero style */}
+                         <div className="absolute inset-0 bg-[#0a3355]/80 z-10 opacity-0 animate-[fadeIn_0.5s_ease-out_forwards]"></div>
+                         <video
+                            src={expandingOffering.video}
+                            poster={expandingOffering.image}
+                            muted
+                            autoPlay
+                            loop
+                            playsInline
+                            className="w-full h-full object-cover"
+                        />
+                    </div>
+                </div>
+            )}
+
+            {/* Filter Drawer Overlay */}
+            <div 
+                className={`fixed inset-0 z-[55] bg-black/60 backdrop-blur-sm transition-opacity duration-500 ${isFilterOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                onClick={() => setIsFilterOpen(false)}
+            />
+
             {/* Left Filter Drawer */}
-            <div className={`fixed top-0 left-0 bottom-0 w-[320px] z-[60] bg-[#0d1424] border-r border-brand-gold/30 shadow-[10px_0_40px_rgba(0,0,0,0.5)] transition-transform duration-500 ease-in-out ${isFilterOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+            <div className={`fixed top-0 left-0 bottom-0 w-[320px] z-[60] bg-[#0d1424] border-r border-brand-gold/30 shadow-[10px_0_40px_rgba(0,0,0,0.5)] transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${isFilterOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                  <div className="flex flex-col h-full">
-                     
                      {/* Header */}
                      <div className="flex items-center justify-between p-6 border-b border-white/10 bg-[#162036] shrink-0">
                         <div className="flex items-center gap-3">
@@ -157,7 +435,6 @@ export const CoreOfferings: React.FC = () => {
 
                      {/* Content */}
                      <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col">
-                        
                         {/* Search Bar */}
                         <div className="p-6 pb-2">
                             <label className="text-xs uppercase font-bold text-gray-500 mb-2 block">Search</label>
@@ -181,7 +458,7 @@ export const CoreOfferings: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Filter Groups - Accordion Style */}
+                        {/* Filter Groups */}
                         <div className="divide-y divide-white/10 mt-4">
                             <CheckboxGroup 
                                 title="Study Level" 
@@ -224,206 +501,128 @@ export const CoreOfferings: React.FC = () => {
                              View Results
                          </Button>
                      </div>
-
                  </div>
             </div>
 
-            {/* Main Content */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                
-                {/* Main Heading Area */}
-                <div className="mb-12 text-center">
-                    <h2 className="font-serif text-4xl md:text-6xl text-white mb-6">
-                        Our <span className="text-brand-gold">Programmes</span>
-                    </h2>
-                    
-                    <p className="text-gray-400 max-w-3xl mx-auto mb-8 leading-relaxed">
-                        World-class hospitality and culinary programmes designed to launch your career. All programmes include practical work experience and employment support.
-                    </p>
+            {/* --- TOP WHITE SECTION --- */}
+            <div className="relative bg-white pt-20 pb-20">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    {/* Main Heading Area */}
+                    <div className="mb-10 text-center">
+                        <h2 className="font-serif text-4xl md:text-6xl text-brand-primary mb-6">
+                            Our <span className="text-brand-accent">Programmes</span>
+                        </h2>
+                        
+                        <p className="text-brand-textSecondary max-w-3xl mx-auto mb-8 leading-relaxed">
+                            World-class hospitality and culinary programmes designed to launch your career. All programmes include practical work experience and employment support.
+                        </p>
+                    </div>
                 </div>
 
-                {/* Controls Container */}
-                <div className="mb-12">
-                    
-                    {/* Programme Type Tabs & Filter Toggle */}
-                    <div className="flex items-center justify-center gap-4">
-                        <div className="overflow-x-auto no-scrollbar">
-                            <div className="bg-[#131B2C] border border-white/10 rounded-lg p-1.5 flex gap-1 md:gap-2 items-center min-w-max shadow-lg">
+                {/* Floating Tabs & Controls - Positioned to overlap the boundary */}
+                <div className="absolute bottom-0 left-0 right-0 translate-y-1/2 z-20">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                            
+                            {/* Filter Toggle (Left) - Relative position in flex container */}
+                            <button 
+                                onClick={() => setIsFilterOpen(!isFilterOpen)}
+                                className="hidden md:flex items-center justify-center bg-white hover:bg-gray-50 text-gray-500 hover:text-[#1289fe] rounded-full h-[50px] w-[50px] shadow-lg transition-all duration-300 relative z-10"
+                                aria-label="Toggle Filters"
+                            >
+                                <SlidersHorizontal size={20} />
+                            </button>
+
+                            {/* Centered Floating Pill Navigation */}
+                            <div 
+                                ref={tabsRef}
+                                className="bg-white rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.1)] p-1.5 flex items-center gap-1 overflow-x-auto max-w-full no-scrollbar mx-auto"
+                            >
                                 {TABS.map(tab => (
                                     <button
                                         key={tab.id}
                                         onClick={() => setActiveTab(tab.id)}
-                                        className={`px-4 md:px-6 py-2.5 rounded-md text-sm font-bold transition-all duration-300 whitespace-nowrap ${
+                                        className={`px-6 py-3 rounded-full text-xs font-bold uppercase tracking-widest transition-all duration-300 whitespace-nowrap ${
                                             activeTab === tab.id 
-                                            ? 'bg-brand-gold text-brand-dark shadow-md' 
-                                            : 'text-gray-400 hover:text-white hover:bg-white/5'
+                                            ? 'bg-[#1289fe] text-white shadow-md' 
+                                            : 'text-gray-500 hover:bg-gray-100 hover:text-[#1289fe]'
                                         }`}
                                     >
                                         {tab.label}
                                     </button>
                                 ))}
                             </div>
-                        </div>
 
-                        {/* Filter Toggle Button - Icon Only */}
+                            {/* Navigation Arrows (Right) */}
+                            <div className="hidden md:flex gap-2">
+                                <button 
+                                    onClick={() => scrollTabs('left')}
+                                    className="w-[50px] h-[50px] bg-white rounded-full text-[#002B4E] flex items-center justify-center shadow-lg hover:bg-[#1289fe] hover:text-white transition-all duration-300"
+                                    aria-label="Previous"
+                                >
+                                    <ChevronLeft size={20} />
+                                </button>
+                                <button 
+                                    onClick={() => scrollTabs('right')}
+                                    className="w-[50px] h-[50px] bg-white rounded-full text-[#002B4E] flex items-center justify-center shadow-lg hover:bg-[#1289fe] hover:text-white transition-all duration-300"
+                                    aria-label="Next"
+                                >
+                                    <ChevronRight size={20} />
+                                </button>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* --- BOTTOM BLUE GRID SECTION --- */}
+            <div className="bg-[#072136] pt-24 pb-20">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    
+                    {/* Mobile Controls (Visible only on small screens) */}
+                    <div className="flex md:hidden justify-between items-center mb-6">
                         <button 
                             onClick={() => setIsFilterOpen(!isFilterOpen)}
-                            className={`flex items-center justify-center bg-[#131B2C] border border-brand-gold/30 hover:border-brand-gold hover:bg-brand-gold hover:text-brand-dark rounded-full h-[50px] w-[50px] transition-all duration-300 shadow-lg ${isFilterOpen ? 'bg-brand-gold text-brand-dark border-brand-gold' : 'text-brand-gold'}`}
-                            aria-label="Toggle Filters"
+                            className="bg-white/10 text-white rounded-full p-3"
                         >
-                            {isFilterOpen ? <X size={20} /> : <SlidersHorizontal size={20} />}
+                            <SlidersHorizontal size={20} />
                         </button>
                     </div>
 
-                </div>
-
-                {/* Results Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 transition-all duration-300">
-                    {displayedOfferings.map((offering) => {
-                        const isEcommerce = offering.programmeTypes.some((type: string) => 
-                            ['Online Learning', 'Part Time Learning'].includes(type)
-                        );
-                        const typeOfStudy = offering.programmeTypes.some(t => t.includes('Online')) ? 'Online' : 'Full-Time';
-                        const inCompare = isInCompare(offering.id);
-                        // Display the first programme type or the active one
-                        const displayLabel = offering.programmeTypes[0];
-
-                        return (
-                        <div key={offering.id} className="bg-brand-card group rounded-lg overflow-hidden border border-white/5 hover:border-brand-gold/30 transition-all duration-300 flex flex-col h-full hover:shadow-[0_10px_40px_rgba(0,0,0,0.5)] hover:-translate-y-1 relative">
-                            {/* Image Area */}
-                            <div className="relative h-60 overflow-hidden">
-                                <div className="absolute top-4 left-4 z-10">
-                                    <span className="bg-brand-gold text-brand-dark text-xs font-bold px-4 py-1.5 rounded-full tracking-wide shadow-md">
-                                        {displayLabel}
-                                    </span>
+                    {/* Results Grid (Replaces Slider) */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {displayedOfferings.map((offering) => (
+                            <CourseCardItem 
+                                key={offering.id} 
+                                offering={offering} 
+                                onExpand={handleCardExpand}
+                            />
+                        ))}
+                        
+                        {displayedOfferings.length === 0 && (
+                            <div className="col-span-full text-center py-20 bg-white/10 rounded-sm border border-white/20">
+                                <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-6 text-gray-400 shadow-sm">
+                                    <Eye size={40} />
                                 </div>
-                                <img 
-                                    src={offering.image} 
-                                    alt={offering.title} 
-                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-brand-card via-transparent to-transparent opacity-60"></div>
-                                
-                                {/* Hover Actions Panel - Slides up from bottom of image */}
-                                <div className="absolute bottom-0 left-0 right-0 bg-[#131B2C]/90 backdrop-blur-sm p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 flex gap-2">
-                                    <button 
-                                        onClick={(e) => handleAction(offering, e)}
-                                        className="flex-[2] bg-brand-gold text-brand-dark hover:bg-white hover:text-brand-dark text-[10px] font-bold uppercase tracking-wider py-2.5 rounded-sm transition-all flex items-center justify-center gap-2"
-                                    >
-                                        {isEcommerce ? (
-                                            <><ShoppingBag size={14} /> Buy Now</>
-                                        ) : (
-                                            <>Apply Now <ArrowRight size={14} /></>
-                                        )}
-                                    </button>
-                                    <button 
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            if (inCompare) removeFromCompare(offering.id);
-                                            else addToCompare(offering);
-                                        }}
-                                        className={`flex-1 bg-transparent border border-white/20 hover:bg-white/5 text-white text-[10px] font-bold uppercase tracking-wider py-2.5 rounded-sm transition-all flex items-center justify-center gap-2 ${inCompare ? 'bg-brand-gold/20 border-brand-gold text-brand-gold' : ''}`}
-                                    >
-                                        {inCompare ? <X size={16} /> : <BarChart2 size={16} />}
-                                        {inCompare ? 'Remove' : 'Compare'}
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Content Area */}
-                            <div className="p-6 flex-1 flex flex-col relative z-10 bg-brand-card">
-                                <Link to={`/course/${offering.id}`} className="block">
-                                    <h3 className="text-2xl font-serif font-bold text-white mb-3 leading-tight group-hover:text-brand-gold transition-colors">{offering.title}</h3>
-                                </Link>
-                                
-                                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-400 mb-4">
-                                    <div className="flex items-center gap-2">
-                                        <Clock size={16} className="text-brand-gold" />
-                                        <span>{offering.duration}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <GraduationCap size={16} className="text-brand-gold" />
-                                        <span>{offering.qualification}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <MapPin size={16} className="text-brand-gold" />
-                                        <span>{typeOfStudy}</span>
-                                    </div>
-                                </div>
-
-                                <p className="text-gray-400 text-sm mb-4 flex-1 line-clamp-3 leading-relaxed">
-                                    {offering.description}
+                                <h3 className="text-2xl text-white font-serif mb-3">No Programmes Found</h3>
+                                <p className="text-blue-100 max-w-md mx-auto mb-8 leading-relaxed">
+                                    We couldn't find any courses matching your current selection. Try switching categories or adjusting filters.
                                 </p>
-                                
-                                <div className="mb-6 pt-4 border-t border-white/5">
-                                    <p className="text-3xl font-serif text-brand-gold font-bold">
-                                        R {offering.price?.toLocaleString()}
-                                    </p>
-                                    <p className="text-xs text-gray-500 mt-1 uppercase tracking-wider">Starting: {offering.startDate}</p>
-                                </div>
-
-                                <div className="mt-auto flex gap-3">
-                                    <Link 
-                                        to={`/course/${offering.id}`}
-                                        className="flex-1 bg-brand-gold text-brand-dark hover:bg-white hover:text-brand-dark font-bold transition-all duration-300 text-xs uppercase tracking-wider px-4 py-3 rounded-sm flex items-center justify-center gap-2"
-                                    >
-                                        View More
-                                    </Link>
-                                    <button 
-                                        onClick={(e) => handleQuickView(offering, e)}
-                                        className="h-full aspect-square flex items-center justify-center bg-transparent border border-white/20 hover:border-brand-gold hover:text-brand-gold text-white rounded-sm transition-all" 
-                                        aria-label="Quick View"
-                                    >
-                                        <Eye size={20} />
-                                    </button>
-                                </div>
+                                <button 
+                                    onClick={() => {
+                                        setActiveTab('All');
+                                        resetFilters();
+                                    }}
+                                    className="text-white hover:text-brand-accent transition-colors border-b border-white pb-1 font-bold uppercase tracking-widest text-sm"
+                                >
+                                    Reset All Filters
+                                </button>
                             </div>
-                        </div>
-                    )})}
-                    
-                    {displayedOfferings.length === 0 && (
-                        <div className="col-span-full text-center py-20 bg-[#131B2C] rounded-sm border border-white/5">
-                            <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6 text-gray-500">
-                                <Eye size={40} />
-                            </div>
-                            <h3 className="text-2xl text-white font-serif mb-3">No Programmes Found</h3>
-                            <p className="text-gray-400 max-w-md mx-auto mb-8 leading-relaxed">
-                                We couldn't find any courses matching your current selection. Try switching categories or adjusting filters.
-                            </p>
-                            <button 
-                                onClick={() => {
-                                    setActiveTab('All');
-                                    resetFilters();
-                                }}
-                                className="text-brand-gold hover:text-white transition-colors border-b border-brand-gold pb-1 font-bold uppercase tracking-widest text-sm"
-                            >
-                                Reset All Filters
-                            </button>
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </div>
-
             </div>
-
-            {selectedOffering && (
-                <QuickViewModal 
-                    offering={selectedOffering} 
-                    isOpen={isModalOpen} 
-                    onClose={() => setIsModalOpen(false)} 
-                />
-            )}
-
-            <ApplicationModal 
-                isOpen={showApplication} 
-                onClose={() => setShowApplication(false)} 
-                courseTitle={currentCourse?.title}
-            />
-            
-            <CheckoutModal 
-                isOpen={showCheckout}
-                onClose={() => setShowCheckout(false)}
-            />
         </section>
     );
 };

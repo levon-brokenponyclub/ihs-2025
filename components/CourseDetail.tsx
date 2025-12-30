@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useLocation } from 'react-router-dom';
 import { COURSE_DETAILS, OFFERINGS, ACCREDITATION_LOGOS } from '../constants';
 import { Button } from './ui/Button';
 import { AccordionItem } from './ui/Accordion';
@@ -59,10 +59,10 @@ const FeesCard = ({ course, className }: { course: any, className?: string }) =>
     return (
         <div className={`bg-brand-card border border-white/10 rounded-sm overflow-hidden shadow-2xl ${className}`}>
             <div className="bg-brand-gold p-4 text-center">
-                <span className="text-brand-dark font-bold uppercase tracking-widest text-sm">2025 Fees</span>
+                <span className="text-white font-bold uppercase tracking-widest text-sm">2025 Fees</span>
             </div>
             <div className="p-6 md:p-8 text-center">
-                <p className="text-brand-muted text-sm mb-2">Per Year</p>
+                <p className="text-brand-muted text-xs uppercase tracking-wider mb-2">Per Year</p>
                 <p className="text-4xl font-serif text-white font-bold mb-6">{course.fees.tuition}</p>
                 
                 <div className="border-t border-white/10 pt-4 mb-6">
@@ -76,7 +76,7 @@ const FeesCard = ({ course, className }: { course: any, className?: string }) =>
                     </div>
                 </div>
                 
-                <p className="text-xs text-gray-500 mb-8 italic">
+                <p className="text-xs text-gray-400 mb-8 italic">
                     *{course.fees.note}
                 </p>
 
@@ -129,7 +129,7 @@ const MobileFeesDrawer = ({ course }: { course: any }) => {
             
             <div className="bg-brand-card border-t border-brand-gold shadow-[0_-10px_40px_rgba(0,0,0,0.5)] relative z-10 max-h-[80vh] overflow-y-auto">
                  {/* Header Bar */}
-                 <div className="p-4 flex items-center justify-between bg-[#162036] cursor-pointer" onClick={() => setIsOpen(!isOpen)}>
+                 <div className="p-4 flex items-center justify-between bg-brand-card cursor-pointer" onClick={() => setIsOpen(!isOpen)}>
                       <div className="flex flex-col">
                           <span className="text-xs text-brand-muted uppercase tracking-wider mb-0.5">Annual Tuition</span>
                           <span className="text-white font-serif font-bold text-xl">{course.fees.tuition}</span>
@@ -212,27 +212,26 @@ const CourseCard: React.FC<{ offering: Offering }> = ({ offering }) => {
 
     return (
         <>
-        {/* Adjusted min-width to ensure the "cut-off" look for 4th card in a col-span-3 area */}
-        <div className="bg-brand-card group rounded-lg overflow-hidden border border-white/5 hover:border-brand-gold/30 transition-all duration-300 flex flex-col h-full hover:shadow-[0_10px_40px_rgba(0,0,0,0.5)] hover:-translate-y-1 relative min-w-[280px] md:min-w-[300px] lg:min-w-[320px] snap-center">
+        <div className="bg-brand-card group rounded-sm overflow-hidden border border-white/10 hover:border-brand-gold/30 transition-all duration-300 flex flex-col h-full hover:shadow-[0_15px_40px_rgba(0,0,0,0.3)] hover:-translate-y-1 relative min-w-[280px] md:min-w-[300px] lg:min-w-[320px] snap-center">
             {/* Image Area */}
-            <div className="relative h-60 overflow-hidden shrink-0">
+            <div className="relative h-64 overflow-hidden shrink-0">
                 <div className="absolute top-4 left-4 z-10">
-                    <span className="bg-brand-gold text-brand-dark text-xs font-bold px-4 py-1.5 rounded-full tracking-wide">
+                    <span className="bg-brand-gold text-white text-[10px] font-bold px-3 py-1.5 uppercase tracking-widest rounded-sm shadow-md">
                         {offering.category}
                     </span>
                 </div>
                 <img 
                     src={offering.image} 
                     alt={offering.title} 
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                    className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105" 
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-brand-card via-transparent to-transparent opacity-60"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-brand-card via-transparent to-transparent opacity-80"></div>
                 
                 {/* Hover Actions Panel */}
-                <div className="absolute bottom-0 left-0 right-0 bg-[#131B2C]/90 backdrop-blur-sm p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 flex gap-2">
+                <div className="absolute bottom-0 left-0 right-0 bg-[#004b78]/90 backdrop-blur-sm p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 flex gap-2">
                     <button 
                         onClick={handleAction}
-                        className="flex-[2] bg-brand-gold text-brand-dark hover:bg-white hover:text-brand-dark text-[10px] font-bold uppercase tracking-wider py-2.5 rounded-sm transition-all flex items-center justify-center gap-2"
+                        className="flex-[2] bg-brand-gold text-white hover:bg-brand-goldHover text-[11px] font-bold uppercase tracking-widest py-2.5 rounded-sm transition-all flex items-center justify-center gap-2"
                     >
                         {isEcommerce ? (
                             <><ShoppingBag size={14} /> Buy Now</>
@@ -247,7 +246,7 @@ const CourseCard: React.FC<{ offering: Offering }> = ({ offering }) => {
                             if (inCompare) removeFromCompare(offering.id);
                             else addToCompare(offering);
                         }}
-                        className={`flex-1 bg-transparent border border-white/20 hover:bg-white/5 text-white text-[10px] font-bold uppercase tracking-wider py-2.5 rounded-sm transition-all flex items-center justify-center gap-2 ${inCompare ? 'bg-brand-gold/20 border-brand-gold text-brand-gold' : ''}`}
+                        className={`flex-1 bg-transparent border border-white/20 hover:bg-white/5 text-white/70 text-[11px] font-bold uppercase tracking-widest py-2.5 rounded-sm transition-all flex items-center justify-center gap-2 ${inCompare ? 'bg-white/10 border-brand-gold text-brand-gold' : ''}`}
                     >
                         {inCompare ? <X size={16} /> : <BarChart2 size={16} />}
                         {inCompare ? 'Remove' : 'Compare'}
@@ -255,42 +254,42 @@ const CourseCard: React.FC<{ offering: Offering }> = ({ offering }) => {
                 </div>
             </div>
 
-            {/* Content Area - Flex 1 ensures it fills available space, flex-col organizes inner content */}
+            {/* Content Area */}
             <div className="p-6 flex-1 flex flex-col relative z-10 bg-brand-card">
                 <Link to={`/course/${offering.id}`} className="block">
-                    <h3 className="text-xl md:text-2xl font-serif font-bold text-white mb-3 leading-tight group-hover:text-brand-gold transition-colors">{offering.title}</h3>
+                    <h3 className="text-xl md:text-2xl font-serif font-semibold text-white mb-3 leading-tight group-hover:text-brand-gold transition-colors">{offering.title}</h3>
                 </Link>
                 
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-400 mb-4">
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-brand-muted uppercase tracking-wider mb-4">
                     <div className="flex items-center gap-2">
-                        <Clock size={16} className="text-brand-gold" />
+                        <Clock size={14} className="text-brand-gold/80" />
                         <span>{offering.duration}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <GraduationCap size={16} className="text-brand-gold" />
+                        <GraduationCap size={14} className="text-brand-gold/80" />
                         <span>{offering.qualification}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <MapPin size={16} className="text-brand-gold" />
+                        <MapPin size={14} className="text-brand-gold/80" />
                         <span>{typeOfStudy}</span>
                     </div>
                 </div>
 
-                <p className="text-gray-400 text-sm mb-4 flex-1 line-clamp-3 leading-relaxed">
+                <p className="text-brand-muted text-sm mb-4 flex-1 line-clamp-3 leading-relaxed font-light">
                     {offering.description}
                 </p>
                 
-                <div className="mb-6 pt-4 border-t border-white/5">
+                <div className="mb-6 pt-4 border-t border-white/10">
                     <p className="text-3xl font-serif text-brand-gold font-bold">
                         R {offering.price?.toLocaleString()}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1 uppercase tracking-wider">Starting: {offering.startDate}</p>
+                    <p className="text-[10px] text-gray-400 mt-1 uppercase tracking-widest">Starting: {offering.startDate}</p>
                 </div>
 
                 <div className="mt-auto flex gap-3">
                     <Link 
                         to={`/course/${offering.id}`}
-                        className="flex-1 bg-brand-gold text-brand-dark hover:bg-white hover:text-brand-dark font-bold transition-all duration-300 text-xs uppercase tracking-wider px-4 py-3 rounded-sm flex items-center justify-center gap-2"
+                        className="flex-1 bg-transparent border border-white/20 hover:border-brand-gold text-white hover:text-brand-gold font-bold transition-all duration-300 text-[11px] uppercase tracking-widest px-4 py-3 rounded-sm flex items-center justify-center gap-2"
                     >
                         View More
                     </Link>
@@ -336,12 +335,15 @@ export const CourseDetail: React.FC = () => {
   const [activeSection, setActiveSection] = useState('overview');
   const [showStickyHeader, setShowStickyHeader] = useState(false);
   
+  // Transition Logic
+  const location = useLocation();
+  const [isContentVisible, setIsContentVisible] = useState(false);
+  
   const sliderRef = useRef<HTMLDivElement>(null);
 
   // Fallback to the first course if ID not found for demo purposes
   const course = id && COURSE_DETAILS[id] ? COURSE_DETAILS[id] : COURSE_DETAILS['1'];
   
-  // Define Sections dynamically based on course
   const SECTIONS = useMemo(() => [
     { id: 'overview', label: 'Overview' },
     { id: 'content', label: 'Programme Content' },
@@ -351,20 +353,14 @@ export const CourseDetail: React.FC = () => {
     { id: 'faq', label: 'FAQs' },
   ], [course.qualification]);
 
-  // Extract proper "Type of Study" based on Delivery Mode or Programme Type logic for display
   const typeOfStudy = course.programmeTypes.some(t => t.includes('Full Time')) ? 'Full Time' : 
                       course.programmeTypes.some(t => t.includes('Part Time')) ? 'Part Time' : 'Online';
 
-  // Prepare Related Courses for Testing (Force at least 5)
-  // Get courses in same category, exclude current
   let relatedCourses = OFFERINGS.filter(o => o.category === course.category && o.id !== course.id);
   
-  // TESTING ONLY: Pad with other courses to reach minimum of 5 for slider demo
   if (relatedCourses.length < 5) {
       const padding = OFFERINGS.filter(o => o.id !== course.id && !relatedCourses.find(r => r.id === o.id));
       relatedCourses = [...relatedCourses, ...padding].slice(0, 5);
-      
-      // If still < 5 (small dataset), duplicate existing
       while (relatedCourses.length < 5 && relatedCourses.length > 0) {
           relatedCourses = [...relatedCourses, relatedCourses[0]];
       }
@@ -374,14 +370,24 @@ export const CourseDetail: React.FC = () => {
     window.scrollTo(0, 0);
   }, [id]);
 
-  // Enhanced Scroll Spy Logic & Sticky Header
+  useEffect(() => {
+     // Delayed Content Animation Entrance
+     // If coming from transition, wait 1000ms. If direct load, show faster.
+     const isFromTransition = location.state?.fromTransition;
+     const delay = isFromTransition ? 1000 : 100;
+
+     const timer = setTimeout(() => {
+         setIsContentVisible(true);
+     }, delay);
+
+     return () => clearTimeout(timer);
+  }, [location.state]);
+
   useEffect(() => {
     const handleScroll = () => {
-        // Sticky Header logic
         const stickyThreshold = window.innerHeight - 60; 
         setShowStickyHeader(window.scrollY > stickyThreshold);
 
-        // Scroll Spy
         const offset = 180;
         const scrollPosition = window.scrollY + offset;
         
@@ -407,7 +413,6 @@ export const CourseDetail: React.FC = () => {
   const scrollToSection = (id: string) => {
     const el = document.getElementById(id);
     if (el) {
-        // Sticky Header (60px) + Tab Nav (58px) + Buffer
         const headerOffset = 130; 
         const elementPosition = el.getBoundingClientRect().top;
         const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
@@ -439,32 +444,10 @@ export const CourseDetail: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-brand-dark pt-0">
-      <style>{`
-        .scrollbar-hide::-webkit-scrollbar {
-            display: none;
-        }
-        .scrollbar-hide {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-        .scrollbar-thin::-webkit-scrollbar {
-            height: 4px;
-        }
-        .scrollbar-thin::-webkit-scrollbar-track {
-            background: rgba(255,255,255,0.05);
-        }
-        .scrollbar-thin::-webkit-scrollbar-thumb {
-            background: rgba(255,255,255,0.2);
-            border-radius: 10px;
-        }
-        .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-            background: #C5A059;
-        }
-      `}</style>
       
-      {/* Sticky Top Bar - Replaces Main Header on Scroll */}
+      {/* Sticky Top Bar */}
       <div 
-        className={`fixed top-0 left-0 right-0 z-[60] bg-[#0B1221] border-b border-white/10 h-[60px] flex items-center justify-between px-4 sm:px-6 lg:px-8 transition-transform duration-300 shadow-xl ${showStickyHeader ? 'translate-y-0' : '-translate-y-full'}`}
+        className={`fixed top-0 left-0 right-0 z-[60] bg-brand-dark border-b border-white/10 h-[60px] flex items-center justify-between px-4 sm:px-6 lg:px-8 transition-transform duration-300 shadow-xl ${showStickyHeader ? 'translate-y-0' : '-translate-y-full'}`}
       >
          <div className="flex items-center gap-4 h-full">
             <button onClick={() => window.history.back()} className="text-gray-400 hover:text-white flex items-center gap-2 text-sm font-medium transition-colors h-full">
@@ -482,39 +465,51 @@ export const CourseDetail: React.FC = () => {
          </button>
       </div>
 
-      {/* Hero Section - Full Height */}
-      <section className="relative h-screen flex flex-col justify-end bg-brand-card border-b border-white/5 pb-0">
+      {/* Hero Section */}
+      <section className="relative h-screen flex flex-col justify-end bg-brand-card border-b border-white/5 pb-0 overflow-hidden">
+        {/* The video/image background here matches the final state of the transition overlay */}
         <div className="absolute inset-0 overflow-hidden">
-            <div className="absolute inset-0 bg-brand-dark/80 z-10"></div>
-            <img src={course.image} alt={course.title} className="w-full h-full object-cover blur-sm" />
+            <div className="absolute inset-0 bg-[#0a3355]/80 z-10"></div>
+            {course.video ? (
+                <video
+                    src={course.video}
+                    poster={course.image}
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    className="w-full h-full object-cover"
+                />
+            ) : (
+                <img src={course.image} alt={course.title} className="w-full h-full object-cover" />
+            )}
         </div>
 
-        <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-            <div className="lg:w-2/3 pr-0 lg:pr-12 pb-6 md:pb-8"> {/* Reduced padding bottom to refine gap */}
+        <div 
+            className={`relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full transition-all duration-[1000ms] ease-out transform ${isContentVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}
+        >
+            <div className="lg:w-2/3 pr-0 lg:pr-12 pb-6 md:pb-8"> 
                 
-                {/* Updated Header Layout: Category below Back Link */}
                 <div className="flex flex-col items-start gap-4 mb-6">
                     <Link to="/" className="inline-flex items-center text-brand-muted hover:text-white text-sm transition-colors">
                         <ArrowLeft size={16} className="mr-2" /> Back to Programmes
                     </Link>
-                    <div className="bg-brand-gold text-brand-dark text-xs font-bold px-3 py-1 uppercase rounded-sm tracking-wider">
+                    <div className="bg-brand-gold text-white text-[10px] font-bold px-3 py-1 uppercase rounded-sm tracking-widest">
                         {course.category}
                     </div>
                 </div>
                 
-                {/* Increased mb-10 to mb-14 for larger gap */}
-                <h1 className="font-serif text-3xl md:text-5xl lg:text-6xl text-white mb-14 leading-tight">
+                <h1 className="font-serif text-3xl md:text-5xl lg:text-6xl text-white mb-14 leading-tight font-semibold">
                     {course.title}
                 </h1>
                 
-                {/* Increased pt-6 to pt-10 for larger gap */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6 border-t border-white/10 pt-10"> 
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-brand-gold shrink-0">
                             <Clock size={20} />
                         </div>
                         <div>
-                            <p className="text-xs text-brand-muted uppercase">Duration</p>
+                            <p className="text-xs text-brand-muted uppercase tracking-wider">Duration</p>
                             <p className="text-white font-medium">{course.duration}</p>
                         </div>
                     </div>
@@ -523,7 +518,7 @@ export const CourseDetail: React.FC = () => {
                             <GraduationCap size={20} />
                         </div>
                         <div>
-                            <p className="text-xs text-brand-muted uppercase">Qualification</p>
+                            <p className="text-xs text-brand-muted uppercase tracking-wider">Qualification</p>
                             <p className="text-white font-medium">{course.qualification}</p>
                         </div>
                     </div>
@@ -532,7 +527,7 @@ export const CourseDetail: React.FC = () => {
                             <BookOpen size={20} />
                         </div>
                         <div>
-                            <p className="text-xs text-brand-muted uppercase">Type of Study</p>
+                            <p className="text-xs text-brand-muted uppercase tracking-wider">Type of Study</p>
                             <p className="text-white font-medium">{typeOfStudy}</p>
                         </div>
                     </div>
@@ -541,7 +536,7 @@ export const CourseDetail: React.FC = () => {
                             <Calendar size={20} />
                         </div>
                         <div>
-                            <p className="text-xs text-brand-muted uppercase">Next Intake</p>
+                            <p className="text-xs text-brand-muted uppercase tracking-wider">Next Intake</p>
                             <p className="text-white font-medium">{course.intake || course.startDate}</p>
                         </div>
                     </div>
@@ -550,14 +545,16 @@ export const CourseDetail: React.FC = () => {
         </div>
       </section>
 
-      {/* Main Content & Sidebar */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20">
+      {/* Main Content */}
+      <div 
+        className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20 transition-all duration-[1000ms] ease-out delay-200 transform ${isContentVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}
+      >
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
             
             {/* Left Content Column */}
             <div className="lg:col-span-2 pb-12">
                 
-                {/* Sticky Tabbed Navigation - Positioned immediately after hero */}
+                {/* Sticky Tabbed Navigation */}
                 <div 
                     className={`sticky z-50 bg-brand-dark/95 backdrop-blur border-b border-white/10 mb-8 -mx-4 px-4 md:mx-0 md:px-0 transition-[top] duration-300 ${showStickyHeader ? 'top-[60px]' : 'top-0'}`}
                 >
@@ -566,7 +563,7 @@ export const CourseDetail: React.FC = () => {
                              <button 
                                 key={sec.id}
                                 onClick={() => scrollToSection(sec.id)}
-                                className={`whitespace-nowrap py-4 relative text-sm font-bold uppercase tracking-wide transition-colors ${activeSection === sec.id ? 'text-brand-gold' : 'text-gray-500 hover:text-white'}`}
+                                className={`whitespace-nowrap py-4 relative text-[11px] md:text-xs font-bold uppercase tracking-widest transition-colors ${activeSection === sec.id ? 'text-brand-gold' : 'text-gray-500 hover:text-white'}`}
                              >
                                 {sec.label}
                                 {activeSection === sec.id && (
@@ -577,31 +574,25 @@ export const CourseDetail: React.FC = () => {
                      </div>
                 </div>
 
-                {/* Overview Section */}
+                {/* Overview */}
                 <div id="overview" className="scroll-mt-48 mb-16">
-                    <h2 className="text-2xl font-serif text-white mb-6">Overview</h2>
-                    
-                    {/* Just Description in Overview now, as Certification/Requirements have moved */}
-                    <p className="text-lg text-gray-300 leading-relaxed mb-8">
+                    <h2 className="text-2xl font-serif text-white mb-6 font-semibold">Overview</h2>
+                    <p className="text-lg text-brand-muted leading-relaxed mb-8 font-light">
                         {course.fullDescription}
                     </p>
                 </div>
                 
-                {/* ... rest of content ... */}
-
-                {/* Programme Content (Curriculum/Focus Areas) Section */}
+                {/* Content */}
                 <div id="content" className="scroll-mt-48 mb-16">
-                    
-                    {/* Programme Content Highlights Grid (if available) - Always show if present */}
                     {course.programContentIncludes && (
                         <div className="mb-12">
-                            <h3 className="text-white font-serif text-2xl mb-6 flex items-center gap-3">
+                            <h3 className="text-white font-serif text-2xl mb-6 flex items-center gap-3 font-semibold">
                                 <span className="w-8 h-1 bg-brand-gold rounded-full"></span>
                                 Programme Content Includes:
                             </h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {course.programContentIncludes.map((item, idx) => (
-                                    <div key={idx} className="bg-[#131B2C] border border-white/5 p-4 rounded-sm flex items-center gap-3 hover:border-brand-gold/30 transition-colors">
+                                    <div key={idx} className="bg-brand-card border border-white/5 p-4 rounded-sm flex items-center gap-3 hover:border-brand-gold/30 transition-colors">
                                         <div className="w-8 h-8 rounded-full border border-brand-gold/30 flex items-center justify-center text-brand-gold shrink-0">
                                             <Circle size={10} fill="currentColor" />
                                         </div>
@@ -612,10 +603,9 @@ export const CourseDetail: React.FC = () => {
                         </div>
                     )}
 
-                    {/* Standard Curriculum Accordion if NOT specific BBA with hidden curriculum */}
                     {!course.extendedFocusAreas && (
                         <>
-                            <h3 className="text-white font-serif text-2xl mb-6 flex items-center gap-3">
+                            <h3 className="text-white font-serif text-2xl mb-6 flex items-center gap-3 font-semibold">
                                 <span className="w-8 h-1 bg-brand-gold rounded-full"></span>
                                 Programme Curriculum
                             </h3>
@@ -647,12 +637,11 @@ export const CourseDetail: React.FC = () => {
                     )}
                 </div>
 
-                {/* Degree Focus Area / Focus Areas */}
+                {/* Focus Areas */}
                 <div id="focus" className="scroll-mt-48 mb-16">
                     {course.extendedFocusAreas ? (
-                        /* Special Layout for BBA Focus Areas */
                         <div>
-                             <h3 className="text-white font-serif text-2xl mb-2 flex items-center gap-3">
+                             <h3 className="text-white font-serif text-2xl mb-2 flex items-center gap-3 font-semibold">
                                 <span className="w-8 h-1 bg-brand-gold rounded-full"></span>
                                 Choose Your Degree Focus Area:
                             </h3>
@@ -662,7 +651,7 @@ export const CourseDetail: React.FC = () => {
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {course.extendedFocusAreas.map((area, idx) => (
-                                    <div key={idx} className="bg-[#131B2C] p-6 rounded-sm border-l-4 border-brand-gold/50 hover:border-brand-gold transition-colors flex flex-col h-full">
+                                    <div key={idx} className="bg-brand-card p-6 rounded-sm border-l-4 border-brand-gold/50 hover:border-brand-gold transition-colors flex flex-col h-full">
                                         <h4 className="text-brand-gold font-serif font-bold text-xl mb-3">{area.title}</h4>
                                         <p className="text-gray-400 text-sm leading-relaxed flex-1">
                                             {area.description}
@@ -670,21 +659,16 @@ export const CourseDetail: React.FC = () => {
                                     </div>
                                 ))}
                             </div>
-                            
-                            <p className="mt-8 text-xs text-gray-500 italic">
-                                *In the case of insufficient interest in one of the Focus Areas, or other unforeseen circumstances, IHS reserves the right to omit that Focus Area for the year in question.
-                            </p>
                         </div>
                     ) : course.focusAreas ? (
-                        /* Standard Focus Areas */
                         <div>
-                            <h3 className="text-white font-serif text-2xl mb-6 flex items-center gap-3">
+                            <h3 className="text-white font-serif text-2xl mb-6 flex items-center gap-3 font-semibold">
                                 <span className="w-8 h-1 bg-brand-gold rounded-full"></span>
                                 Focus Areas
                             </h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {course.focusAreas.map((area, idx) => (
-                                    <div key={idx} className="flex flex-col gap-2 bg-[#131B2C] p-6 rounded-sm border border-brand-gold/20 hover:border-brand-gold transition-colors">
+                                    <div key={idx} className="flex flex-col gap-2 bg-brand-card p-6 rounded-sm border border-brand-gold/20 hover:border-brand-gold transition-colors">
                                         <h4 className="text-brand-gold font-bold text-lg">{area}</h4>
                                     </div>
                                 ))}
@@ -693,9 +677,9 @@ export const CourseDetail: React.FC = () => {
                     ) : null}
                 </div>
 
-                {/* Entry Requirements Section - Standalone */}
+                {/* Requirements */}
                 <div id="requirements" className="scroll-mt-48 mb-16">
-                    <h3 className="text-white font-serif text-2xl mb-6 flex items-center gap-3">
+                    <h3 className="text-white font-serif text-2xl mb-6 flex items-center gap-3 font-semibold">
                         <span className="w-8 h-1 bg-brand-gold rounded-full"></span>
                         Entry Requirements
                     </h3>
@@ -704,34 +688,33 @@ export const CourseDetail: React.FC = () => {
                             {course.requirements.map((req, idx) => (
                                 <li key={idx} className="flex items-start gap-3">
                                     <CheckCircle className="text-brand-gold shrink-0 mt-1" size={18} />
-                                    <span className="text-gray-300">{req}</span>
+                                    <span className="text-brand-muted">{req}</span>
                                 </li>
                             ))}
                         </ul>
                     </div>
                 </div>
 
-                {/* Certification Section - Standalone */}
+                {/* Certification */}
                 {course.certification && (
                     <div id="certification" className="scroll-mt-48 mb-16">
-                        <h3 className="text-white font-serif text-2xl mb-6 flex items-center gap-3">
+                        <h3 className="text-white font-serif text-2xl mb-6 flex items-center gap-3 font-semibold">
                             <span className="w-8 h-1 bg-brand-gold rounded-full"></span>
                             Certification
                         </h3>
-                        <div className="bg-[#131B2C] border border-white/5 p-8 rounded-sm">
+                        <div className="bg-brand-card border border-white/5 p-8 rounded-sm">
                              <div className="flex items-start gap-4 mb-6">
                                  <div className="w-12 h-12 bg-brand-gold/10 rounded-full flex items-center justify-center text-brand-gold shrink-0">
                                      <Award size={24} />
                                  </div>
                                  <div>
                                      <h4 className="text-white font-bold text-lg mb-2">Qualification Awarded</h4>
-                                     <p className="text-gray-300 text-base leading-relaxed whitespace-pre-line">
+                                     <p className="text-brand-muted text-base leading-relaxed whitespace-pre-line">
                                         {course.certification}
                                      </p>
                                  </div>
                              </div>
                              
-                             {/* Accreditation Logos */}
                              <div className="border-t border-white/5 pt-6">
                                 <h5 className="text-xs text-brand-muted uppercase tracking-widest font-bold mb-4">Accredited By:</h5>
                                 <div className="flex flex-wrap gap-4">
@@ -750,14 +733,13 @@ export const CourseDetail: React.FC = () => {
                     </div>
                 )}
                 
-                {/* FAQ Section */}
+                {/* FAQs */}
                 <div id="faq" className="scroll-mt-48 mb-16">
-                     <h3 className="text-white font-serif text-2xl mb-6 flex items-center gap-3">
+                     <h3 className="text-white font-serif text-2xl mb-6 flex items-center gap-3 font-semibold">
                         <span className="w-8 h-1 bg-brand-gold rounded-full"></span>
                         Frequently Asked Questions
                     </h3>
                     <div className="space-y-4">
-                        {/* Question 1 */}
                         <AccordionItem 
                             title="What is the difference between the Diploma and Degree?" 
                             isOpen={activeFaq === 0} 
@@ -766,35 +748,21 @@ export const CourseDetail: React.FC = () => {
                             <div className="space-y-6 text-sm">
                                 <div>
                                     <h4 className="font-bold text-white mb-2 text-base">IHS Diploma Programmes (NQF Level 6, 3 years)</h4>
-                                    <p className="mb-3">Focuses primarily on the service delivery & operations management of the different departments of a hospitality establishment, namely:</p>
+                                    <p className="mb-3 text-brand-muted">Focuses primarily on the service delivery & operations management of the different departments of a hospitality establishment, namely:</p>
                                     <ul className="grid grid-cols-2 gap-2 list-disc list-inside text-gray-400 mb-3 bg-white/5 p-4 rounded-sm">
                                         <li>Front Office</li>
                                         <li>Food & Beverage</li>
                                         <li>Kitchens</li>
                                         <li>Housekeeping</li>
                                     </ul>
-                                    <p>This is a balanced theory & practical based programme with 50% of the academic year spent in the classroom and 50% working in industry. As a result, the student receives an extensive working understanding of the operations management of a hospitality establishment.</p>
                                 </div>
                                 <div className="border-t border-white/10 pt-4">
-                                    <h4 className="font-bold text-white mb-2 text-base">IHS Bachelor of Business Administration in Hospitality Operations Management (NQF Level 7, 3 years)</h4>
-                                    <p className="mb-3">Focuses primarily on the strategic management of a hospitality establishment and its operations. Strong leadership capabilities, the ability to apply strategic thinking and strong numerical application is learnt. The core subjects are Hospitality Management and Hospitality Operations.</p>
-                                    <p className="mb-2 text-brand-gold text-xs uppercase tracking-wider font-bold">Curriculum Fields Covered:</p>
-                                    <ul className="grid grid-cols-1 md:grid-cols-2 gap-2 list-disc list-inside text-gray-400 mb-3 bg-white/5 p-4 rounded-sm">
-                                        <li>Financial Management</li>
-                                        <li>Accounting Principles</li>
-                                        <li>Statistics for Business</li>
-                                        <li>Marketing</li>
-                                        <li>Human Resources</li>
-                                        <li>Management Information Systems</li>
-                                        <li>Project Management</li>
-                                        <li>Corporate Governance</li>
-                                    </ul>
-                                    <p>This is a theory-based programme and as a result the student achieves an extensive understanding of the business operation of a hospitality establishment.</p>
+                                    <h4 className="font-bold text-white mb-2 text-base">IHS Bachelor of Business Administration (NQF Level 7, 3 years)</h4>
+                                    <p className="mb-3 text-brand-muted">Focuses primarily on the strategic management of a hospitality establishment and its operations.</p>
                                 </div>
                             </div>
                         </AccordionItem>
 
-                        {/* Question 2 */}
                         <AccordionItem 
                             title="What is the difference between completing a BBA, BCom or BA Degree?" 
                             isOpen={activeFaq === 1} 
@@ -803,50 +771,7 @@ export const CourseDetail: React.FC = () => {
                              <div className="space-y-6 text-sm">
                                 <div>
                                     <h4 className="font-bold text-white mb-2 text-base">Bachelor of Business Administration (BBA)</h4>
-                                    <p>A BBA Degree covers the fundamentals of business management and prepares a student for a career in leadership or management in a selected industry. This degree covers subjects such as Strategy, Human Resources, Marketing, Project Management and Financial Management (accounting, financial principals & statistics).</p>
-                                </div>
-                                <div className="border-t border-white/10 pt-4">
-                                    <h4 className="font-bold text-white mb-2 text-base">Bachelor of Commerce (BCom)</h4>
-                                    <p>A BCom Degree is commerce based with a financial focus covering subjects such as Accounting I, 2 & 3, Economics, Commercial Law, Taxation and Auditing.</p>
-                                </div>
-                                <div className="border-t border-white/10 pt-4">
-                                    <h4 className="font-bold text-white mb-2 text-base">Bachelor of Arts (BA)</h4>
-                                    <p>A BA Degree is a broad qualification within the humanities, such as Psychology, Political Science, Drama and journalism.</p>
-                                </div>
-                             </div>
-                        </AccordionItem>
-                        
-                        {/* Question 3 */}
-                        <AccordionItem 
-                            title="Do the Degree students complete Work Integrated Learning (WIL)?" 
-                            isOpen={activeFaq === 2} 
-                            onToggle={() => setActiveFaq(activeFaq === 2 ? null : 2)}
-                        >
-                             <div className="space-y-4 text-sm">
-                                <p>Yes, students will complete 1 month (4 Weeks) of practical work experience in leading hospitality establishments. This will be completed at the end of the theory year, during the 3 months break over December - February each year.</p>
-                                <p className="font-bold text-white">Each student will be placed in industry to experience the following areas:</p>
-                                <ul className="grid grid-cols-2 gap-2 list-disc list-inside text-gray-400 bg-white/5 p-4 rounded-sm">
-                                    <li>Sales & Marketing/Events and Banqueting</li>
-                                    <li>Front Office</li>
-                                    <li>Human Resources</li>
-                                    <li>Housekeeping</li>
-                                    <li>Procurement</li>
-                                    <li>Finance</li>
-                                </ul>
-                             </div>
-                        </AccordionItem>
-
-                        {/* Question 4 */}
-                        <AccordionItem 
-                            title="Can current Diploma students articulate into the Degree?" 
-                            isOpen={activeFaq === 3} 
-                            onToggle={() => setActiveFaq(activeFaq === 3 ? null : 3)}
-                        >
-                             <div className="space-y-4 text-sm">
-                                <p>Yes, Diploma students can. They would qualify for credits for End User Computing and Business Communication in the first year of their BBA Degree.</p>
-                                <p>They could also apply for Recognition of Prior Learning (RPL) pertaining to their Work Integrated Learning (WIL) that has been completed in their Diploma qualification.</p>
-                                <div className="bg-brand-gold/10 p-4 border-l-2 border-brand-gold">
-                                    <p className="text-gray-300 italic">It is important to note that the Degree and Diploma programme content differs extensively. Please refer to Question 1 for the focus areas per programme.</p>
+                                    <p className="text-brand-muted">A BBA Degree covers the fundamentals of business management and prepares a student for a career in leadership.</p>
                                 </div>
                              </div>
                         </AccordionItem>
@@ -871,7 +796,7 @@ export const CourseDetail: React.FC = () => {
                     ) : (
                         <>
                             <div className="text-center mb-8">
-                                <h3 className="text-2xl font-serif text-white mb-2">Apply for this Programme</h3>
+                                <h3 className="text-2xl font-serif text-white mb-2 font-semibold">Apply for this Programme</h3>
                                 <p className="text-brand-muted text-sm">Start your journey today. Fill in your details below.</p>
                             </div>
 
@@ -887,36 +812,7 @@ export const CourseDetail: React.FC = () => {
                 <div className="sticky top-[130px] space-y-6 lg:-mt-72 transition-[top] duration-300">
                     <FeesCard course={course} className="shadow-2xl shadow-black/50" />
                     
-                    {/* Finance & Payment Options Block */}
-                    <div className="bg-brand-dark border border-white/5 p-6 rounded-sm space-y-6 hidden">
-                        {/* Payment Options */}
-                        <div>
-                            <h4 className="text-white font-bold text-sm mb-2 border-b border-white/5 pb-2">Payment Options</h4>
-                            <p className="text-xs text-gray-400 mb-3">The following payment options are available:</p>
-                            <div className="bg-white p-2 rounded-sm">
-                                <img src="https://www.hotelschool.co.za/wp-content/uploads/2020/08/payment-logos.png" alt="Payment Options" className="w-full h-auto" />
-                            </div>
-                        </div>
-
-                        {/* Interest Free Plans */}
-                        <div>
-                             <h4 className="text-white font-bold text-sm mb-2 border-b border-white/5 pb-2">Interest Free Payment Plans</h4>
-                             <p className="text-xs text-brand-gold italic">Speak to our consultants about available Payment Plans</p>
-                        </div>
-
-                        {/* Student Hero Finance */}
-                        <div>
-                             <h4 className="text-white font-bold text-sm mb-2 border-b border-white/5 pb-2">Finance facilitated by:</h4>
-                             <div className="bg-white p-3 rounded-sm mb-4">
-                                <img src="https://www.hotelschool.co.za/wp-content/uploads/2021/06/Student-Hero_logo-2x1-1.png" alt="Student Hero" className="w-full h-auto" />
-                             </div>
-                             <a href="https://www.studenthero.co.za" target="_blank" rel="noopener noreferrer" className="block text-center bg-brand-gold text-brand-dark text-xs font-bold uppercase tracking-wider py-3 rounded-sm hover:bg-white transition-colors">
-                                Apply For Finance
-                             </a>
-                        </div>
-                    </div>
-
-                    <div className="bg-brand-dark border border-white/5 p-6 rounded-sm">
+                    <div className="bg-brand-card border border-white/5 p-6 rounded-sm">
                         <div className="flex items-center gap-3 mb-4">
                             <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-brand-gold">
                                 <HelpCircle size={20} />
@@ -926,7 +822,7 @@ export const CourseDetail: React.FC = () => {
                                 <p className="text-xs text-gray-400">Our admissions team is here to help.</p>
                             </div>
                         </div>
-                        <a href="tel:+123456789" className="text-brand-gold text-sm font-bold hover:underline flex items-center justify-center gap-2 w-full border border-brand-gold/20 py-3 rounded-sm hover:bg-brand-gold hover:text-brand-dark transition-all">
+                        <a href="tel:+123456789" className="text-brand-gold text-sm font-bold hover:underline flex items-center justify-center gap-2 w-full border border-brand-gold/20 py-3 rounded-sm hover:bg-brand-gold hover:text-white transition-all">
                             Call +27 12 345 6789
                         </a>
                     </div>
@@ -935,14 +831,13 @@ export const CourseDetail: React.FC = () => {
 
         </div>
 
-        {/* Related Programmes Section - Redesigned */}
+        {/* Related Programmes Section */}
         {relatedCourses.length > 0 && (
              <div className="border-t border-white/5 pt-16 pb-24 mt-8">
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
                     
-                    {/* Left Block: Title & Navigation */}
                     <div className="lg:col-span-1 lg:sticky lg:top-[150px]">
-                        <h3 className="text-white font-serif text-3xl leading-tight mb-6">
+                        <h3 className="text-white font-serif text-3xl leading-tight mb-6 font-semibold">
                             Courses related to <br/>
                             <span className="text-brand-gold italic">{course.title}</span>
                         </h3>
@@ -952,20 +847,19 @@ export const CourseDetail: React.FC = () => {
                         <div className="flex gap-2">
                             <button 
                                 onClick={slideLeft}
-                                className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center text-white hover:bg-brand-gold hover:text-brand-dark transition-all"
+                                className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center text-white hover:bg-brand-gold hover:text-white transition-all"
                             >
                                 <ChevronLeft size={20} />
                             </button>
                             <button 
                                 onClick={slideRight}
-                                className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center text-white hover:bg-brand-gold hover:text-brand-dark transition-all"
+                                className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center text-white hover:bg-brand-gold hover:text-white transition-all"
                             >
                                 <ChevronRight size={20} />
                             </button>
                         </div>
                     </div>
 
-                    {/* Right Block: Slider */}
                     <div className="lg:col-span-3 -mx-4 px-4 sm:mx-0 sm:px-0">
                         <div 
                             ref={sliderRef}
@@ -982,10 +876,7 @@ export const CourseDetail: React.FC = () => {
 
       </div>
       
-      {/* Mobile Sticky Fees Drawer */}
       <MobileFeesDrawer course={course} />
-      
-      {/* Spacer for mobile bottom bar */}
       <div className="h-20 lg:hidden"></div>
 
     </div>

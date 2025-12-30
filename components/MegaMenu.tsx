@@ -1,275 +1,198 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Clock, GraduationCap, ChevronRight, Award, Calendar, Tag, ShoppingBag } from 'lucide-react';
 import { OFFERINGS } from '../constants';
-import { useCart } from '../context/CartContext';
-import { ApplicationModal } from './ApplicationModal';
-import { CheckoutModal } from './CheckoutModal';
-import { Offering } from '../types';
+import { ArrowRight } from 'lucide-react';
 
 const PROGRAMME_TYPES = [
-    { label: 'Full Time Learning', value: 'Full Time Learning', desc: 'Immersive campus experience' },
-    { label: 'Blended Learning', value: 'Blended Learning', desc: 'Flexible remote & contact study' },
-    { label: 'In-Service Traineeship', value: 'In-Service Traineeship', desc: 'Earn while you learn' },
-    { label: 'Part Time Learning', value: 'Part Time Learning', desc: 'Study while working' },
-    { label: 'Online Learning', value: 'Online Learning', desc: '100% Online flexibility' },
-];
-
-const FOCUS_AREAS = [
-    { label: 'Hospitality Management', value: 'Hospitality' },
-    { label: 'Culinary Arts', value: 'Culinary' }
+    { label: 'Full Time Learning', value: 'Full Time Learning' },
+    { label: 'Blended Learning', value: 'Blended Learning' },
+    { label: 'In-Service Traineeship', value: 'In-Service Traineeship' },
+    { label: 'Part Time Learning', value: 'Part Time Learning' },
+    { label: 'Online Learning', value: 'Online Learning' },
 ];
 
 interface MegaMenuProps {
+    isOpen: boolean;
     onMouseEnter?: () => void;
     onMouseLeave?: () => void;
 }
 
-export const MegaMenu: React.FC<MegaMenuProps> = ({ onMouseEnter, onMouseLeave }) => {
-    const [activeType, setActiveType] = useState(PROGRAMME_TYPES[0].value);
-    const [activeFocus, setActiveFocus] = useState<string>('Hospitality');
-    const { addToCart } = useCart();
+// ------------------------------------------
+// Sub-Component: Vertical Marquee Link
+// ------------------------------------------
+const MenuLink = ({ 
+    text, 
+    isActive = false, 
+    onClick, 
+    to,
+    delayIndex = 0,
+    isOpen 
+}: { 
+    text: string; 
+    isActive?: boolean; 
+    onClick?: () => void;
+    to?: string;
+    delayIndex: number;
+    isOpen: boolean;
+}) => {
+    // Base Classes
+    const containerClasses = `relative block overflow-hidden group cursor-pointer py-1`;
     
-    // States for modals
-    const [showApplication, setShowApplication] = useState(false);
-    const [showCheckout, setShowCheckout] = useState(false);
-    const [currentCourse, setCurrentCourse] = useState<Offering | null>(null);
+    // Animation State Classes for Entrance
+    const entranceClasses = `transition-all duration-700 ease-[cubic-bezier(0.76,0,0.24,1)] transform`;
+    const entranceState = isOpen 
+        ? 'translate-y-0 opacity-100' 
+        : 'translate-y-8 opacity-0';
 
-    const handleAction = (e: React.MouseEvent, offering: Offering) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setCurrentCourse(offering);
-        
-        const isEcommerce = offering.programmeTypes.some((type: string) => 
-            ['Online Learning', 'Part Time Learning'].includes(type)
-        );
-
-        if (isEcommerce) {
-            addToCart(offering);
-            setShowCheckout(true);
-        } else {
-            setShowApplication(true);
-        }
-    };
-
-    // Calculate available focus areas for the selected type
-    const availableFocusAreas = FOCUS_AREAS.filter(area => 
-        OFFERINGS.some(o => 
-            o.programmeTypes.includes(activeType) && 
-            o.category === area.value
-        )
-    );
-
-    // Auto-select first valid focus area when type changes
-    useEffect(() => {
-        const isCurrentFocusValid = availableFocusAreas.some(a => a.value === activeFocus);
-        if (!isCurrentFocusValid && availableFocusAreas.length > 0) {
-            setActiveFocus(availableFocusAreas[0].value);
-        } else if (availableFocusAreas.length === 0) {
-            // If no focus areas (e.g. specialized type), maybe show all or handle gracefully
-        }
-    }, [activeType, availableFocusAreas, activeFocus]);
-
-    const displayedOfferings = OFFERINGS.filter(o => 
-        o.programmeTypes.includes(activeType) && 
-        o.category === activeFocus
-    );
-
-    const getLinkSlug = (type: string) => {
-        if (type === 'Full Time Learning') return 'full-time';
-        if (type === 'Blended Learning') return 'blended';
-        if (type === 'In-Service Traineeship') return 'in-service';
-        if (type === 'Part Time Learning') return 'part-time';
-        if (type === 'Online Learning') return 'online';
-        return 'full-time';
-    };
-
-    return (
-        <>
-        <div 
-            className="absolute top-full left-0 w-full bg-[#0B1221] border-t border-white/10 shadow-2xl z-50 animate-in fade-in slide-in-from-top-1 duration-200 cursor-default"
-            onMouseEnter={onMouseEnter}
-            onMouseLeave={onMouseLeave}
-            style={{ height: 'calc(100vh - 80px)', maxHeight: '600px' }}
-        >
-            <div className="max-w-7xl mx-auto flex h-full">
-                
-                {/* Column 1: Programme Types (30%) */}
-                <div className="w-[30%] border-r border-white/5 p-8 flex flex-col h-full bg-[#0B1221]">
-                    <h3 className="text-xs font-bold text-brand-muted uppercase tracking-widest mb-6 flex items-center gap-2">
-                        <div className="w-1 h-1 bg-brand-gold rounded-full"></div>
-                        Programme Type
-                    </h3>
-                    <div className="space-y-1 flex-1">
-                        {PROGRAMME_TYPES.map((type) => (
-                            <div 
-                                key={type.value}
-                                onMouseEnter={() => setActiveType(type.value)}
-                                className={`group flex items-center justify-between p-4 rounded-sm cursor-pointer transition-all duration-300 ${
-                                    activeType === type.value 
-                                        ? 'bg-brand-gold text-brand-dark shadow-[0_0_20px_rgba(197,160,89,0.15)] translate-x-1' 
-                                        : 'hover:bg-white/5 text-gray-400 hover:text-white'
-                                }`}
-                            >
-                                <div>
-                                    <div className={`font-serif text-lg font-bold leading-tight ${activeType === type.value ? 'text-brand-dark' : 'text-white'}`}>
-                                        {type.label}
-                                    </div>
-                                    <div className={`text-[11px] mt-1 font-medium uppercase tracking-wider ${activeType === type.value ? 'text-brand-dark/70' : 'text-gray-600 group-hover:text-gray-400'}`}>
-                                        {type.desc}
-                                    </div>
-                                </div>
-                                <ChevronRight size={16} className={`transition-all duration-300 ${
-                                    activeType === type.value ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2 group-hover:opacity-50'
-                                }`} />
-                            </div>
-                        ))}
-                    </div>
-                    
-                    <div className="mt-8 pt-6 border-t border-white/5">
-                        <Link 
-                            to={`/programmes/${getLinkSlug(activeType)}`}
-                            className="flex items-center justify-between text-brand-gold hover:text-white transition-colors text-xs font-bold uppercase tracking-widest group p-2"
-                        >
-                            <span>View All {activeType}</span>
-                            <div className="w-8 h-8 rounded-full border border-brand-gold/30 flex items-center justify-center group-hover:bg-brand-gold group-hover:text-brand-dark transition-all">
-                                <ArrowRight size={14} />
-                            </div>
-                        </Link>
-                    </div>
-                </div>
-
-                {/* Column 2: Focus Areas (25%) */}
-                <div className="w-[25%] border-r border-white/5 p-8 bg-white/[0.02] flex flex-col h-full">
-                    <h3 className="text-xs font-bold text-brand-muted uppercase tracking-widest mb-6 flex items-center gap-2">
-                        <div className="w-1 h-1 bg-brand-gold rounded-full"></div>
-                        Focus Area
-                    </h3>
-                    <div className="space-y-3">
-                        {availableFocusAreas.length > 0 ? (
-                            availableFocusAreas.map((area) => (
-                                <div 
-                                    key={area.value}
-                                    onMouseEnter={() => setActiveFocus(area.value)}
-                                    className={`p-6 rounded-sm cursor-pointer transition-all duration-300 border relative overflow-hidden group ${
-                                        activeFocus === area.value 
-                                            ? 'bg-gradient-to-r from-white/10 to-transparent border-brand-gold/50 text-white' 
-                                            : 'bg-transparent border-transparent text-gray-400 hover:text-white hover:bg-white/5'
-                                    }`}
-                                >
-                                    {activeFocus === area.value && (
-                                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-brand-gold"></div>
-                                    )}
-                                    <span className="font-serif text-xl font-bold relative z-10">
-                                        {area.label}
-                                    </span>
-                                </div>
-                            ))
-                        ) : (
-                            <div className="text-gray-500 italic p-4 text-sm border border-white/5 rounded-sm bg-white/5">
-                                Select a programme type to see focus areas.
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                {/* Column 3: Programmes (45%) */}
-                <div className="w-[45%] p-8 bg-black/30 flex flex-col h-full">
-                    <h3 className="text-xs font-bold text-brand-muted uppercase tracking-widest mb-6 flex items-center gap-2">
-                         <div className="w-1 h-1 bg-brand-gold rounded-full"></div>
-                        Programmes
-                    </h3>
-                    <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-3">
-                        {displayedOfferings.length > 0 ? (
-                            displayedOfferings.map((offering) => {
-                                const isEcommerce = offering.programmeTypes.some((type: string) => 
-                                    ['Online Learning', 'Part Time Learning'].includes(type)
-                                );
-
-                                return (
-                                <Link 
-                                    key={offering.id} 
-                                    to={`/course/${offering.id}`}
-                                    className="group flex bg-brand-card border border-white/5 rounded-sm overflow-hidden hover:border-brand-gold/50 transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5"
-                                >
-                                    {/* Card Image */}
-                                    <div className="w-28 shrink-0 overflow-hidden relative">
-                                        <img src={offering.image} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                                        <div className="absolute inset-0 bg-brand-dark/20 group-hover:bg-transparent transition-colors"></div>
-                                    </div>
-                                    
-                                    {/* Card Content */}
-                                    <div className="p-4 flex-1 flex flex-col justify-center">
-                                        <h4 className="text-white font-serif font-bold text-base mb-2 group-hover:text-brand-gold transition-colors line-clamp-1">
-                                            {offering.title}
-                                        </h4>
-                                        
-                                        <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-[10px] text-gray-400 uppercase tracking-wider mb-2">
-                                            <div className="flex items-center gap-1.5">
-                                                <Clock size={12} className="text-brand-gold" /> {offering.duration}
-                                            </div>
-                                            <div className="flex items-center gap-1.5">
-                                                <GraduationCap size={12} className="text-brand-gold" /> {offering.qualification}
-                                            </div>
-                                        </div>
-
-                                        <div className="mt-2 pt-2 border-t border-white/5 flex flex-col gap-2">
-                                            <div className="flex justify-between items-center">
-                                                <span className="text-brand-gold font-bold text-lg font-serif">R {offering.price?.toLocaleString()}</span>
-                                                <span className="text-[10px] text-gray-500">{offering.startDate}</span>
-                                            </div>
-                                            
-                                            <button 
-                                                onClick={(e) => handleAction(e, offering)}
-                                                className="w-full bg-white/5 hover:bg-brand-gold hover:text-brand-dark text-white text-[10px] font-bold uppercase tracking-wider py-2 rounded-sm transition-colors flex items-center justify-center gap-1.5"
-                                            >
-                                                {isEcommerce ? (
-                                                    <><ShoppingBag size={12} /> Buy Now</>
-                                                ) : (
-                                                    <>Apply Now <ArrowRight size={12} /></>
-                                                )}
-                                            </button>
-                                        </div>
-                                    </div>
-                                </Link>
-                            )})
-                        ) : (
-                             <div className="h-full flex flex-col items-center justify-center text-gray-500 p-8 border border-white/5 border-dashed rounded-sm">
-                                <Award size={32} className="mb-3 opacity-20" />
-                                <p className="text-sm italic">Select a focus area to view available programmes.</p>
-                            </div>
-                        )}
-                    </div>
-                    
-                    {/* Bottom CTA */}
-                     <div className="mt-6 pt-4 border-t border-white/10 flex justify-between items-center">
-                        <span className="text-xs text-gray-500">
-                            Viewing <span className="text-white font-bold">{displayedOfferings.length}</span> programmes
-                        </span>
-                        <Link to="/programmes/full-time" className="text-xs text-brand-gold hover:text-white font-bold uppercase tracking-wide transition-colors flex items-center gap-2 group">
-                            Full Programme Catalogue
-                            <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
-                        </Link>
-                    </div>
-                </div>
-
+    const innerContent = (
+        <div className="relative">
+            {/* Primary Text (Slides up on hover) */}
+            <div className={`transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:-translate-y-full ${isActive ? 'text-[#C2B067]' : 'text-white'}`}>
+                {text}
             </div>
             
-             {/* Footer Bar */}
-             <div className="bg-brand-gold h-1.5 w-full"></div>
+            {/* Duplicate Text (Slides up from bottom on hover) */}
+            <div className={`absolute top-0 left-0 w-full transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] translate-y-full group-hover:translate-y-0 ${isActive ? 'text-[#C2B067]' : 'text-white'}`}>
+                {text}
+            </div>
         </div>
-        
-        <ApplicationModal 
-            isOpen={showApplication} 
-            onClose={() => setShowApplication(false)} 
-            courseTitle={currentCourse?.title}
-        />
-        
-        <CheckoutModal 
-            isOpen={showCheckout}
-            onClose={() => setShowCheckout(false)}
-        />
-        </>
+    );
+
+    if (to) {
+        return (
+            <Link 
+                to={to} 
+                className={`${containerClasses} ${entranceClasses} ${entranceState}`}
+                style={{ transitionDelay: `${isOpen ? 100 + (delayIndex * 30) : 0}ms` }}
+            >
+                {innerContent}
+            </Link>
+        );
+    }
+
+    return (
+        <div 
+            onClick={onClick}
+            className={`${containerClasses} ${entranceClasses} ${entranceState}`}
+            style={{ transitionDelay: `${isOpen ? 100 + (delayIndex * 30) : 0}ms` }}
+        >
+            {innerContent}
+        </div>
+    );
+};
+
+export const MegaMenu: React.FC<MegaMenuProps> = ({ isOpen, onMouseEnter, onMouseLeave }) => {
+    const [activeType, setActiveType] = useState(PROGRAMME_TYPES[0].value);
+    
+    // Reset active type when closed to ensure animation consistency on reopen
+    useEffect(() => {
+        if (!isOpen) {
+            const timer = setTimeout(() => setActiveType(PROGRAMME_TYPES[0].value), 500);
+            return () => clearTimeout(timer);
+        }
+    }, [isOpen]);
+
+    const displayedOfferings = OFFERINGS.filter(o => 
+        o.programmeTypes.includes(activeType)
+    );
+
+    return (
+        <div 
+            className="fixed top-[80px] left-0 right-0 z-50 overflow-hidden pointer-events-none"
+            style={{ height: 'calc(100vh - 80px)', maxHeight: '600px' }}
+        >
+            {/* Curtain Container */}
+            <div 
+                className={`w-full h-full bg-[#002B4E] shadow-2xl flex transition-all duration-700 ease-[cubic-bezier(0.76,0,0.24,1)] pointer-events-auto`}
+                style={{ 
+                    clipPath: isOpen ? 'inset(0 0 0% 0)' : 'inset(0 0 100% 0)',
+                    opacity: isOpen ? 1 : 0 
+                }}
+                onMouseEnter={onMouseEnter}
+                onMouseLeave={onMouseLeave}
+            >
+                <div className="max-w-7xl mx-auto px-4 lg:px-8 w-full h-full flex flex-col lg:flex-row">
+                    
+                    {/* Left Column: Categories */}
+                    <div className="w-full lg:w-1/3 border-r border-white/10 h-full bg-[#002B4E] relative z-10">
+                        <div className="py-12 pr-12 flex flex-col h-full justify-between">
+                            
+                            <div className="space-y-1">
+                                <p className={`text-xs font-bold text-gray-500 uppercase tracking-widest mb-6 transition-opacity duration-700 delay-100 ${isOpen ? 'opacity-100' : 'opacity-0'}`}>
+                                    Programme Categories
+                                </p>
+                                {PROGRAMME_TYPES.map((type, index) => (
+                                    <div 
+                                        key={type.value} 
+                                        className="relative text-2xl lg:text-3xl font-serif font-bold leading-tight"
+                                        onMouseEnter={() => setActiveType(type.value)}
+                                    >
+                                        <MenuLink 
+                                            text={type.label}
+                                            isActive={activeType === type.value}
+                                            onClick={() => setActiveType(type.value)}
+                                            delayIndex={index}
+                                            isOpen={isOpen}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Bottom Callout */}
+                            <div className={`mt-auto pt-12 transition-all duration-700 delay-300 ${isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+                                <a href="#" className="flex items-center gap-2 text-[#C2B067] text-sm font-bold uppercase tracking-widest group">
+                                    View All Programmes <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Right Column: Specific Links */}
+                    <div className="w-full lg:w-2/3 bg-[#002240] h-full relative overflow-hidden">
+                        {/* Background Marquee Text */}
+                        <div className="absolute -right-20 top-0 h-full flex items-center justify-center opacity-5 pointer-events-none select-none">
+                             <div className="whitespace-nowrap text-[20vh] font-serif font-bold text-white transform -rotate-90 origin-center leading-none">
+                                {activeType}
+                             </div>
+                        </div>
+
+                        <div className="relative z-10 py-12 px-12 h-full flex flex-col">
+                            <p className={`text-xs font-bold text-gray-500 uppercase tracking-widest mb-8 transition-opacity duration-700 delay-200 ${isOpen ? 'opacity-100' : 'opacity-0'}`}>
+                                Available Programmes
+                            </p>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4 overflow-y-auto custom-scrollbar pb-12">
+                                {displayedOfferings.length > 0 ? (
+                                    displayedOfferings.map((offering, index) => (
+                                        <div key={offering.id} className="text-lg font-medium">
+                                            <MenuLink 
+                                                to={`/course/${offering.id}`}
+                                                text={offering.title}
+                                                delayIndex={index + 2} // Slight offset from left column
+                                                isOpen={isOpen}
+                                            />
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className={`text-white/40 italic transition-opacity duration-500 ${isOpen ? 'opacity-100' : 'opacity-0'}`}>
+                                        Select a category to view programmes.
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                {/* Bottom Gold Accent Bar (Animated) */}
+                <div 
+                    className="absolute bottom-0 left-0 h-1.5 bg-[#C2B067] transition-all duration-1000 ease-out delay-300"
+                    style={{ 
+                        width: isOpen ? '100%' : '0%' 
+                    }}
+                ></div>
+            </div>
+        </div>
     );
 };

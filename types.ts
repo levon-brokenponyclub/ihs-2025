@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 export interface Offering {
@@ -8,6 +9,7 @@ export interface Offering {
   qualification: string;
   description: string;
   image: string;
+  video?: string; // Added for hover video loops
   programmeTypes: string[];
   accreditations: string[];
   price?: number; // Added for eCommerce
