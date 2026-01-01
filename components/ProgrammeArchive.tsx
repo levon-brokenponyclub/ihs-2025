@@ -209,7 +209,7 @@ export const ProgrammeArchive: React.FC = () => {
                                     <div className="md:col-span-3">
                                         <button 
                                             onClick={handleSearch}
-                                            className="w-full h-full bg-brand-gold text-brand-dark font-bold py-3 rounded-sm hover:bg-white transition-colors uppercase tracking-widest text-sm"
+                                            className="w-full h-full bg-brand-gold text-brand-dark font-bold py-3 rounded-sm hover:bg-white transition-colors uppercase tracking-widest text-sm tracking-[1px]"
                                         >
                                             Search Products...
                                         </button>
@@ -230,7 +230,7 @@ export const ProgrammeArchive: React.FC = () => {
                                 <div className="flex flex-wrap justify-center gap-4 mt-8">
                                     <button 
                                         onClick={() => setSelectedCategory('')}
-                                        className={`px-6 py-2 rounded-full border text-sm uppercase tracking-wider transition-colors ${selectedCategory === '' ? 'bg-brand-gold border-brand-gold text-brand-dark font-bold' : 'border-white/30 text-white hover:bg-white/10'}`}
+                                        className={`px-6 py-2 rounded-full border text-sm uppercase tracking-wider transition-colors tracking-[1px] ${selectedCategory === '' ? 'bg-brand-gold border-brand-gold text-brand-dark font-bold' : 'border-white/30 text-white hover:bg-white/10'}`}
                                     >
                                         All
                                     </button>
@@ -241,7 +241,7 @@ export const ProgrammeArchive: React.FC = () => {
                                                 const newVal = selectedCategory === filter ? '' : filter;
                                                 setSelectedCategory(newVal);
                                             }}
-                                            className={`px-6 py-2 rounded-full border text-sm uppercase tracking-wider transition-colors ${selectedCategory === filter ? 'bg-brand-gold border-brand-gold text-brand-dark font-bold' : 'border-white/30 text-white hover:bg-white/10'}`}
+                                            className={`px-6 py-2 rounded-full border text-sm uppercase tracking-wider transition-colors tracking-[1px] ${selectedCategory === filter ? 'bg-brand-gold border-brand-gold text-brand-dark font-bold' : 'border-white/30 text-white hover:bg-white/10'}`}
                                         >
                                             {filter}
                                         </button>
@@ -284,7 +284,7 @@ export const ProgrammeArchive: React.FC = () => {
                                 <div className="absolute bottom-0 left-0 right-0 bg-[#131B2C]/90 backdrop-blur-sm p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 flex gap-2">
                                     <button 
                                         onClick={(e) => handleAction(offering, e)}
-                                        className="flex-[2] bg-brand-gold text-brand-dark hover:bg-white hover:text-brand-dark text-[10px] font-bold uppercase tracking-wider py-2.5 rounded-sm transition-all flex items-center justify-center gap-2"
+                                        className="flex-[2] bg-brand-gold text-brand-dark hover:bg-white hover:text-brand-dark text-[10px] font-bold uppercase tracking-wider py-2.5 rounded-sm transition-all flex items-center justify-center gap-2 tracking-[1px]"
                                     >
                                         {isEcommerce ? (
                                             <><ShoppingBag size={14} /> Buy Now</>
@@ -299,7 +299,7 @@ export const ProgrammeArchive: React.FC = () => {
                                             if (inCompare) removeFromCompare(offering.id);
                                             else addToCompare(offering);
                                         }}
-                                        className={`flex-1 bg-transparent border border-white/20 hover:bg-white/5 text-white text-[10px] font-bold uppercase tracking-wider py-2.5 rounded-sm transition-all flex items-center justify-center gap-2 ${inCompare ? 'bg-brand-gold/20 border-brand-gold text-brand-gold' : ''}`}
+                                        className={`flex-1 bg-transparent border border-white/20 hover:bg-white/5 text-white text-[10px] font-bold uppercase tracking-wider py-2.5 rounded-sm transition-all flex items-center justify-center gap-2 tracking-[1px] ${inCompare ? 'bg-brand-gold/20 border-brand-gold text-brand-gold' : ''}`}
                                     >
                                         {inCompare ? <X size={16} /> : <BarChart2 size={16} />}
                                         {inCompare ? 'Remove' : 'Compare'}
@@ -343,7 +343,7 @@ export const ProgrammeArchive: React.FC = () => {
                                 <div className="mt-auto flex gap-3">
                                     <Link 
                                         to={`/course/${offering.id}`}
-                                        className="flex-1 bg-brand-gold text-brand-dark hover:bg-white hover:text-brand-dark font-bold transition-all duration-300 text-xs uppercase tracking-wider px-4 py-3 rounded-sm flex items-center justify-center gap-2"
+                                        className="flex-1 bg-brand-gold text-brand-dark hover:bg-white hover:text-brand-dark font-bold transition-all duration-300 text-xs uppercase tracking-wider px-4 py-3 rounded-sm flex items-center justify-center gap-2 tracking-[1px]"
                                     >
                                         View More
                                     </Link>
@@ -374,7 +374,7 @@ export const ProgrammeArchive: React.FC = () => {
                                     setSelectedAccreditations([]);
                                     handleSearch();
                                 }}
-                                className="text-brand-gold hover:underline mt-2 text-sm font-bold uppercase tracking-wide"
+                                className="text-brand-gold hover:underline mt-2 text-sm font-bold uppercase tracking-wide tracking-[1px]"
                             >
                                 Clear All Filters
                             </button>

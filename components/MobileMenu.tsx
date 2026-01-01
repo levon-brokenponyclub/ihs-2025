@@ -1,9 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
-import { X, ChevronRight, ArrowLeft, ArrowRight } from 'lucide-react';
+import { ChevronRight, ArrowLeft, ArrowRight } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { NAV_LINKS, MORE_MENU_LINKS, OFFERINGS } from '../constants';
 import { Offering } from '../types';
+import { useCart } from '../context/CartContext';
 
 const PROGRAMME_TYPES = [
     { label: 'Full Time Learning', value: 'Full Time Learning' },
@@ -27,6 +28,7 @@ interface Panel {
 
 export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
     const navigate = useNavigate();
+    const { addToCart } = useCart();
     const [panels, setPanels] = useState<Panel[]>([{ id: 'main', title: 'Main Menu' }]);
 
     // Reset when closed
@@ -54,6 +56,19 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
              if(el) el.scrollIntoView({ behavior: 'smooth' });
         } else {
              navigate(to);
+        }
+    };
+
+    const handleApplyClick = (course: Offering) => {
+        onClose();
+        const isEcommerce = course.programmeTypes.some((type: string) =>
+            ['Online Learning', 'Part Time Learning'].includes(type)
+        );
+
+        if (isEcommerce) {
+            addToCart(course);
+        } else {
+            navigate(`/course/${course.id}`);
         }
     };
 
@@ -108,10 +123,10 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
             {/* Footer Buttons */}
             <div className="p-6 border-t border-gray-100 bg-gray-50">
                 <div className="grid grid-cols-2 gap-4">
-                    <button className="py-3 px-4 border border-[#002B4E] text-[#002B4E] text-xs font-bold uppercase tracking-widest rounded-sm text-center">
+                    <button className="py-3 px-4 border border-[#002B4E] text-[#002B4E] text-xs font-bold uppercase rounded-sm text-center tracking-[1px]">
                         Login
                     </button>
-                    <button className="py-3 px-4 bg-[#002B4E] text-white text-xs font-bold uppercase tracking-widest rounded-sm text-center">
+                    <button className="py-3 px-4 bg-[#002B4E] text-white text-xs font-bold uppercase rounded-sm text-center tracking-[1px]">
                         Apply Now
                     </button>
                 </div>
@@ -147,11 +162,6 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
     );
 
     const renderTypePanel = (type: string) => {
-        const typeSlug = type.toLowerCase().split(' ')[0] === 'full' ? 'full-time' : 
-                         type.toLowerCase().split(' ')[0] === 'part' ? 'part-time' :
-                         type.toLowerCase().split(' ')[0] === 'online' ? 'online' :
-                         type.toLowerCase().includes('blended') ? 'blended' : 'in-service';
-
         // Filter Offerings for this type
         const courses = OFFERINGS.filter(o => o.programmeTypes.includes(type));
         
@@ -163,7 +173,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
             <div className="flex flex-col h-full bg-white">
                 <div className="p-6 bg-brand-surface border-b border-gray-100">
                     <p className="text-gray-600 text-sm mb-4 leading-relaxed">
-                        Explore our {type} offerings below.
+                        Explore our {type} offerings.
                     </p>
                     <button
                          onClick={() => pushPanel({ 
@@ -172,9 +182,9 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
                             previousTitle: type, 
                             data: courses 
                         })}
-                        className="inline-flex items-center text-xs font-bold text-[#C2B067] uppercase tracking-widest hover:underline"
+                        className="inline-flex items-center text-xs font-bold text-[#C2B067] uppercase hover:underline tracking-[1px]"
                     >
-                        View All {type} <ArrowRight size={14} className="ml-2" />
+                        View All {type.replace(' Learning', '').replace('Traineeship', 'Traineeships')} <ArrowRight size={14} className="ml-2" />
                     </button>
                 </div>
 
@@ -242,22 +252,59 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
             <div className="flex flex-col h-full bg-white">
                 <div className="flex-1 overflow-y-auto px-6 py-6">
                     <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-6">{courses.length} Programmes Found</p>
-                    <div className="space-y-4">
-                        {courses.length > 0 ? courses.map(course => (
-                            <Link
+                    <div className="space-y-0">
+                        {courses.length > 0 ? courses.map((course, index) => {
+                            const isEcommerce = course.programmeTypes.some((type: string) =>
+                                ['Online Learning', 'Part Time Learning'].includes(type)
+                            );
+                            const bgClass = index % 2 === 0 ? 'bg-white' : 'bg-[#f8fafc]';
+                            
+                            return (
+                            <div
                                 key={course.id}
-                                to={`/course/${course.id}`}
-                                onClick={() => handleLinkClick(`/course/${course.id}`)}
-                                className="block border-b border-gray-100 pb-4 last:border-0 group"
+                                className={`py-6 px-4 ${bgClass} border-b border-gray-100 last:border-0`}
                             >
-                                <h4 className="text-base font-bold text-[#002B4E] mb-1 leading-tight group-hover:text-[#C2B067] transition-colors">{course.title}</h4>
-                                <div className="flex items-center gap-2 text-xs text-gray-500">
-                                    <span className="font-semibold text-brand-accent">{course.category}</span>
-                                    <span>•</span>
-                                    <span>{course.qualification}</span>
+                                {/* Course Info (Clickable) */}
+                                <Link 
+                                    to={`/course/${course.id}`}
+                                    onClick={() => handleLinkClick(`/course/${course.id}`)}
+                                    className="block mb-4"
+                                >
+                                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] text-gray-500 mb-2">
+                                        <span className="font-bold text-brand-accent uppercase tracking-wider">{course.category}</span>
+                                        <span className="text-gray-300">•</span>
+                                        <span>{course.qualification}</span>
+                                    </div>
+                                    <h4 className="text-base font-bold text-[#002B4E] leading-tight mb-2">{course.title}</h4>
+                                </Link>
+
+                                {/* Fees & Actions */}
+                                <div className="flex items-center justify-between mt-4">
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] text-gray-400 uppercase tracking-wider font-bold">Tuition</span>
+                                        <span className="text-sm font-bold text-[#002B4E]">R {course.price?.toLocaleString() || 'TBA'}</span>
+                                    </div>
+                                    
+                                    <div className="flex gap-2">
+                                        {/* Course Details (Ghost/Secondary) */}
+                                        <button 
+                                            onClick={() => handleLinkClick(`/course/${course.id}`)}
+                                            className="px-3 py-2 border border-gray-300 text-gray-600 rounded-sm text-[10px] font-bold uppercase hover:border-[#002B4E] hover:text-[#002B4E] transition-colors tracking-[1px]"
+                                        >
+                                            Course Details
+                                        </button>
+                                        
+                                        {/* Apply/Buy (Primary) */}
+                                        <button 
+                                            onClick={() => handleApplyClick(course)}
+                                            className="px-4 py-2 bg-[#002B4E] text-white text-[10px] font-bold uppercase rounded-sm flex items-center gap-1 hover:bg-[#C2B067] hover:text-[#002B4E] transition-colors shadow-none tracking-[1px]"
+                                        >
+                                            {isEcommerce ? 'Buy' : 'Apply'}
+                                        </button>
+                                    </div>
                                 </div>
-                            </Link>
-                        )) : (
+                            </div>
+                        )}) : (
                             <div className="text-center py-8 text-gray-400 italic">
                                 No courses found for this selection.
                             </div>
@@ -296,10 +343,10 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
                 <div className="relative w-full h-full overflow-hidden bg-white">
                     {panels.map((panel, index) => {
                         const isMain = panel.id === 'main';
-                        // Header styles: Navy for Main, Gold for sub-levels (matches previous user preference)
-                        const headerBg = isMain ? 'bg-[#002B4E]' : 'bg-[#C2B067]';
-                        const headerText = isMain ? 'text-white' : 'text-[#002B4E]';
-                        const closeBtn = isMain ? 'text-white' : 'text-[#002B4E]';
+                        // All panel headers now use Brand Blue as requested
+                        const headerBg = 'bg-[#002B4E]';
+                        const headerText = 'text-white';
+                        const closeBtn = 'text-white';
                         
                         return (
                             <div
@@ -318,11 +365,49 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
                                         <h2 className={`${headerText} font-serif font-bold text-xl tracking-wide truncate pr-4`}>
                                             {isMain ? 'International Hotel School' : panel.title}
                                         </h2>
+                                        {/* Animated Close Icon matching Header */}
                                         <button 
                                             onClick={onClose}
-                                            className={`${closeBtn} hover:opacity-70 transition-opacity`}
+                                            className={`${closeBtn} h-[40px] w-[40px] flex items-center justify-center hover:opacity-70 transition-opacity`}
                                         >
-                                            <X size={24} />
+                                            <svg width="24" height="24" viewBox="0 0 100 100" className="overflow-visible">
+                                                <path
+                                                    d="M 20,29.000046 H 80.000231 C 80.000231,29.000046 94.498839,28.817352 94.532987,66.711331 94.543142,77.980673 90.966081,81.670246 85.259173,81.668997 79.552261,81.667751 75.000211,74.999942 75.000211,74.999942 L 25.000021,25.000058"
+                                                    style={{
+                                                        fill: 'none',
+                                                        stroke: 'currentColor',
+                                                        strokeWidth: 8,
+                                                        strokeLinecap: 'round',
+                                                        transition: 'stroke-dasharray 600ms cubic-bezier(0.4, 0, 0.2, 1), stroke-dashoffset 600ms cubic-bezier(0.4, 0, 0.2, 1)',
+                                                        strokeDasharray: isOpen ? '90 207' : '60 207',
+                                                        strokeDashoffset: isOpen ? -134 : 0
+                                                    }}
+                                                />
+                                                <path
+                                                    d="M 20,50 H 80"
+                                                    style={{
+                                                        fill: 'none',
+                                                        stroke: 'currentColor',
+                                                        strokeWidth: 8,
+                                                        strokeLinecap: 'round',
+                                                        transition: 'stroke-dasharray 600ms cubic-bezier(0.4, 0, 0.2, 1), stroke-dashoffset 600ms cubic-bezier(0.4, 0, 0.2, 1)',
+                                                        strokeDasharray: isOpen ? '1 60' : '60 60',
+                                                        strokeDashoffset: isOpen ? -30 : 0
+                                                    }}
+                                                />
+                                                <path
+                                                    d="M 20,70.999954 H 80.000231 C 80.000231,70.999954 94.498839,71.182648 94.532987,33.288669 94.543142,22.019327 90.966081,18.329754 85.259173,18.331003 79.552261,18.332249 75.000211,25.000058 75.000211,25.000058 L 25.000021,74.999942"
+                                                    style={{
+                                                        fill: 'none',
+                                                        stroke: 'currentColor',
+                                                        strokeWidth: 8,
+                                                        strokeLinecap: 'round',
+                                                        transition: 'stroke-dasharray 600ms cubic-bezier(0.4, 0, 0.2, 1), stroke-dashoffset 600ms cubic-bezier(0.4, 0, 0.2, 1)',
+                                                        strokeDasharray: isOpen ? '90 207' : '60 207',
+                                                        strokeDashoffset: isOpen ? -134 : 0
+                                                    }}
+                                                />
+                                            </svg>
                                         </button>
                                     </div>
 

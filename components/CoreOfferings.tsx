@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { OFFERINGS } from '../constants.tsx';
 import { Button } from './ui/Button';
@@ -14,8 +15,10 @@ import {
     ChevronLeft,
     ChevronRight,
     Search,
-    Filter
+    Filter,
+    FileText
 } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import { QuickViewModal } from './QuickViewModal';
 import { Offering } from '../types';
 import { useCart } from '../context/CartContext';
@@ -24,8 +27,6 @@ import { useTransition } from '../context/TransitionContext';
 import { ApplicationModal } from './ApplicationModal';
 import { CheckoutModal } from './CheckoutModal';
 import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-gsap.registerPlugin(ScrollTrigger);
 
 // --- Tabs / Filter Options ---
 const TABS = [
@@ -123,11 +124,6 @@ const CourseCardItem: React.FC<{ offering: Offering; onExpand: (o: Offering, img
 
     // Refactored to allow "Course Details" button to trigger transition via bubbling
     const handleCardClick = (e: React.MouseEvent) => {
-        // We do NOT check for closest('button') here anymore.
-        // The other buttons (QuickView, Action, Compare) all have e.stopPropagation(),
-        // so they will never trigger this handler.
-        // This allows the "Course Details" button to bubble up and trigger this handler naturally.
-        
         e.preventDefault();
         if (mediaRef.current && titleRef.current && categoryRef.current) {
             const imgRect = mediaRef.current.getBoundingClientRect();
@@ -140,24 +136,29 @@ const CourseCardItem: React.FC<{ offering: Offering; onExpand: (o: Offering, img
     return (
         <>
             <div className="flex flex-col h-full course-card cursor-pointer" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} onClick={handleCardClick}>
-                <div className="bg-white w-full group rounded-2xl overflow-hidden flex flex-col h-full shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 relative">
+                {/* Updated border radius to 1px */}
+                <div className="bg-white w-full group rounded-[1px] overflow-hidden flex flex-col h-full shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 relative">
                     <div ref={mediaRef} className="relative h-60 overflow-hidden shrink-0 bg-gray-100">
                         <video ref={videoRef} src={offering.video} muted loop playsInline className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                         <div className="absolute top-4 left-4 z-10">
-                            <span ref={categoryRef} className="bg-[#f8fafc] border border-[#eff4f7] text-[#002a4e] text-[10px] font-bold px-3 py-1.5 uppercase tracking-widest rounded-sm shadow-md hover:bg-[#c2b068] hover:border-[#d4c999] hover:text-[#fff] transition-colors inline-block">
+                            <span ref={categoryRef} className="bg-[#f8fafc] border border-[#eff4f7] text-[#002a4e] text-[10px] font-bold px-3 py-1.5 uppercase rounded-sm shadow-md hover:bg-[#c2b068] hover:border-[#d4c999] hover:text-[#fff] transition-colors inline-block tracking-[1px]">
                                 {offering.category}
                             </span>
                         </div>
-                        <div className="absolute bottom-0 left-0 right-0 bg-[#002B4E]/90 backdrop-blur-sm p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 flex gap-2 z-20">
-                            <button onClick={handleAction} className="flex-[2] bg-white text-[#002B4E] hover:bg-[#C2B067] hover:text-white text-[10px] font-bold uppercase tracking-wider py-2.5 rounded-sm flex items-center justify-center gap-2 border border-transparent">
-                                {isEcommerce ? (<><ShoppingBag size={14} /> Buy Now</>) : (<>Apply Now <ArrowRight size={14} /></>)}
+                        
+                        {/* Slide-Up Overlay: Quick View & Compare */}
+                        <div className="absolute bottom-0 left-0 right-0 bg-[#002B4E]/95 backdrop-blur-sm p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 flex gap-2 z-20">
+                            <button onClick={handleQuickView} className="flex-1 bg-white text-[#002B4E] hover:bg-[#C2B067] hover:text-white text-[10px] font-bold uppercase py-2.5 rounded-sm flex items-center justify-center gap-2 border border-transparent transition-colors tracking-[1px]">
+                                <Eye size={14} /> Quick View
                             </button>
-                            <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); inCompare ? removeFromCompare(offering.id) : addToCompare(offering); }} className={`flex-1 bg-transparent border border-white/30 hover:bg-white/10 text-white text-[10px] font-bold uppercase tracking-wider py-2.5 rounded-sm flex items-center justify-center gap-2 ${inCompare ? 'bg-white text-[#002B4E]' : ''}`}>
+                            <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); inCompare ? removeFromCompare(offering.id) : addToCompare(offering); }} className={`flex-1 bg-transparent border border-white/30 hover:bg-white/10 text-white text-[10px] font-bold uppercase py-2.5 rounded-sm flex items-center justify-center gap-2 transition-colors tracking-[1px] ${inCompare ? 'bg-white text-[#002B4E]' : ''}`}>
                                 {inCompare ? <X size={16} /> : <BarChart2 size={16} />} {inCompare ? 'Remove' : 'Compare'}
                             </button>
                         </div>
                     </div>
-                    <div className="p-6 flex-1 flex flex-col relative z-10 bg-white">
+                    
+                    {/* Content Area - Reduced Padding to p-4 */}
+                    <div className="p-4 flex-1 flex flex-col relative z-10 bg-white">
                         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-gray-500 font-medium mb-4">
                             <div className="flex items-center gap-1.5">
                                 <Clock size={16} className="text-[#002B4E]" />
@@ -174,21 +175,29 @@ const CourseCardItem: React.FC<{ offering: Offering; onExpand: (o: Offering, img
                         <div className="mt-auto"></div>
                         <div className="mb-4 flex justify-between items-end border-t border-gray-100 pt-3">
                             <div>
-                                <p className="text-[10px] uppercase tracking-widest text-gray-400 font-bold mb-1">Tuition</p>
+                                <p className="text-[10px] uppercase text-gray-400 font-bold mb-1 tracking-[1px]">Tuition</p>
                                 <p className="text-lg font-bold text-[#002B4E]">R {offering.price?.toLocaleString()}</p>
                             </div>
                             <div className="text-right">
-                                <p className="text-[10px] uppercase tracking-widest text-gray-400 font-bold mb-1">Next Intake</p>
+                                <p className="text-[10px] uppercase text-gray-400 font-bold mb-1 tracking-[1px]">Next Intake</p>
                                 <p className="text-xs font-bold text-[#002B4E]">{offering.startDate}</p>
                             </div>
                         </div>
+                        
+                        {/* Main Buttons: Course Details & Apply Now */}
                         <div className="flex gap-3 relative z-20 bg-white">
-                            {/* Removed onClick here to let it bubble to the container handler, preventing double-fire */}
-                            <button className="flex-1 bg-[#002845] border border-[#002845] text-white hover:bg-[#002845]/90 font-bold transition-all duration-300 text-xs uppercase tracking-widest px-4 py-3 rounded-md flex items-center justify-center">
+                            {/* Course Details (Left) - Dark */}
+                            <button className="flex-1 bg-[#002845] border border-[#002845] text-white hover:bg-[#002845]/90 font-bold transition-all duration-300 text-[10px] md:text-xs uppercase px-2 py-3 rounded-sm flex items-center justify-center shadow-none tracking-[1px]">
                                 Course Details
                             </button>
-                            <button onClick={handleQuickView} className="w-12 flex items-center justify-center bg-[#c2b068] border border-[#c2b068] text-white hover:bg-[#d4c999] rounded-none transition-all duration-300" aria-label="Quick View">
-                                <Eye size={18} />
+                            
+                            {/* Apply Now (Right) - White BG, Navy Border/Text */}
+                            <button 
+                                onClick={handleAction} 
+                                className="flex-1 bg-white border border-[#002B4E] text-[#002B4E] hover:bg-[#002B4E] hover:text-white font-bold transition-all duration-300 text-[10px] md:text-xs uppercase px-2 py-3 rounded-sm flex items-center justify-center gap-2 shadow-none tracking-[1px]"
+                            >
+                                {isEcommerce ? 'Buy Now' : 'Apply Now'} 
+                                {isEcommerce ? <ShoppingBag size={14} /> : <FileText size={14} />}
                             </button>
                         </div>
                     </div>
@@ -328,12 +337,12 @@ export const CoreOfferings: React.FC = () => {
     return (
         <section className="bg-white relative min-h-screen" id="offerings">
 
-            {/* Filter Pills */}
+            {/* Filter Pills Display */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-wrap gap-2">
                 {[...selectedStudyLevels, ...selectedFocusAreas, ...selectedAccreditations].map(filter => (
                     <span 
                         key={filter} 
-                        className="inline-flex items-center gap-1 bg-brand-accent text-brand-primary px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider cursor-pointer hover:bg-brand-primary hover:text-white transition-colors" 
+                        className="inline-flex items-center gap-1 bg-brand-accent text-brand-primary px-3 py-1 rounded-full text-xs font-bold uppercase cursor-pointer hover:bg-brand-primary hover:text-white transition-colors tracking-[1px]" 
                         onClick={() => { 
                             toggleFilter(selectedStudyLevels.includes(filter) ? setSelectedStudyLevels : selectedFocusAreas.includes(filter) ? setSelectedFocusAreas : setSelectedAccreditations, filter);
                         }}
@@ -430,18 +439,18 @@ export const CoreOfferings: React.FC = () => {
                     <div className="flex justify-between items-center text-xs text-gray-500 font-medium uppercase tracking-wide">
                         <span>{displayedOfferings.length} Programmes Found</span>
                         {activeFilterCount > 0 && (
-                            <button onClick={resetFilters} className="text-red-500 hover:text-red-700 underline decoration-red-200 hover:decoration-red-700 underline-offset-2">
+                            <button onClick={resetFilters} className="text-red-500 hover:text-red-700 underline decoration-red-200 hover:decoration-red-700 underline-offset-2 tracking-[1px]">
                                 Reset Filters
                             </button>
                         )}
                     </div>
-                    <Button variant="primary" className="w-full justify-center py-4" onClick={() => setIsFilterOpen(false)}>
+                    <Button variant="primary" className="w-full justify-center py-4 tracking-[1px]" onClick={() => setIsFilterOpen(false)}>
                         View Results
                     </Button>
                 </div>
             </div>
 
-            {/* --- TOP SECTION --- */}
+            {/* --- TOP SECTION (Static White) --- */}
             <div className="relative bg-white pt-20 pb-20">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="mb-10 text-center">
@@ -454,13 +463,14 @@ export const CoreOfferings: React.FC = () => {
                     </div>
                 </div>
 
+                {/* --- FLOATING FILTER & TABS BAR --- */}
                 <div className="absolute bottom-0 left-0 right-0 translate-y-1/2 z-20">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="flex items-center gap-6">
+                        <div className="flex items-center gap-2 md:gap-6">
                             {/* Filter Toggle Button */}
                             <button 
                                 onClick={() => setIsFilterOpen(true)} 
-                                className="flex items-center justify-center bg-white hover:bg-gray-50 text-brand-primary hover:text-brand-accent rounded-full h-[50px] w-[50px] shadow-lg transition-all duration-300 relative z-10 group" 
+                                className="flex-shrink-0 flex items-center justify-center bg-white hover:bg-gray-50 text-brand-primary hover:text-brand-accent rounded-full h-[50px] w-[50px] shadow-lg transition-all duration-300 relative z-10 group" 
                                 aria-label="Toggle Filters"
                             >
                                 <SlidersHorizontal size={20} className="group-hover:scale-110 transition-transform" />
@@ -471,16 +481,18 @@ export const CoreOfferings: React.FC = () => {
                                 )}
                             </button>
 
-                            <div className="flex-1 flex justify-center">
-                                <div ref={tabsRef} className="bg-white rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.1)] p-1.5 flex items-center gap-1 overflow-x-auto max-w-full no-scrollbar">
+                            {/* Tabs Container (Scrollable) */}
+                            <div className="flex-1 flex justify-center min-w-0">
+                                <div ref={tabsRef} className="bg-white rounded-full shadow-[0_10px_30px_rgba(0,0,0,0.1)] p-1.5 flex items-center gap-1 overflow-x-auto max-w-full no-scrollbar mask-gradient-right">
                                     {TABS.map(tab => (
-                                        <button key={tab.id} data-tab={tab.id} onClick={() => { setActiveTab(tab.id); setTimeout(() => { const btn = tabsRef.current?.querySelector(`[data-tab="${tab.id}"]`); if (btn) btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' }); }, 0); }} className={`px-6 py-3 rounded-full text-xs font-bold uppercase tracking-widest transition-all duration-300 whitespace-nowrap ${activeTab === tab.id ? 'bg-[#1289fe] text-white shadow-md' : 'text-gray-500 hover:bg-gray-100 hover:text-[#1289fe]'}`}>
+                                        <button key={tab.id} data-tab={tab.id} onClick={() => { setActiveTab(tab.id); setTimeout(() => { const btn = tabsRef.current?.querySelector(`[data-tab="${tab.id}"]`); if (btn) btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' }); }, 0); }} className={`px-6 py-3 rounded-full text-xs font-bold uppercase transition-all duration-300 whitespace-nowrap tracking-[1px] ${activeTab === tab.id ? 'bg-[#1289fe] text-white shadow-md' : 'text-gray-500 hover:bg-gray-100 hover:text-[#1289fe]'}`}>
                                             {tab.label}
                                         </button>
                                     ))}
                                 </div>
                             </div>
 
+                            {/* Desktop Nav Arrows */}
                             <div className="hidden md:flex gap-2">
                                 <button onClick={() => scrollSlider('left')} className="w-[50px] h-[50px] bg-white rounded-full text-[#002B4E] flex items-center justify-center shadow-lg hover:bg-[#1289fe] hover:text-white transition-all duration-300" aria-label="Previous programmes">
                                     <ChevronLeft size={20} />
@@ -494,7 +506,7 @@ export const CoreOfferings: React.FC = () => {
                 </div>
             </div>
 
-            {/* --- RESULTS SLIDER --- */}
+            {/* --- RESULTS SLIDER (Dark) --- */}
             <div ref={cardsContainerRef} className="bg-[#072136] pt-24 pb-20">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex md:hidden justify-between items-center mb-6">
@@ -505,7 +517,7 @@ export const CoreOfferings: React.FC = () => {
 
                     <div className="relative">
                         {displayedOfferings.length > 0 && (
-                            <div ref={sliderRef} className="overflow-x-auto programmes-slider snap-x snap-mandatory">
+                            <div ref={sliderRef} className="overflow-x-auto programmes-slider snap-x snap-mandatory no-scrollbar">
                                 <div className="flex gap-6 pb-4" style={{ width: `calc(${displayedOfferings.length} * (340px + 1.5rem))` }}>
                                     {displayedOfferings.map((offering) => (
                                         <div key={offering.id} className="flex-shrink-0 snap-center" style={{ width: '340px' }}>
@@ -525,7 +537,7 @@ export const CoreOfferings: React.FC = () => {
                                 <p className="text-blue-100 max-w-md mx-auto mb-8 leading-relaxed">
                                     We couldn't find any courses matching your current selection. Try switching categories or adjusting filters.
                                 </p>
-                                <button onClick={() => { setActiveTab('All'); resetFilters(); }} className="text-white hover:text-brand-accent transition-colors border-b border-white pb-1 font-bold uppercase tracking-widest text-sm">
+                                <button onClick={() => { setActiveTab('All'); resetFilters(); }} className="text-white hover:text-brand-accent transition-colors border-b border-white pb-1 font-bold uppercase text-sm tracking-[1px]">
                                     Reset All Filters
                                 </button>
                             </div>

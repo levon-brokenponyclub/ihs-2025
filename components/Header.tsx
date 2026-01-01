@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { NAV_LINKS, MORE_MENU_LINKS } from '../constants';
+import { NAV_LINKS, MORE_MENU_LINKS } from '../constants.tsx';
 import { Button } from './ui/Button';
 import { Menu, X, ShoppingBag, Search, ChevronRight } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
@@ -15,10 +15,37 @@ export const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isFinderOpen, setIsFinderOpen] = useState(false);
   const [isMegaMenuOpen, setIsMegaMenuOpen] = useState(false);
-  const menuTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   
+  // Header Scroll State
+  const [isVisible, setIsVisible] = useState(true);
+  const lastScrollY = useRef(0);
+
+  const menuTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const location = useLocation();
   const { toggleCart, items } = useCart();
+
+  // Scroll Handler for Hide/Show
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      // Show header at top of page or when scrolling up
+      // We don't check isMenuOpen here to avoid stale closure issues. 
+      // We handle the override in the render logic.
+      if (currentScrollY < 10) {
+        setIsVisible(true);
+      } else if (currentScrollY > lastScrollY.current && currentScrollY > 80) {
+        setIsVisible(false); // Scrolling down & past header
+      } else {
+        setIsVisible(true); // Scrolling up
+      }
+      
+      lastScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Lock body scroll when menu is open
   useEffect(() => {
@@ -40,12 +67,9 @@ export const Header: React.FC = () => {
   };
 
   const handleMouseEnter = () => {
-      // Don't open Mega Menu if the main Full Screen menu is open
+      // Prevent mega menu from opening if the full screen menu is active
       if (isMenuOpen) return;
-
-      if (menuTimeoutRef.current) {
-          clearTimeout(menuTimeoutRef.current);
-      }
+      if (menuTimeoutRef.current) clearTimeout(menuTimeoutRef.current);
       setIsMegaMenuOpen(true);
   };
 
@@ -55,18 +79,28 @@ export const Header: React.FC = () => {
       }, 100);
   };
 
-  // Toggle Menu Function
-  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+  const toggleMenu = () => {
+      if (!isMenuOpen) {
+          // Closing MegaMenu if we are opening the full menu
+          setIsMegaMenuOpen(false);
+      }
+      setIsMenuOpen(!isMenuOpen);
+  };
+
+  // Force header visible if menu is open, otherwise use scroll state
+  const headerVisible = isMenuOpen || isVisible;
 
   return (
     <>
-    {/* Main Header */}
-    <header className="fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-100 h-[80px]">
+    {/* Main Header with Transition */}
+    <header 
+        className={`fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-100 h-[80px] transition-transform duration-300 ease-in-out ${headerVisible ? 'translate-y-0' : '-translate-y-full'}`}
+    >
         <div className="max-w-7xl mx-auto h-full flex items-center justify-between px-4 lg:px-8 relative">
             
             {/* Left: Logo */}
             <div className="flex items-center h-full">
-            <Link to="/" className="flex items-center group">
+            <Link to="/" className="flex items-center group" onClick={() => setIsMenuOpen(false)}>
                 <img
                 src="components/assets/img/ihs-logo.png"
                 alt="IHS Logo"
@@ -95,12 +129,12 @@ export const Header: React.FC = () => {
                         }}
                         className="group relative h-full flex items-center px-2 cursor-pointer"
                     >
-                        <span className={`relative z-10 text-sm font-bold uppercase tracking-wider transition-colors duration-300 ${isActive ? 'text-[#C2B067]' : 'text-[#002B4E] group-hover:text-[#C2B067]'}`}>
+                        <span className={`relative z-10 text-sm font-bold uppercase transition-colors duration-300 tracking-[1px] ${isActive ? 'text-[#C2B067]' : 'text-[#002B4E] group-hover:text-[#C2B067]'}`}>
                             {link.label}
                         </span>
                         
                         {/* Animated Underline */}
-                        <span className={`absolute bottom-6 left-0 w-full h-[2px] bg-[#C2B067] transform transition-transform duration-300 ease-out origin-left ${isActive ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'}`}></span>
+                        <span className={`absolute bottom-0 left-0 w-full h-[5px] bg-[#002B4E] transform transition-transform duration-300 ease-out origin-left ${isActive ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'}`}></span>
                     </a>
                 );
             })}
@@ -178,20 +212,57 @@ export const Header: React.FC = () => {
              {/* Desktop 'More' Button */}
             <button
                 onClick={toggleMenu}
-                className="hidden lg:flex h-[80px] w-[100px] bg-[#002B4E] text-white flex-col items-center justify-center gap-1 hover:bg-[#001ebd] transition-colors duration-200 cursor-pointer relative z-[60]"
+                className="hidden lg:flex h-[80px] w-[100px] bg-[#002B4E] text-white flex-col items-center justify-center gap-1 hover:bg-[#C2B067] transition-colors duration-200 cursor-pointer relative z-[60] group"
             >
-                {isMenuOpen ? (
-                     <X size={28} />
-                ) : (
-                    <>
-                        <div className="space-y-1.5 mb-1">
-                            <div className="w-6 h-0.5 bg-white"></div>
-                            <div className="w-6 h-0.5 bg-white"></div>
-                            <div className="w-6 h-0.5 bg-white"></div>
-                        </div>
-                        <span className="text-[10px] font-bold uppercase tracking-widest">More</span>
-                    </>
-                )}
+                <div className="w-8 h-8 relative flex items-center justify-center">
+                    <svg width="100%" height="100%" viewBox="0 0 100 100" className="overflow-visible">
+                        <path
+                            d="M 20,29.000046 H 80.000231 C 80.000231,29.000046 94.498839,28.817352 94.532987,66.711331 94.543142,77.980673 90.966081,81.670246 85.259173,81.668997 79.552261,81.667751 75.000211,74.999942 75.000211,74.999942 L 25.000021,25.000058"
+                            style={{
+                                fill: 'none',
+                                stroke: 'white',
+                                strokeWidth: 8,
+                                strokeLinecap: 'round',
+                                transition: 'stroke-dasharray 600ms cubic-bezier(0.4, 0, 0.2, 1), stroke-dashoffset 600ms cubic-bezier(0.4, 0, 0.2, 1)',
+                                strokeDasharray: isMenuOpen ? '90 207' : '60 207',
+                                strokeDashoffset: isMenuOpen ? -134 : 0
+                            }}
+                        />
+                        <path
+                            d="M 20,50 H 80"
+                            style={{
+                                fill: 'none',
+                                stroke: 'white',
+                                strokeWidth: 8,
+                                strokeLinecap: 'round',
+                                transition: 'stroke-dasharray 600ms cubic-bezier(0.4, 0, 0.2, 1), stroke-dashoffset 600ms cubic-bezier(0.4, 0, 0.2, 1)',
+                                strokeDasharray: isMenuOpen ? '1 60' : '60 60',
+                                strokeDashoffset: isMenuOpen ? -30 : 0
+                            }}
+                        />
+                        <path
+                            d="M 20,70.999954 H 80.000231 C 80.000231,70.999954 94.498839,71.182648 94.532987,33.288669 94.543142,22.019327 90.966081,18.329754 85.259173,18.331003 79.552261,18.332249 75.000211,25.000058 75.000211,25.000058 L 25.000021,74.999942"
+                            style={{
+                                fill: 'none',
+                                stroke: 'white',
+                                strokeWidth: 8,
+                                strokeLinecap: 'round',
+                                transition: 'stroke-dasharray 600ms cubic-bezier(0.4, 0, 0.2, 1), stroke-dashoffset 600ms cubic-bezier(0.4, 0, 0.2, 1)',
+                                strokeDasharray: isMenuOpen ? '90 207' : '60 207',
+                                strokeDashoffset: isMenuOpen ? -134 : 0
+                            }}
+                        />
+                    </svg>
+                </div>
+                
+                <div className="relative h-[14px] w-full overflow-hidden">
+                    <span className={`absolute inset-0 flex items-center justify-center text-[10px] font-bold uppercase tracking-[1px] transition-all duration-300 ease-in-out ${isMenuOpen ? '-translate-y-full opacity-0' : 'translate-y-0 opacity-100'}`}>
+                        More
+                    </span>
+                    <span className={`absolute inset-0 flex items-center justify-center text-[10px] font-bold uppercase tracking-[1px] transition-all duration-300 ease-in-out ${isMenuOpen ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'}`}>
+                        Close
+                    </span>
+                </div>
             </button>
             </div>
         </div>
@@ -206,10 +277,10 @@ export const Header: React.FC = () => {
         </div>
     </header>
 
-    {/* Mobile Menu Component (Restricted to Mobile via CSS inside component) */}
+    {/* Mobile Menu Component */}
     <MobileMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
 
-    {/* Desktop Full Screen Menu (Restricted to Desktop via CSS inside component) */}
+    {/* Desktop Full Screen Menu */}
     <DesktopMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
 
     <MiniCart />

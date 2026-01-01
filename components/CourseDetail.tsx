@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { COURSE_DETAILS } from '../constants.tsx';
+import { useParams, Link, useLocation } from 'react-router-dom';
+import { COURSE_DETAILS, OFFERINGS, ACCREDITATION_LOGOS } from '../constants.tsx';
 import { Button } from './ui/Button';
 import { useCart } from '../context/CartContext';
 import { useCompare } from '../context/CompareContext';
@@ -36,7 +36,6 @@ import { Offering, CourseDetail as CourseDetailType } from '../types';
 import { QuickViewModal } from './QuickViewModal';
 import { ApplicationModal } from './ApplicationModal';
 import { CheckoutModal } from './CheckoutModal';
-import gsap from 'gsap';
 
 // --- Light Theme Accordion for Mobile Course Detail ---
 interface LightAccordionProps {
@@ -52,8 +51,6 @@ const LightAccordionItem: React.FC<LightAccordionProps> = ({ title, children, is
     const wasOpen = useRef(isOpen);
 
     useEffect(() => {
-        // Only scroll if we are transitioning from CLOSED to OPEN
-        // This prevents auto-scrolling on initial render when defaultOpen is true
         if (isOpen && !wasOpen.current && itemRef.current) {
             setTimeout(() => {
                 itemRef.current?.scrollIntoView({
@@ -62,7 +59,6 @@ const LightAccordionItem: React.FC<LightAccordionProps> = ({ title, children, is
                 });
             }, 300);
         }
-        // Update ref for next render
         wasOpen.current = isOpen;
     }, [isOpen]);
 
@@ -93,20 +89,20 @@ const MobileFeesDrawer = ({
     course, 
     isOpen, 
     onToggle, 
-    onApply 
+    onApply,
+    showTitle
 }: { 
     course: CourseDetailType, 
     isOpen: boolean, 
     onToggle: () => void, 
-    onApply: () => void 
+    onApply: () => void,
+    showTitle: boolean
 }) => {
-    // 1. Determine CTA Label / Type
     const isEcommerce = course.programmeTypes.some((type: string) =>
         ['Online Learning', 'Part Time Learning'].includes(type)
     );
     const ctaLabel = isEcommerce ? 'Buy Now' : 'Apply Now';
 
-    // 2. Accessibility: Handle Escape Key
     useEffect(() => {
         const handleEsc = (e: KeyboardEvent) => {
             if (e.key === 'Escape' && isOpen) onToggle();
@@ -122,7 +118,6 @@ const MobileFeesDrawer = ({
             role="region"
             aria-label="Course Fees Details"
         >
-            {/* Handle / Drag Area */}
             <button
                 onClick={onToggle}
                 className="w-full h-8 flex items-center justify-center cursor-pointer hover:bg-slate-50 rounded-t-3xl transition-colors focus:outline-none"
@@ -132,45 +127,44 @@ const MobileFeesDrawer = ({
                 <span className="w-12 h-1.5 bg-slate-300 rounded-full"></span>
             </button>
 
-            {/* Header Interactive Area */}
             <div 
-                className="w-full px-6 md:px-10 pb-2 cursor-pointer flex flex-col"
+                className="w-full px-6 md:px-10 pb-4 cursor-pointer flex flex-col"
                 onClick={onToggle}
             >
-                {/* Row 1: Title & Chevron (Always Visible) */}
-                <div className="flex justify-between items-center w-full gap-4 h-12">
-                    <h3 
-                        className="font-serif text-lg font-bold text-[#002B4E] truncate"
-                        title={course.title}
-                    >
-                        {course.title}
-                    </h3>
-                    {/* Chevron - Rotates 180deg when open */}
-                    <div className="text-[#C2B067] transition-transform duration-500 group-data-[state=open]:rotate-180 shrink-0">
+                <div className="flex justify-between items-center w-full gap-4 h-12 overflow-hidden relative">
+                    <div className="flex-1 relative h-full">
+                        <div 
+                            className={`absolute inset-0 flex items-center justify-between transition-all duration-500 ease-in-out ${showTitle ? '-translate-y-full opacity-0' : 'translate-y-0 opacity-100'}`}
+                        >
+                             <p className="text-gray-500 text-[10px] uppercase tracking-[1px] font-bold">Per Year</p>
+                             <p className="text-2xl font-serif text-[#002B4E] font-bold leading-none">{course.fees.tuition}</p>
+                        </div>
+
+                        <div 
+                            className={`absolute inset-0 flex items-center transition-all duration-500 ease-in-out ${showTitle ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'}`}
+                        >
+                             <h3 className="font-serif text-lg font-bold text-[#002B4E] truncate leading-normal pr-2">
+                                {course.title}
+                            </h3>
+                        </div>
+                    </div>
+
+                    <div className={`text-[#C2B067] transition-transform duration-500 shrink-0 ${isOpen ? 'rotate-180' : ''}`}>
                          <ChevronUp size={24} />
                     </div>
                 </div>
-
-                {/* Row 2: Price & Label - "Roll Fade" Reveal on Hover/Open */}
-                <div className="
-                    flex flex-col items-center justify-center text-center gap-1
-                    overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]
-                    max-h-0 opacity-0 -translate-y-4
-                    group-hover:max-h-24 group-hover:opacity-100 group-hover:translate-y-0
-                    group-data-[state=open]:max-h-24 group-data-[state=open]:opacity-100 group-data-[state=open]:translate-y-0
-                    pb-2
-                ">
-                    <p className="text-gray-500 text-[10px] uppercase tracking-wider">Per Year</p>
-                    <p className="text-3xl font-serif text-[#002B4E] font-bold">{course.fees.tuition}</p>
-                </div>
             </div>
 
-            {/* Expanded Content */}
             <div className="w-full px-6 md:px-10 overflow-hidden transition-[max-height,opacity,padding] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] max-h-0 opacity-0 pb-0 group-data-[state=open]:max-h-[85vh] group-data-[state=open]:opacity-100 group-data-[state=open]:pb-10">
                 <div className="pt-2 border-t border-slate-100 mt-2">
-                    
-                    {/* Fees Breakdown - Styled to match Sidebar Fees Card */}
                     <div className="mb-8 mt-2">
+                        {showTitle && (
+                            <div className="mb-4 flex justify-between items-center border-b border-gray-100 pb-4">
+                                <p className="text-gray-500 text-[10px] uppercase tracking-[1px] font-bold">Tuition</p>
+                                <p className="text-3xl font-serif text-[#002B4E] font-bold">{course.fees.tuition}</p>
+                            </div>
+                        )}
+
                         <div className="space-y-4">
                             <div className="flex justify-between text-sm border-b border-gray-100 pb-3">
                                 <span className="text-gray-600">Registration Fee</span>
@@ -186,19 +180,18 @@ const MobileFeesDrawer = ({
                         </p>
                     </div>
 
-                    {/* Stacked Actions */}
                     <div className="flex flex-col gap-3">
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
                                 onApply();
                             }}
-                            className="inline-flex items-center justify-center font-bold uppercase tracking-widest transition-all duration-300 text-xs px-6 py-4 rounded-sm bg-[#C2B067] text-[#002B4E] hover:bg-white hover:text-[#002B4E] border border-transparent hover:border-[#C2B067] w-full shadow-md"
+                            className="inline-flex items-center justify-center font-bold uppercase transition-all duration-300 text-xs px-6 py-4 rounded-sm bg-[#C2B067] text-[#002B4E] hover:bg-white hover:text-[#002B4E] border border-transparent hover:border-[#C2B067] w-full shadow-md tracking-[1px]"
                         >
                             {ctaLabel}
                         </button>
                         
-                        <button className="w-full border border-[#002B4E] text-[#002B4E] bg-white hover:bg-slate-50 font-bold uppercase tracking-widest text-xs py-4 rounded-sm transition-colors flex items-center justify-center gap-2">
+                        <button className="w-full border border-[#002B4E] text-[#002B4E] bg-white hover:bg-slate-50 font-bold uppercase text-xs py-4 rounded-sm transition-colors flex items-center justify-center gap-2 tracking-[1px]">
                             Download Prospectus <Download size={14} />
                         </button>
                     </div>
@@ -212,7 +205,6 @@ const MobileFeesDrawer = ({
 const NeedGuidanceCard = () => {
     return (
         <div className="bg-[#002B4E] rounded-sm p-8 relative overflow-hidden shadow-xl border border-white/10">
-            {/* Background Icon */}
             <div className="absolute -right-6 -top-6 text-white/5 transform rotate-12">
                 <MessageSquare size={140} fill="currentColor" />
             </div>
@@ -223,7 +215,7 @@ const NeedGuidanceCard = () => {
                     Speak to our admissions team to find the perfect fit for your career goals.
                 </p>
                 
-                <button className="flex items-center gap-3 text-brand-gold font-bold text-xs uppercase tracking-widest hover:text-white transition-colors group">
+                <button className="flex items-center gap-3 text-brand-gold font-bold text-xs uppercase hover:text-white transition-colors group tracking-[1px]">
                     Start Live Chat 
                     <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                 </button>
@@ -250,10 +242,10 @@ const FeesCard = ({ course }: { course: CourseDetailType }) => {
     return (
         <div className="bg-white border border-gray-200 rounded-sm overflow-hidden shadow-xl">
             <div className="bg-[#002B4E] p-4 text-center">
-                <span className="text-white font-bold uppercase tracking-widest text-sm">2025 Fees</span>
+                <span className="text-white font-bold uppercase tracking-[1px] text-sm">2025 Fees</span>
             </div>
             <div className="p-8 text-center">
-                <p className="text-gray-500 text-xs uppercase tracking-wider mb-2">Per Year</p>
+                <p className="text-gray-500 text-xs uppercase tracking-[1px] mb-2">Per Year</p>
                 <p className="text-4xl font-serif text-[#002B4E] font-bold mb-6">{course.fees.tuition}</p>
 
                 <div className="border-t border-gray-200 pt-4 mb-6">
@@ -274,13 +266,13 @@ const FeesCard = ({ course }: { course: CourseDetailType }) => {
                 <div className="space-y-3">
                     <Button
                         variant="primary"
-                        className="w-full"
+                        className="w-full tracking-[1px]"
                         onClick={handleAction}
                         icon={isEcommerce ? <ShoppingBag size={16} /> : undefined}
                     >
                         {isEcommerce ? 'Buy Now' : 'Apply Now'}
                     </Button>
-                    <Button variant="outline" className="w-full" icon={<Download size={16} />}>
+                    <Button variant="outline" className="w-full tracking-[1px]" icon={<Download size={16} />}>
                         Download Prospectus
                     </Button>
                 </div>
@@ -294,25 +286,20 @@ export const CourseDetail: React.FC = () => {
     const [activeSection, setActiveSection] = useState('overview');
     const [isTabsSticky, setIsTabsSticky] = useState(false);
     
-    // Mobile Accordion State (Overview open by default)
-    const [openMobileSection, setOpenMobileSection] = useState<string | null>('overview');
-    
-    // Drawer State
-    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+    // Header Visibility State sync (mirrored logic from Header.tsx)
+    const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+    const lastScrollY = useRef(0);
 
-    // Modals
-    const [formSuccess, setFormSuccess] = useState(false);
+    const [openMobileSection, setOpenMobileSection] = useState<string | null>('overview');
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+    const [scrolledPastHero, setScrolledPastHero] = useState(false);
     const [showApplication, setShowApplication] = useState(false);
     const [showCheckout, setShowCheckout] = useState(false);
-
-    // Refs
     const heroRef = useRef<HTMLDivElement>(null);
     const { addToCart } = useCart();
     
-    // Data
     const course = id && COURSE_DETAILS[id] ? COURSE_DETAILS[id] : COURSE_DETAILS['1'];
     
-    // Sections configuration
     const SECTIONS = useMemo(() => [
         { id: 'overview', label: 'Overview' },
         { id: 'content', label: 'Programme Content' },
@@ -320,7 +307,7 @@ export const CourseDetail: React.FC = () => {
         { id: 'requirements', label: 'Entry Requirements' },
         { id: 'certification', label: 'Certification' },
         { id: 'faq', label: 'FAQs' },
-        { id: 'fees', label: 'Fees' }, // Fees added for tab navigation
+        { id: 'fees', label: 'Fees' },
     ], [course.qualification]);
 
     const isEcommerce = course.programmeTypes.some((type: string) => 
@@ -328,17 +315,30 @@ export const CourseDetail: React.FC = () => {
     );
 
     useEffect(() => {
-        // Ensure page starts at top
         window.scrollTo(0, 0);
     }, [id]);
 
     useEffect(() => {
         const handleScroll = () => {
+            const currentScrollY = window.scrollY;
             const heroHeight = heroRef.current?.offsetHeight || 400;
-            // Sticky logic triggers when we scroll PAST the hero
-            setIsTabsSticky(window.scrollY >= (heroHeight - 80));
+            
+            // Header Visibility Logic (Matches Header.tsx)
+            if (currentScrollY < 10) {
+                setIsHeaderVisible(true);
+            } else if (currentScrollY > lastScrollY.current && currentScrollY > 80) {
+                setIsHeaderVisible(false);
+            } else {
+                setIsHeaderVisible(true);
+            }
+            lastScrollY.current = currentScrollY;
 
-            // Update active section based on scroll position (Desktop mainly)
+            // Sticky Logic
+            const isSticky = window.scrollY >= (heroHeight - 80);
+            setIsTabsSticky(isSticky);
+            setScrolledPastHero(window.scrollY > (heroHeight - 150));
+
+            // Spy Scroll Logic
             if (window.innerWidth >= 1024) {
                 const offset = 200;
                 const scrollPosition = window.scrollY + offset;
@@ -368,18 +368,14 @@ export const CourseDetail: React.FC = () => {
             if (window.innerWidth < 1024) {
                 setIsDrawerOpen(true);
             } else {
-                // Desktop: Fees are sticky, maybe scroll to top of content
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
             return;
         }
 
         if (window.innerWidth < 1024) {
-            // Mobile: Expand the accordion
             setOpenMobileSection(sectionId);
-            setIsDrawerOpen(false); // Close drawer if navigating elsewhere
-            
-            // Scroll to element
+            setIsDrawerOpen(false);
             setTimeout(() => {
                 const el = document.getElementById(`mobile-${sectionId}`);
                 if (el) {
@@ -387,10 +383,9 @@ export const CourseDetail: React.FC = () => {
                 }
             }, 100);
         } else {
-            // Desktop Scroll
             const el = document.getElementById(sectionId);
             if (el) {
-                const headerOffset = 160;
+                const headerOffset = isHeaderVisible ? 160 : 80;
                 const elementPosition = el.getBoundingClientRect().top;
                 const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
                 window.scrollTo({ top: offsetPosition, behavior: "smooth" });
@@ -416,7 +411,7 @@ export const CourseDetail: React.FC = () => {
     return (
         <div className="min-h-screen bg-gray-50 pt-0 pb-20 lg:pb-0">
             
-            {/* Hero Section - First element for smooth transition */}
+            {/* Hero Section */}
             <section ref={heroRef} className="relative bg-brand-primary h-[50vh] lg:h-[80vh] flex items-end pb-8 lg:pb-16 overflow-hidden">
                 <div className="absolute inset-0 z-0">
                     <img src={course.image} alt={course.title} className="w-full h-full object-cover opacity-60" />
@@ -425,15 +420,15 @@ export const CourseDetail: React.FC = () => {
                 
                 <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
                     <div className="lg:w-2/3">
-                        <Link to="/" className="inline-flex items-center text-white/70 hover:text-white mb-6 text-xs font-bold uppercase tracking-widest">
+                        <Link to="/" className="inline-flex items-center text-white/70 hover:text-white mb-6 text-xs font-bold uppercase tracking-[1px]">
                             <ArrowLeft size={14} className="mr-2" /> Back to Programmes
                         </Link>
                         
                         <div className="flex flex-wrap gap-2 mb-4">
-                            <span className="bg-brand-gold text-brand-primary text-[10px] font-bold px-2 py-1 uppercase rounded-sm">
+                            <span className="bg-brand-gold text-brand-primary text-[10px] font-bold px-2 py-1 uppercase rounded-sm tracking-[1px]">
                                 {course.category}
                             </span>
-                            <span className="bg-white/20 text-white text-[10px] font-bold px-2 py-1 uppercase rounded-sm">
+                            <span className="bg-white/20 text-white text-[10px] font-bold px-2 py-1 uppercase rounded-sm tracking-[1px]">
                                 {course.qualification}
                             </span>
                         </div>
@@ -442,36 +437,34 @@ export const CourseDetail: React.FC = () => {
                             {course.title}
                         </h1>
 
-                        {/* Mobile: Simple CTA, Desktop: Hidden (Sidebar handles it) */}
                         <div className="lg:hidden flex flex-col gap-3">
                             <div className="flex items-center gap-4 text-white/80 text-xs mb-2">
                                 <span className="flex items-center gap-1"><Clock size={14} /> {course.duration}</span>
                                 <span className="flex items-center gap-1"><MapPin size={14} /> {typeOfStudy}</span>
                             </div>
-                            <Button variant="primary" onClick={handleApply} className="w-full justify-center">
+                            <Button variant="primary" onClick={handleApply} className="w-full justify-center tracking-[1px]">
                                 {isEcommerce ? 'Buy Now' : 'Apply Now'}
                             </Button>
-                            <Button variant="secondary" className="w-full justify-center text-xs py-3">
+                            <Button variant="secondary" className="w-full justify-center text-xs py-3 tracking-[1px]">
                                 Download Prospectus
                             </Button>
                         </div>
 
-                        {/* Desktop Meta Grid */}
                         <div className="hidden lg:grid grid-cols-4 gap-8 border-t border-white/20 pt-8">
                             <div>
-                                <p className="text-brand-gold text-xs uppercase font-bold mb-1">Duration</p>
+                                <p className="text-brand-gold text-xs uppercase font-bold mb-1 tracking-[1px]">Duration</p>
                                 <p className="text-white font-semibold">{course.duration}</p>
                             </div>
                             <div>
-                                <p className="text-brand-gold text-xs uppercase font-bold mb-1">Study Mode</p>
+                                <p className="text-brand-gold text-xs uppercase font-bold mb-1 tracking-[1px]">Study Mode</p>
                                 <p className="text-white font-semibold">{typeOfStudy}</p>
                             </div>
                             <div>
-                                <p className="text-brand-gold text-xs uppercase font-bold mb-1">Next Intake</p>
+                                <p className="text-brand-gold text-xs uppercase font-bold mb-1 tracking-[1px]">Next Intake</p>
                                 <p className="text-white font-semibold">{course.intake || course.startDate}</p>
                             </div>
                             <div>
-                                <p className="text-brand-gold text-xs uppercase font-bold mb-1">Level</p>
+                                <p className="text-brand-gold text-xs uppercase font-bold mb-1 tracking-[1px]">Level</p>
                                 <p className="text-white font-semibold">{course.level}</p>
                             </div>
                         </div>
@@ -479,15 +472,22 @@ export const CourseDetail: React.FC = () => {
                 </div>
             </section>
 
-            {/* Sticky Header Tabs - Now Below Hero */}
-            <div className={`sticky top-[80px] bg-white border-b border-gray-200 z-40 transition-shadow ${isTabsSticky ? 'shadow-md' : ''}`}>
+            {/* Sticky Header Tabs - Dynamically positioned based on header visibility */}
+            <div 
+                className={`sticky z-30 bg-white border-b border-gray-200 transition-all duration-300 ease-in-out ${
+                    isTabsSticky ? 'shadow-md' : ''
+                }`}
+                style={{
+                    top: isHeaderVisible ? '80px' : '0px'
+                }}
+            >
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-3">
                         {SECTIONS.map(sec => (
                             <button
                                 key={sec.id}
                                 onClick={() => handleTabClick(sec.id)}
-                                className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest whitespace-nowrap transition-colors ${
+                                className={`px-4 py-2 rounded-full text-xs font-bold uppercase whitespace-nowrap transition-colors tracking-[1px] ${
                                     activeSection === sec.id 
                                     ? 'bg-brand-primary text-white' 
                                     : 'text-gray-500 hover:bg-gray-100'
@@ -539,7 +539,7 @@ export const CourseDetail: React.FC = () => {
                                 
                                 {course.programContentIncludes && (
                                     <div className="mb-8">
-                                        <h4 className="font-bold text-gray-800 mb-4 text-sm uppercase tracking-wider">What you will learn</h4>
+                                        <h4 className="font-bold text-gray-800 mb-4 text-sm uppercase tracking-[1px]">What you will learn</h4>
                                         <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                             {course.programContentIncludes.map((item, i) => (
                                                 <li key={i} className="flex items-center gap-3 text-sm text-gray-600 bg-gray-50 p-3 rounded-sm">
@@ -652,7 +652,7 @@ export const CourseDetail: React.FC = () => {
                                             <p className="text-sm text-gray-600 leading-relaxed mb-6">{course.certification}</p>
                                             
                                             <div>
-                                                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Accredited By</p>
+                                                <p className="text-xs font-bold text-gray-400 uppercase tracking-[1px] mb-3">Accredited By</p>
                                                 <div className="flex flex-wrap gap-3">
                                                     {course.accreditations.map((acc, idx) => (
                                                         <span key={idx} className="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-bold rounded-sm border border-gray-200">
@@ -707,7 +707,17 @@ export const CourseDetail: React.FC = () => {
 
                     {/* Right Column: Sidebar (Desktop Only) */}
                     <div className="hidden lg:block lg:col-span-1">
-                        <div className="sticky top-[160px] space-y-6">
+                        {/* 
+                            Sidebar Sticky Logic:
+                            - `top-[160px]` when header is visible (80px header + 80px tabs).
+                            - `top-[80px]` when header is hidden (0px header + 80px tabs).
+                        */}
+                        <div 
+                            className="sticky space-y-6 transition-all duration-300 ease-in-out"
+                            style={{
+                                top: isHeaderVisible ? '160px' : '80px'
+                            }}
+                        >
                             <FeesCard course={course} />
                             <NeedGuidanceCard />
                         </div>
@@ -722,6 +732,7 @@ export const CourseDetail: React.FC = () => {
                 isOpen={isDrawerOpen} 
                 onToggle={() => setIsDrawerOpen(!isDrawerOpen)}
                 onApply={handleApply}
+                showTitle={scrolledPastHero}
             />
 
             {/* Modals */}

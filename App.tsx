@@ -1,5 +1,5 @@
 
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
@@ -45,6 +45,7 @@ function App() {
     <CartProvider>
       <CompareProvider>
         <TransitionProvider>
+          {/* Removed overflow-x-hidden to ensure sticky positioning works in children */}
           <div className="min-h-screen bg-brand-dark text-brand-text font-sans antialiased selection:bg-brand-gold selection:text-brand-dark">
             <Header />
             

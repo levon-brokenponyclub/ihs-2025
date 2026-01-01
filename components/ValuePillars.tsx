@@ -1,5 +1,5 @@
 
-import React, { useRef, useEffect } from 'react';
+import React from 'react';
 import { Globe, Award, TrendingUp, Users, Star, ArrowRight, AlertTriangle, TrendingDown } from 'lucide-react';
 
 const PILLARS = [
@@ -51,126 +51,38 @@ const PROBLEMS = [
 ];
 
 export const ValuePillars: React.FC = () => {
-    const containerRef = useRef<HTMLDivElement>(null);
-    const stickyRef = useRef<HTMLDivElement>(null);
-    const trackRef = useRef<HTMLDivElement>(null);
-    const problemStartRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        const handleScroll = () => {
-            if (!containerRef.current || !stickyRef.current || !trackRef.current) return;
-
-            const container = containerRef.current;
-            const track = trackRef.current;
-            const sticky = stickyRef.current;
-            
-            // Dimensions
-            const containerTop = container.offsetTop;
-            const containerHeight = container.offsetHeight;
-            const windowHeight = window.innerHeight;
-            const scrollY = window.scrollY;
-
-            // Calculate progress
-            const start = containerTop;
-            const end = containerTop + containerHeight - windowHeight;
-            
-            if (end <= start) return;
-
-            let progress = (scrollY - start) / (end - start);
-            progress = Math.max(0, Math.min(progress, 1)); // Clamp 0-1
-
-            // Calculate translation
-            const trackWidth = track.scrollWidth;
-            const viewportWidth = window.innerWidth;
-            
-            if (trackWidth <= viewportWidth) {
-                track.style.transform = `translateX(0px)`;
-                return;
-            }
-            
-            const maxTranslate = trackWidth - viewportWidth;
-            const translateX = maxTranslate * progress;
-
-            track.style.transform = `translateX(-${translateX}px)`;
-
-            // Background Color Transition Logic
-            // We want to fade when the Problem section enters the viewport.
-            // Let's find the X position of the problem section relative to the track start
-            // and compare with translateX.
-            
-            // Approximate threshold: when we are about 60% through the scroll (tuned for 500vh)
-            // Or calculate dynamically if possible, but simple progress mapping is smoother.
-            
-            const colorThreshold = 0.65; 
-            const fadeRange = 0.15; // Duration of fade
-
-            if (progress < colorThreshold) {
-                sticky.style.backgroundColor = '#f8fafc'; // Light
-            } else if (progress > (colorThreshold + fadeRange)) {
-                sticky.style.backgroundColor = '#002a4e'; // Dark Navy
-            } else {
-                // Interpolate
-                const fadeProgress = (progress - colorThreshold) / fadeRange;
-                // Simple interpolation from white-ish to navy
-                // #f8fafc = 248, 250, 252
-                // #002a4e = 0, 42, 78
-                
-                const r = 248 - (248 * fadeProgress);
-                const g = 250 - ((250 - 42) * fadeProgress);
-                const b = 252 - ((252 - 78) * fadeProgress);
-                
-                sticky.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
-            }
-        };
-
-        window.addEventListener('scroll', handleScroll, { passive: true });
-        window.addEventListener('resize', handleScroll);
-        handleScroll();
-
-        return () => {
-            window.removeEventListener('scroll', handleScroll);
-            window.removeEventListener('resize', handleScroll);
-        };
-    }, []);
-
     return (
-        <section ref={containerRef} className="relative h-[550vh]">
-            <div ref={stickyRef} className="sticky top-0 h-screen overflow-hidden flex items-center bg-[#f8fafc] transition-colors duration-100 will-change-[background-color]">
+        <section className="bg-[#f8fafc] py-24 overflow-hidden">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 
-                {/* Horizontal Track */}
-                <div ref={trackRef} className="flex items-center pl-6 md:pl-20 pr-20 gap-8 md:gap-16 will-change-transform h-full">
-                    
-                    {/* --- VALUE SECTION --- */}
-                    
-                    {/* Intro Block (Value) */}
-                    <div className="w-[300px] md:w-[450px] shrink-0">
-                        <h2 className="font-serif text-4xl md:text-6xl text-[#0f0f0f] leading-[1.1] mb-8 font-light">
-                            Why Choose <br/>
-                            <span className="font-semibold">International Hotel School?</span>
-                        </h2>
-                        <p className="text-[#666666] text-lg md:text-xl leading-relaxed max-w-sm">
-                            We design educational experiences that make a difference. Discover what sets us apart in the global industry.
-                        </p>
-                        <div className="mt-12 flex items-center gap-4 text-brand-primary font-bold uppercase tracking-widest text-xs">
-                            <div className="w-12 h-[1px] bg-brand-primary"></div>
-                            <span>Scroll to explore</span>
-                        </div>
-                    </div>
+                {/* Intro */}
+                <div className="mb-16 max-w-3xl">
+                    <h2 className="font-serif text-4xl md:text-5xl text-[#0f0f0f] leading-tight mb-6">
+                        Why Choose <br/>
+                        <span className="font-semibold text-brand-primary">International Hotel School?</span>
+                    </h2>
+                    <p className="text-[#666666] text-lg leading-relaxed">
+                        We design educational experiences that make a difference. Discover what sets us apart in the global industry.
+                    </p>
+                </div>
 
+                {/* Horizontal Scroll Container */}
+                <div className="flex gap-8 overflow-x-auto pb-12 snap-x snap-mandatory no-scrollbar -mx-4 px-4 md:mx-0 md:px-0">
+                    
                     {/* Value Cards */}
                     {PILLARS.map((pillar, index) => (
                         <div 
                             key={pillar.id}
-                            className="w-[320px] md:w-[420px] shrink-0 bg-white p-8 md:p-12 border border-[#E5E5E5] hover:border-brand-gold/50 hover:shadow-2xl transition-all duration-500 group flex flex-col justify-between h-[420px] md:h-[500px]"
+                            className="w-[300px] md:w-[380px] shrink-0 bg-white p-8 border border-[#E5E5E5] hover:border-brand-gold/50 hover:shadow-xl transition-all duration-300 group flex flex-col justify-between h-[420px] snap-center rounded-sm"
                         >
                             <div>
-                                <div className="w-14 h-14 bg-[#F5F5F5] rounded-full flex items-center justify-center text-brand-primary mb-8 group-hover:bg-brand-primary group-hover:text-brand-gold transition-colors duration-500">
+                                <div className="w-14 h-14 bg-[#F5F5F5] rounded-full flex items-center justify-center text-brand-primary mb-8 group-hover:bg-brand-primary group-hover:text-brand-gold transition-colors duration-300">
                                     <pillar.icon size={28} strokeWidth={1.5} />
                                 </div>
-                                <h3 className="text-2xl md:text-3xl font-serif text-[#0f0f0f] mb-4 md:mb-6 leading-tight">
+                                <h3 className="text-2xl font-serif text-[#0f0f0f] mb-4 leading-tight">
                                     {pillar.title}
                                 </h3>
-                                <p className="text-[#666666] text-sm md:text-base leading-relaxed">
+                                <p className="text-[#666666] text-sm leading-relaxed">
                                     {pillar.description}
                                 </p>
                             </div>
@@ -184,26 +96,14 @@ export const ValuePillars: React.FC = () => {
                         </div>
                     ))}
 
-                    {/* --- SPACER FOR TRANSITION --- */}
-                    <div className="w-[30vw] shrink-0"></div>
-
-                    {/* --- PROBLEM AWARENESS SECTION --- */}
-                    
-                    {/* Intro Block (Problem) */}
-                    <div ref={problemStartRef} className="w-[300px] md:w-[500px] shrink-0">
-                        <h2 className="font-serif text-3xl md:text-5xl text-white mb-6 font-semibold leading-tight">
-                            Avoid the Stress of Making the <span className="text-brand-gold italic">Incorrect Choice</span>
-                        </h2>
-                        <p className="text-white/80 text-lg font-light leading-relaxed max-w-sm">
-                            Incorrect choices leave you with qualifications that limit your potential rather than expanding it.
-                        </p>
-                    </div>
+                    {/* Problem Cards Divider */}
+                    <div className="w-px bg-gray-200 shrink-0 mx-4"></div>
 
                     {/* Problem Cards */}
-                    {PROBLEMS.map((problem, index) => (
+                    {PROBLEMS.map((problem) => (
                         <div 
                             key={problem.id}
-                            className="w-[320px] md:w-[400px] shrink-0 bg-[#041424] border border-brand-goldMuted/20 p-10 rounded-sm hover:border-brand-gold transition-colors duration-300 h-[350px] md:h-[400px] flex flex-col justify-center"
+                            className="w-[300px] md:w-[380px] shrink-0 bg-[#041424] border border-brand-goldMuted/20 p-8 rounded-sm hover:border-brand-gold transition-colors duration-300 h-[420px] snap-center flex flex-col justify-center"
                         >
                             <div className="w-16 h-16 rounded-full bg-brand-gold/10 flex items-center justify-center text-brand-gold mb-6">
                                 <problem.icon size={32} />
@@ -214,9 +114,6 @@ export const ValuePillars: React.FC = () => {
                             </p>
                         </div>
                     ))}
-
-                    {/* End Spacer */}
-                    <div className="w-[10vw] shrink-0"></div>
                 </div>
             </div>
         </section>
