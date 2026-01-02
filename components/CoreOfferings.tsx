@@ -178,7 +178,7 @@ export const CoreOfferings: React.FC = () => {
     const activeFilterCount = selectedStudyLevels.length + selectedFocusAreas.length + selectedAccreditations.length;
 
     return (
-        <section className="bg-white relative min-h-screen" id="offerings">
+        <section className="bg-gray-50 relative min-h-screen" id="offerings">
 
             {/* Filter Pills Display */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-wrap gap-2">
@@ -294,7 +294,7 @@ export const CoreOfferings: React.FC = () => {
             </div>
 
             {/* --- TOP SECTION (Static White) --- */}
-            <div className="relative bg-white pt-20 pb-20">
+            <div className="relative bg-gray-50 pt-20 pb-20">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="mb-10 text-center">
                         <h2 className="font-serif text-4xl md:text-6xl text-brand-primary mb-6">
@@ -352,11 +352,7 @@ export const CoreOfferings: React.FC = () => {
             {/* --- RESULTS SLIDER (Dark) --- */}
             <div ref={cardsContainerRef} className="bg-[#072136] pt-24 pb-20">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex md:hidden justify-between items-center mb-6">
-                        <button onClick={() => setIsFilterOpen(!isFilterOpen)} className="bg-white/10 text-white rounded-full p-3">
-                            <SlidersHorizontal size={20} />
-                        </button>
-                    </div>
+                    
 
                     <div className="relative">
                         {displayedOfferings.length > 0 ? (

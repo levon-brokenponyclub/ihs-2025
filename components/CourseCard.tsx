@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { Offering } from '../types';
 import { useCart } from '../context/CartContext';
@@ -5,7 +6,7 @@ import { useCompare } from '../context/CompareContext';
 import { QuickViewModal } from './QuickViewModal';
 import { ApplicationModal } from './ApplicationModal';
 import { CheckoutModal } from './CheckoutModal';
-import { Clock, GraduationCap, Eye, BarChart2, X, ShoppingBag, FileText } from 'lucide-react';
+import { Clock, GraduationCap, Eye, BarChart2, X, ShoppingBag, FileText, Layers } from 'lucide-react';
 
 interface CourseCardProps {
     offering: Offering;
@@ -17,7 +18,7 @@ export const CourseCard: React.FC<CourseCardProps> = ({ offering, onExpand }) =>
     const mediaRef = useRef<HTMLDivElement>(null);
     const titleRef = useRef<HTMLHeadingElement>(null);
     const categoryRef = useRef<HTMLSpanElement>(null);
-
+    
     const { addToCart } = useCart();
     const { addToCompare, isInCompare, removeFromCompare } = useCompare();
 
@@ -84,7 +85,7 @@ export const CourseCard: React.FC<CourseCardProps> = ({ offering, onExpand }) =>
                                 {offering.category}
                             </span>
                         </div>
-
+                        
                         <div className="absolute bottom-0 left-0 right-0 bg-[#002B4E]/95 backdrop-blur-sm p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 flex gap-2 z-20">
                             <button onClick={handleQuickView} className="flex-1 bg-white text-[#002B4E] hover:bg-[#C2B067] hover:text-white text-[10px] font-bold uppercase py-2.5 rounded-sm flex items-center justify-center gap-2 border border-transparent transition-colors tracking-[1px]">
                                 <Eye size={14} /> Quick View
@@ -94,8 +95,8 @@ export const CourseCard: React.FC<CourseCardProps> = ({ offering, onExpand }) =>
                             </button>
                         </div>
                     </div>
-
-                    <div className="p-5 flex-1 flex flex-col relative z-10 bg-white">
+                    
+                    <div className="p-4 flex-1 flex flex-col relative z-10 bg-white">
                         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-gray-500 font-medium mb-4">
                             <div className="flex items-center gap-1.5">
                                 <Clock size={16} className="text-[#002B4E]" />
@@ -104,6 +105,10 @@ export const CourseCard: React.FC<CourseCardProps> = ({ offering, onExpand }) =>
                             <div className="flex items-center gap-1.5">
                                 <GraduationCap size={16} className="text-[#002B4E]" />
                                 <span>{offering.qualification}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                                <Layers size={16} className="text-[#002B4E]" />
+                                <span>{offering.category}</span>
                             </div>
                         </div>
                         <h3 ref={titleRef} className="text-lg lg:text-xl font-serif font-bold text-[#002B4E] mb-4 leading-tight group-hover:text-[#1289fe] transition-colors origin-top-left">
@@ -120,17 +125,17 @@ export const CourseCard: React.FC<CourseCardProps> = ({ offering, onExpand }) =>
                                 <p className="text-xs font-bold text-[#002B4E]">{offering.startDate}</p>
                             </div>
                         </div>
-
+                        
                         <div className="flex gap-3 relative z-20 bg-white">
                             <button className="flex-1 bg-[#002845] border border-[#002845] text-white hover:bg-[#002845]/90 font-bold transition-all duration-300 text-[10px] md:text-xs uppercase px-2 py-3 rounded-sm flex items-center justify-center shadow-none tracking-[1px]">
                                 Learn More
                             </button>
-
-                            <button
-                                onClick={handleAction}
+                            
+                            <button 
+                                onClick={handleAction} 
                                 className="flex-1 bg-white border border-[#002B4E] text-[#002B4E] hover:bg-[#002B4E] hover:text-white font-bold transition-all duration-300 text-[10px] md:text-xs uppercase px-2 py-3 rounded-sm flex items-center justify-center gap-2 shadow-none tracking-[1px]"
                             >
-                                {isEcommerce ? 'Buy Now' : 'Apply Now'}
+                                {isEcommerce ? 'Buy Now' : 'Apply Now'} 
                                 {isEcommerce ? <ShoppingBag size={14} /> : <FileText size={14} />}
                             </button>
                         </div>

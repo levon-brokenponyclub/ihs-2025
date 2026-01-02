@@ -12,10 +12,10 @@ export const FinalCTA: React.FC = () => {
             </div>
 
             <div className="relative z-10 max-w-4xl mx-auto px-4 text-center">
-                <h2 className="font-serif text-4xl md:text-6xl text-white mb-6">
+                <h2 className="font-serif text-3xl md:text-5xl text-white mb-6">
                     Ready to Start Your <span className="text-brand-gold italic">Success Story?</span>
                 </h2>
-                <p className="text-brand-muted text-lg mb-10 max-w-2xl mx-auto">
+                <p className="text-white text-lg mb-10 max-w-2xl mx-auto">
                     Join Africa's leading hospitality and culinary school. Take the first step towards your dream career today.
                 </p>
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -26,8 +26,8 @@ export const FinalCTA: React.FC = () => {
                         Request Information
                     </Button>
                 </div>
-                
-                <div className="mt-12 flex justify-center gap-8 text-brand-muted text-sm">
+
+                <div className="mt-12 flex justify-center gap-8 text-brand-gold text-sm">
                     <div className="flex items-center gap-2">
                         <span className="w-2 h-2 bg-brand-gold rounded-full animate-pulse"></span>
                         Call Me Back

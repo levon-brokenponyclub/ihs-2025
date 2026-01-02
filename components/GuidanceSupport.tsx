@@ -16,11 +16,11 @@ export const GuidanceSupport: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
                 
                 {/* Left: Image */}
-                <div className="relative">
+                <div className="relative h-[300px] lg:h-[540px]">
                     <div className="absolute top-4 left-4 w-full h-full border border-brand-gold/20 rounded-sm translate-x-4 translate-y-4"></div>
                     <video
                         src="https://www.shutterstock.com/shutterstock/videos/1087550930/preview/stock-footage-chef-teaching-how-to-cook-cutting-vegetables-indoors-in-commercial-kitchen.webm"
-                        className="relative rounded-sm shadow-2xl w-full object-cover"
+                        className="relative rounded-sm shadow-2xl w-full h-full object-cover"
                         autoPlay
                         muted
                         loop

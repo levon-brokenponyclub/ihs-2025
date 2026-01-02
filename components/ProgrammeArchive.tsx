@@ -8,6 +8,7 @@ import { Offering } from '../types';
 import { CourseCard } from './CourseCard';
 import { useTransition } from '../context/TransitionContext';
 import gsap from 'gsap';
+import { Testimonial } from './Testimonial';
 
 // --- Constants for Archive Pages ---
 
@@ -343,6 +344,10 @@ export const ProgrammeArchive: React.FC = () => {
                     </div>
                 )}
             </div>
+
+            {/* Testimonials Section */}
+            <Testimonial />
+            
         </div>
     );
 };

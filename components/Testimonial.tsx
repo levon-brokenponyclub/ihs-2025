@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 const TESTIMONIALS = [
@@ -46,64 +45,68 @@ const TESTIMONIALS = [
   }
 ];
 
-// Duplicate for infinite effect
+/* ✅ SAFE DUPLICATION */
 const ROW_1 = [...TESTIMONIALS, ...TESTIMONIALS];
-const ROW_2 = [...TESTIMONIALS.reverse(), ...TESTIMONIALS];
+const ROW_2 = [...[...TESTIMONIALS].reverse(), ...TESTIMONIALS];
 
 const TestimonialCard = ({ data }: { data: typeof TESTIMONIALS[0] }) => (
-    <div className="bg-white p-8 rounded-sm shadow-sm border border-brand-border min-w-[350px] max-w-[350px] md:min-w-[400px] md:max-w-[400px] hover:shadow-lg transition-shadow duration-300 mx-4 flex flex-col justify-between h-full">
+  <div className="bg-white p-8 rounded-sm shadow-sm border border-brand-border min-w-[350px] max-w-[350px] md:min-w-[400px] md:max-w-[400px] hover:shadow-lg transition-shadow duration-300 mx-4 flex flex-col">
+    <div>
+      <div className="flex items-center gap-4 mb-6">
+        <img
+          src={data.image}
+          alt={data.name}
+          className="w-12 h-12 rounded-full object-cover border-2 border-brand-surface"
+        />
         <div>
-            <div className="flex items-center gap-4 mb-6">
-                <img 
-                    src={data.image} 
-                    alt={data.name} 
-                    className="w-12 h-12 rounded-full object-cover border-2 border-brand-surface"
-                />
-                <div>
-                    <h4 className="font-serif font-bold text-brand-primary text-lg leading-tight">{data.name}</h4>
-                    <p className="text-xs text-brand-textSecondary uppercase tracking-wider">{data.role}</p>
-                </div>
-            </div>
-            <p className="text-brand-textSecondary text-base leading-relaxed italic">
-                "{data.quote}"
-            </p>
+          <h4 className="font-serif font-bold text-brand-primary text-lg leading-tight">
+            {data.name}
+          </h4>
+          <p className="text-xs text-brand-textSecondary uppercase tracking-wider">
+            {data.role}
+          </p>
         </div>
+      </div>
+      <p className="text-brand-textSecondary text-base leading-relaxed italic">
+        “{data.quote}”
+      </p>
     </div>
+  </div>
 );
 
 export const Testimonial: React.FC = () => {
-    return (
-        <section className="py-24 bg-brand-surface overflow-hidden relative">
-             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16 text-center">
-                <h2 className="font-serif text-4xl md:text-5xl text-brand-primary font-semibold mb-6">
-                    What our students <span className="text-brand-accent italic">say.</span>
-                </h2>
-                <p className="text-brand-textSecondary max-w-2xl mx-auto text-sm md:text-base leading-relaxed">
-                    At International Hotel School, our courses are meticulously curated and delivered by a network of highly skilled trainers who are experts in their respective fields.
-                </p>
-             </div>
+  return (
+    <section className="py-24 bg-brand-surface overflow-hidden relative">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16 text-center">
+        <h2 className="font-serif text-3xl md:text-5xl text-brand-primary mb-6">
+          What our students <span className="text-brand-accent italic">say.</span>
+        </h2>
+        <p className="text-brand-textSecondary max-w-2xl mx-auto text-sm md:text-base leading-relaxed">
+          At International Hotel School, our courses are meticulously curated and delivered by a network of highly skilled trainers.
+        </p>
+      </div>
 
-             {/* Row 1: Right to Left */}
-             <div className="flex mb-8 overflow-hidden group">
-                 <div className="flex animate-marquee-left hover-pause">
-                     {ROW_1.map((item, idx) => (
-                         <TestimonialCard key={`r1-${idx}`} data={item} />
-                     ))}
-                 </div>
-             </div>
+      {/* Row 1 — Right to Left */}
+      <div className="flex mb-10 overflow-hidden">
+        <div className="flex hover-pause animate-marquee-left md:animate-marquee-left-fast">
+          {ROW_1.map((item, idx) => (
+            <TestimonialCard key={`row1-${idx}`} data={item} />
+          ))}
+        </div>
+      </div>
 
-             {/* Row 2: Left to Right */}
-             <div className="flex overflow-hidden group">
-                 <div className="flex animate-marquee-right hover-pause">
-                     {ROW_2.map((item, idx) => (
-                         <TestimonialCard key={`r2-${idx}`} data={item} />
-                     ))}
-                 </div>
-             </div>
-             
-             {/* Fade Edges */}
-             <div className="absolute top-0 left-0 h-full w-20 md:w-32 bg-gradient-to-r from-brand-surface to-transparent z-10 pointer-events-none"></div>
-             <div className="absolute top-0 right-0 h-full w-20 md:w-32 bg-gradient-to-l from-brand-surface to-transparent z-10 pointer-events-none"></div>
-        </section>
-    );
+      {/* Row 2 — Left to Right */}
+      <div className="flex overflow-hidden">
+        <div className="flex hover-pause animate-marquee-right md:animate-marquee-right-fast">
+          {ROW_2.map((item, idx) => (
+            <TestimonialCard key={`row2-${idx}`} data={item} />
+          ))}
+        </div>
+      </div>
+
+      {/* Fade edges */}
+      <div className="absolute top-0 left-0 h-full w-20 md:w-32 bg-gradient-to-r from-brand-surface to-transparent z-10 pointer-events-none" />
+      <div className="absolute top-0 right-0 h-full w-20 md:w-32 bg-gradient-to-l from-brand-surface to-transparent z-10 pointer-events-none" />
+    </section>
+  );
 };

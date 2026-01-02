@@ -14,18 +14,16 @@ export const Footer: React.FC = () => {
                     {/* Column 1: Brand */}
                     <div>
                         <div className="flex items-center gap-3 mb-6">
-                            <div className="w-8 h-8 rounded-full bg-brand-gold flex items-center justify-center text-brand-dark font-serif font-bold text-lg">I</div>
                             <div className="flex flex-col">
-                                <span className="font-serif text-white text-sm leading-none font-bold">International</span>
-                                <span className="text-brand-goldMuted text-[10px] uppercase tracking-widest">Hotel School</span>
+                                <img src="./components/assets/img/ihs-logo.png" alt="International Hotel School" className="h-12 w-auto" />
                             </div>
                         </div>
-                        <p className="text-brand-textSecondary text-sm leading-relaxed mb-8">
+                        <p className="text-white text-sm leading-relaxed mb-8">
                             Africa's leading hospitality management and culinary school. Part of Sommet Education - World Leader in Hospitality Education.
                         </p>
                         <div className="flex gap-4">
                             {[Facebook, Instagram, Twitter, Linkedin, Youtube].map((Icon, i) => (
-                                <a key={i} href="#" className="w-9 h-9 rounded-full bg-[#041424] border border-white/5 flex items-center justify-center text-gray-400 hover:bg-brand-gold hover:text-brand-dark transition-all duration-300">
+                                <a key={i} href="#" className="w-9 h-9 rounded-full bg-brand-dark/20 border border-white/5 flex items-center justify-center text-white hover:bg-brand-gold hover:text-brand-dark transition-all duration-300">
                                     <Icon size={14} />
                                 </a>
                             ))}
@@ -34,8 +32,8 @@ export const Footer: React.FC = () => {
 
                     {/* Column 2: Programmes */}
                     <div>
-                        <h4 className="text-white font-bold mb-6 font-serif">Programmes</h4>
-                        <ul className="space-y-3 text-brand-textSecondary text-sm">
+                        <h4 className="text-brand-gold font-bold mb-6 font-serif">Programmes</h4>
+                        <ul className="space-y-3 text-white/40 text-sm">
                             <li className="hover:text-brand-gold cursor-pointer transition-colors">Hospitality Management</li>
                             <li className="hover:text-brand-gold cursor-pointer transition-colors">Culinary Arts</li>
                             <li className="hover:text-brand-gold cursor-pointer transition-colors">Online Learning</li>
@@ -45,8 +43,8 @@ export const Footer: React.FC = () => {
 
                     {/* Column 3: Admissions */}
                     <div>
-                        <h4 className="text-white font-bold mb-6 font-serif">Admissions</h4>
-                        <ul className="space-y-3 text-brand-textSecondary text-sm">
+                        <h4 className="text-brand-gold font-bold mb-6 font-serif">Admissions</h4>
+                        <ul className="space-y-3 text-white/40 text-sm">
                             <li className="hover:text-brand-gold cursor-pointer transition-colors">How to Apply</li>
                             <li className="hover:text-brand-gold cursor-pointer transition-colors">Entry Requirements</li>
                             <li className="hover:text-brand-gold cursor-pointer transition-colors">Fees & Funding</li>
@@ -56,8 +54,8 @@ export const Footer: React.FC = () => {
 
                     {/* Column 4: Resources */}
                     <div>
-                        <h4 className="text-white font-bold mb-6 font-serif">Resources</h4>
-                        <ul className="space-y-3 text-brand-textSecondary text-sm">
+                        <h4 className="text-brand-gold font-bold mb-6 font-serif">Resources</h4>
+                        <ul className="space-y-3 text-white/40 text-sm">
                             <li className="hover:text-brand-gold cursor-pointer transition-colors">Student Portal</li>
                             <li className="hover:text-brand-gold cursor-pointer transition-colors">Beyond Grad</li>
                             <li className="hover:text-brand-gold cursor-pointer transition-colors">Downloads</li>
@@ -66,7 +64,7 @@ export const Footer: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="border-t border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center gap-6 text-xs text-brand-textSecondary font-medium uppercase tracking-wide">
+                <div className="border-t border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center gap-6 text-xs text-brand-gold font-medium uppercase tracking-wide">
                     <div className="flex flex-wrap justify-center gap-6">
                         <div className="flex items-center gap-2">
                             <MapPin size={14} className="text-brand-gold" />
@@ -83,8 +81,8 @@ export const Footer: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="mt-8 text-center md:text-left flex flex-col md:flex-row justify-between text-xs text-brand-textSecondary/80 items-center">
-                     <p>© 2024 International Hotel School. All rights reserved.</p>
+                <div className="mt-8 text-center md:text-left flex flex-col md:flex-row justify-between text-xs text-white items-center">
+                     <p>© 2026 International Hotel School. All rights reserved.</p>
                      
                      <div className="flex items-center gap-6 mt-4 md:mt-0">
                         <a href="#" className="hover:text-brand-gold transition-colors">Privacy Policy</a>

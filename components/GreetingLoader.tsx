@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 
@@ -8,11 +9,10 @@ interface GreetingLoaderProps {
 const greetings = [
   "Hello",
   "Bonjour",
-  "Hola",
-  "Guten Tag",
-  "Ciao",
   "Sawubona", // Zulu
   "Molo",     // Xhosa
+  "Dumela",   // Tswana
+  "Avuxeni",  // Tsonga
   "Welcome"
 ];
 
@@ -26,7 +26,10 @@ const GreetingLoader: React.FC<GreetingLoaderProps> = ({ onComplete }) => {
     });
 
     // Cycle through greetings
-    greetings.forEach((greeting) => {
+    greetings.forEach((greeting, index) => {
+      // Faster duration for middle items, slightly longer for first and last
+      const displayDuration = index === greetings.length - 1 ? 0.8 : 0.15;
+      
       tl.to(textRef.current, {
         opacity: 1,
         duration: 0.15,
@@ -38,7 +41,7 @@ const GreetingLoader: React.FC<GreetingLoaderProps> = ({ onComplete }) => {
       .to(textRef.current, {
         opacity: 0,
         duration: 0.15,
-        delay: 0.1,
+        delay: displayDuration, 
         ease: "power2.in"
       });
     });
@@ -58,11 +61,11 @@ const GreetingLoader: React.FC<GreetingLoaderProps> = ({ onComplete }) => {
   return (
     <div 
       ref={sectionRef}
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black text-white overflow-hidden"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-brand-dark overflow-hidden"
     >
       <p 
         ref={textRef} 
-        className="text-4xl md:text-6xl font-light tracking-wider opacity-0"
+        className="font-merriweather text-4xl md:text-6xl text-white font-normal tracking-wider opacity-0"
       >
         Hello
       </p>

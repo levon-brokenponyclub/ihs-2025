@@ -16,7 +16,7 @@ This document outlines the animations found in the old AI Studio files and how t
 ### 1. **CoreOfferings.tsx** - Card Expansion Animation
 **Location:** Lines 351-409 in old file  
 **Type:** GSAP Timeline Animation  
-**Purpose:** Animates card expansion when clicking to view course details
+**Purpose:** Animates card expansion when clicking to view Learn More
 
 #### Animation Details:
 - **Trigger:** Click on course card

@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { ChevronRight, ArrowLeft, ArrowRight } from 'lucide-react';
+import { ChevronRight, ArrowLeft, ArrowRight, Clock } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { NAV_LINKS, MORE_MENU_LINKS, OFFERINGS } from '../constants';
 import { Offering } from '../types';
@@ -59,11 +59,23 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
         }
     };
 
+    // Helper to determine if a course is e-commerce (Buy Now) vs Application (Apply Now)
+    const checkIsEcommerce = (course: Offering) => {
+        // Academic qualifications are always Apply Now, even if Online
+        if (['Degree', 'Diploma', 'Certificate', 'Higher Certificate'].includes(course.qualification)) {
+            return false;
+        }
+        // Specialisations and Short Courses are Buy Now
+        if (['Specialisation', 'Short Course'].includes(course.qualification)) {
+            return true;
+        }
+        // Fallback for other types
+        return false;
+    };
+
     const handleApplyClick = (course: Offering) => {
         onClose();
-        const isEcommerce = course.programmeTypes.some((type: string) =>
-            ['Online Learning', 'Part Time Learning'].includes(type)
-        );
+        const isEcommerce = checkIsEcommerce(course);
 
         if (isEcommerce) {
             addToCart(course);
@@ -254,9 +266,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
                     <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-6">{courses.length} Programmes Found</p>
                     <div className="space-y-0">
                         {courses.length > 0 ? courses.map((course, index) => {
-                            const isEcommerce = course.programmeTypes.some((type: string) =>
-                                ['Online Learning', 'Part Time Learning'].includes(type)
-                            );
+                            const isEcommerce = checkIsEcommerce(course);
                             const bgClass = index % 2 === 0 ? 'bg-white' : 'bg-[#f8fafc]';
                             
                             return (
@@ -264,44 +274,56 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
                                 key={course.id}
                                 className={`py-6 px-4 ${bgClass} border-b border-gray-100 last:border-0`}
                             >
-                                {/* Course Info (Clickable) */}
+                                {/* Row 1: Meta (Duration, Qualification, Category) */}
+                                <div className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-wider mb-3">
+                                    <div className="flex items-center gap-1 text-gray-500">
+                                        <Clock size={12} />
+                                        <span>{course.duration}</span>
+                                    </div>
+                                    <span className="text-gray-300">•</span>
+                                    <span className="text-gray-500">{course.qualification}</span>
+                                    <span className="text-gray-300">•</span>
+                                    <span className="text-brand-accent">{course.category}</span>
+                                </div>
+
+                                {/* Row 2: Title */}
                                 <Link 
                                     to={`/course/${course.id}`}
                                     onClick={() => handleLinkClick(`/course/${course.id}`)}
-                                    className="block mb-4"
+                                    className="block mb-6"
                                 >
-                                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] text-gray-500 mb-2">
-                                        <span className="font-bold text-brand-accent uppercase tracking-wider">{course.category}</span>
-                                        <span className="text-gray-300">•</span>
-                                        <span>{course.qualification}</span>
-                                    </div>
-                                    <h4 className="text-base font-bold text-[#002B4E] leading-tight mb-2">{course.title}</h4>
+                                    <h4 className="text-lg font-serif font-bold text-[#002B4E] leading-tight hover:text-brand-accent transition-colors">
+                                        {course.title}
+                                    </h4>
                                 </Link>
 
-                                {/* Fees & Actions */}
-                                <div className="flex items-center justify-between mt-4">
-                                    <div className="flex flex-col">
-                                        <span className="text-[10px] text-gray-400 uppercase tracking-wider font-bold">Tuition</span>
-                                        <span className="text-sm font-bold text-[#002B4E]">R {course.price?.toLocaleString() || 'TBA'}</span>
+                                {/* Row 3: Tuition & Intake */}
+                                <div className="flex justify-between items-end mb-6 border-t border-gray-100 pt-4">
+                                    <div>
+                                        <p className="text-[10px] text-gray-400 uppercase tracking-widest font-bold mb-1">Tuition</p>
+                                        <p className="text-base font-bold text-[#002B4E]">R {course.price?.toLocaleString() || 'TBA'}</p>
                                     </div>
+                                    <div className="text-right">
+                                        <p className="text-[10px] text-gray-400 uppercase tracking-widest font-bold mb-1">Next Intake</p>
+                                        <p className="text-xs font-bold text-[#002B4E]">{course.startDate}</p>
+                                    </div>
+                                </div>
+
+                                {/* Row 4: Actions */}
+                                <div className="flex gap-3">
+                                    <button 
+                                        onClick={() => handleLinkClick(`/course/${course.id}`)}
+                                        className="flex-1 py-3 border border-[#002B4E] text-[#002B4E] rounded-sm text-[10px] font-bold uppercase hover:bg-[#002B4E] hover:text-white transition-colors tracking-[1px] text-center"
+                                    >
+                                        Learn More
+                                    </button>
                                     
-                                    <div className="flex gap-2">
-                                        {/* Course Details (Ghost/Secondary) */}
-                                        <button 
-                                            onClick={() => handleLinkClick(`/course/${course.id}`)}
-                                            className="px-3 py-2 border border-gray-300 text-gray-600 rounded-sm text-[10px] font-bold uppercase hover:border-[#002B4E] hover:text-[#002B4E] transition-colors tracking-[1px]"
-                                        >
-                                            Course Details
-                                        </button>
-                                        
-                                        {/* Apply/Buy (Primary) */}
-                                        <button 
-                                            onClick={() => handleApplyClick(course)}
-                                            className="px-4 py-2 bg-[#002B4E] text-white text-[10px] font-bold uppercase rounded-sm flex items-center gap-1 hover:bg-[#C2B067] hover:text-[#002B4E] transition-colors shadow-none tracking-[1px]"
-                                        >
-                                            {isEcommerce ? 'Buy' : 'Apply'}
-                                        </button>
-                                    </div>
+                                    <button 
+                                        onClick={() => handleApplyClick(course)}
+                                        className="flex-1 py-3 bg-[#002B4E] text-white text-[10px] font-bold uppercase rounded-sm hover:bg-[#C2B067] hover:text-[#002B4E] transition-colors shadow-none tracking-[1px] text-center flex items-center justify-center gap-2"
+                                    >
+                                        {isEcommerce ? 'Buy Now' : 'Apply Now'}
+                                    </button>
                                 </div>
                             </div>
                         )}) : (
@@ -327,7 +349,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
 
     return (
         <div 
-            className={`fixed inset-0 z-[100] lg:hidden transition-visibility duration-500 ${isOpen ? 'visible' : 'invisible delay-500'}`}
+            className={`fixed inset-0 z-[150] lg:hidden transition-visibility duration-500 ${isOpen ? 'visible' : 'invisible delay-500'}`}
         >
             {/* Backdrop */}
             <div 

@@ -26,6 +26,7 @@ import { ApplicationModal } from './ApplicationModal';
 import { CheckoutModal } from './CheckoutModal';
 import { useTransition } from '../context/TransitionContext';
 import { CourseCardSlider } from './CourseCardSlider';
+import { Testimonial } from './Testimonial';
 
 
 // --- Light Theme Accordion for Mobile Course Detail ---
@@ -127,6 +128,9 @@ const MobileFeesDrawer = ({
     );
     const ctaLabel = isEcommerce ? 'Buy Now' : 'Apply Now';
 
+    // Logic: Show Title in header if scrolled past hero (showTitle=true) OR if drawer is open
+    const displayTitleInHeader = showTitle || isOpen;
+
     useEffect(() => {
         const handleEsc = (e: KeyboardEvent) => {
             if (e.key === 'Escape' && isOpen) onToggle();
@@ -158,14 +162,14 @@ const MobileFeesDrawer = ({
                 <div className="flex justify-between items-center w-full gap-4 h-12 overflow-hidden relative">
                     <div className="flex-1 relative h-full">
                         <div
-                            className={`absolute inset-0 flex items-center justify-between transition-all duration-500 ease-in-out ${showTitle ? '-translate-y-full opacity-0' : 'translate-y-0 opacity-100'}`}
+                            className={`absolute inset-0 flex items-center justify-between transition-all duration-500 ease-in-out ${displayTitleInHeader ? '-translate-y-full opacity-0' : 'translate-y-0 opacity-100'}`}
                         >
                             <p className="text-gray-500 text-[10px] uppercase tracking-[1px] font-bold">Per Year</p>
                             <p className="text-2xl font-serif text-[#002B4E] font-bold leading-none">{course.fees.tuition}</p>
                         </div>
 
                         <div
-                            className={`absolute inset-0 flex items-center justify-center transition-all duration-500 ease-in-out ${showTitle ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'}`}
+                            className={`absolute inset-0 flex items-center justify-center transition-all duration-500 ease-in-out ${displayTitleInHeader ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'}`}
                         >
                             <h3 className="font-serif text-lg font-bold text-[#002B4E] truncate leading-normal px-4 text-center">
                                 {course.title}
@@ -182,7 +186,7 @@ const MobileFeesDrawer = ({
             <div className="w-full px-6 md:px-10 overflow-hidden transition-[max-height,opacity,padding] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] max-h-0 opacity-0 pb-0 group-data-[state=open]:max-h-[85vh] group-data-[state=open]:opacity-100 group-data-[state=open]:pb-10">
                 <div className="pt-2 border-t border-slate-100 mt-2">
                     <div className="mb-4 mt-2">
-                        {showTitle && (
+                        {displayTitleInHeader && (
                             <div className="mb-4 flex justify-between items-center border-b border-gray-100 pb-4">
                                 <p className="text-gray-500 text-[10px] uppercase tracking-[1px] font-bold">Tuition</p>
                                 <p className="text-3xl font-serif text-[#002B4E] font-bold">{course.fees.tuition}</p>
@@ -275,7 +279,7 @@ const FeesCard = ({ course }: { course: CourseDetailType }) => {
     return (
         <div className="bg-white border border-gray-200 rounded-sm overflow-hidden shadow-xl">
             <div className="bg-[#002B4E] p-4 text-center">
-                <span className="text-white font-bold uppercase tracking-[1px] text-sm">2025 Fees</span>
+                <span className="text-white font-bold uppercase tracking-[1px] text-sm">2026 Fees</span>
             </div>
             <div className="p-8 text-center">
                 <p className="text-gray-500 text-xs uppercase tracking-[1px] mb-2">Per Year</p>
@@ -893,6 +897,9 @@ export const CourseDetail: React.FC = () => {
                     />
                 </section>
             )}
+            
+            {/* Testimonials Section */}
+            <Testimonial />
 
             {/* Mobile Bottom Drawer */}
             <MobileFeesDrawer

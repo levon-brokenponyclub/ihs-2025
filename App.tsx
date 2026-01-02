@@ -1,5 +1,4 @@
-
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
@@ -19,6 +18,11 @@ import { TransitionProvider } from './context/TransitionContext';
 import { CompareBar } from './components/CompareBar';
 import { CompareModal } from './components/CompareModal';
 import { LogoSlider } from './components/LogoSlider';
+import GreetingLoader from './components/GreetingLoader';
+
+// ✅ Import WhatsApp widget
+import { WhatsAppWidget } from 'react-whatsapp-widget';
+import 'react-whatsapp-widget/dist/index.css';
 
 const HomePage = () => (
   <>
@@ -36,6 +40,7 @@ const HomePage = () => (
 
 function App() {
   const { pathname } = useLocation();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -45,7 +50,8 @@ function App() {
     <CartProvider>
       <CompareProvider>
         <TransitionProvider>
-          {/* Removed overflow-x-hidden to ensure sticky positioning works in children */}
+          {loading && <GreetingLoader onComplete={() => setLoading(false)} />}
+          
           <div className="min-h-screen bg-brand-dark text-brand-text font-sans antialiased selection:bg-brand-gold selection:text-brand-dark">
             <Header />
             
@@ -54,7 +60,6 @@ function App() {
                 <Route path="/" element={<HomePage />} />
                 <Route path="/programmes/:type" element={<ProgrammeArchive />} />
                 <Route path="/course/:id" element={<CourseDetail />} />
-                {/* Catch-all route to prevent blank pages */}
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </main>
@@ -62,6 +67,14 @@ function App() {
             <CompareBar />
             <CompareModal />
             <Footer />
+
+            {/* WhatsApp Widget */}
+            <WhatsAppWidget
+              phoneNumber="541112222222" // replace with your number in international format
+              companyName="International Hotel School"
+              replyTimeText="Typically replies within a day"
+              message="Hello! 👋🏼 \n\nHow can we help you today?"
+            />
           </div>
         </TransitionProvider>
       </CompareProvider>
