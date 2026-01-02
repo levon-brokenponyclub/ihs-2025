@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 export interface Offering {
@@ -8,7 +7,7 @@ export interface Offering {
   duration: string;
   qualification: string;
   description: string;
-  image: string;
+  image?: string; // Legacy: optional, use video instead
   video?: string; // Added for hover video loops
   programmeTypes: string[];
   accreditations: string[];
@@ -48,7 +47,6 @@ export interface CourseDetail extends Offering {
   fullDescription: string;
   level: string;
   deliveryMode: string;
-  // intake is now inherited from Offering
   accreditations: string[];
   curriculum: CurriculumYear[];
   requirements: string[];
@@ -62,4 +60,5 @@ export interface CourseDetail extends Offering {
     registration: string;
     note: string;
   };
+  workIntegratedLearning?: string; // Added optional property
 }

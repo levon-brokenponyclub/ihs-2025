@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -51,20 +50,17 @@ export const DesktopMenu: React.FC<DesktopMenuProps> = ({ isOpen, onClose }) => 
     >
       {/* Background Layer - Split to match columns */}
       <div className="absolute inset-0 flex z-0 pointer-events-none">
-          {/* Col 1 & 2 Area (66.66%) - Brand Navy */}
-          <div className="w-2/3 bg-[#002B4E] border-r border-white/5"></div>
-          {/* Col 3 Area (33.33%) - Darker Navy */}
-          <div className="w-1/3 bg-[#001D36]"></div>
+          {/* Col 1 + 2 Area (58%) - Brand Navy (stretches full width) */}
+          <div className="w-[58%] bg-[#002B4E]" style={{ backgroundColor: '#002B4E', opacity: 1, filter: 'none' }}></div>
+          {/* Col 3 Area (42%) - Darker Navy (stretches full width) */}
+          <div className="w-[42%] bg-[#001D36]" style={{ backgroundColor: '#001D36', opacity: 1, filter: 'none' }}></div>
       </div>
-
-      {/* Depth overlay */}
-      <div className={`absolute inset-0 bg-black/20 transition-opacity duration-500 z-0 ${isOpen ? 'opacity-100' : 'opacity-0'}`} />
 
       <div className="relative z-10 w-full h-full overflow-y-auto">
         <div className="max-w-7xl mx-auto px-8 h-full flex items-stretch">
 
           {/* COLUMN 1 */}
-          <div {...useAnimation(columnEntrance.left(), isOpen)} className={`w-1/3 border-r border-white/5 py-16 pr-12 flex flex-col`}>
+          <div {...useAnimation(columnEntrance.left(), isOpen)} className={`w-[30%] border-r border-white/5 py-16 pr-12 flex flex-col`}>
             <h3 className="text-xs font-bold text-[#C2B067] uppercase tracking-widest mb-10">
               Student & Academic
             </h3>
@@ -90,7 +86,7 @@ export const DesktopMenu: React.FC<DesktopMenuProps> = ({ isOpen, onClose }) => 
           </div>
 
           {/* COLUMN 2 */}
-          <div {...useAnimation(columnEntrance.center(), isOpen)} className={`w-1/3 border-r border-white/5 py-16 px-12 flex flex-col`}>
+          <div {...useAnimation(columnEntrance.center(), isOpen)} className={`w-[28%] border-r border-white/5 py-16 px-12 flex flex-col`}>
             <h3 className="text-xs font-bold text-[#C2B067] uppercase tracking-widest mb-10">
               Institutional
             </h3>
@@ -122,9 +118,7 @@ export const DesktopMenu: React.FC<DesktopMenuProps> = ({ isOpen, onClose }) => 
           </div>
 
           {/* COLUMN 3 */}
-          <div {...useAnimation(columnEntrance.right(), isOpen)} className="w-1/3 py-16 pl-12 flex flex-col relative">
-            <div className="absolute inset-0 bg-[#05192e]/30 pointer-events-none" />
-
+          <div {...useAnimation(columnEntrance.right(), isOpen)} className="w-[42%] bg-[#001D36] py-16 pl-12 flex flex-col relative" style={{ backgroundColor: '#001D36', opacity: 1, filter: 'none' }}>
             <div className="relative z-10">
               <h3 className="text-xs font-bold text-white/40 uppercase tracking-widest mb-10">
                 Don't Miss Out

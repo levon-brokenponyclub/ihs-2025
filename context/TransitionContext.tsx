@@ -1,13 +1,18 @@
-
 import React, { createContext, useContext, useState, useRef, useLayoutEffect } from 'react';
 import gsap from 'gsap';
 import { Offering } from '../types';
 import { useNavigate } from 'react-router-dom';
 
+interface TransitionState {
+    isTransitioning: boolean;
+    phase: 'idle' | 'animating' | 'navigating' | 'complete';
+}
+
 interface TransitionContextType {
     startTransition: (offering: Offering, imageRect: DOMRect, textRect: DOMRect, categoryRect: DOMRect) => void;
     debugMode: boolean;
     toggleDebug: () => void;
+    transitionState: TransitionState;
 }
 
 const TransitionContext = createContext<TransitionContextType | undefined>(undefined);
@@ -71,6 +76,9 @@ export const TransitionProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         categoryRect: DOMRect;
     } | null>(null);
 
+    // New transition state exposed to consumers
+    const [transitionState, setTransitionState] = useState<TransitionState>({ isTransitioning: false, phase: 'idle' });
+
     // Refs for the temporary transition elements
     const imageOverlayRef = useRef<HTMLDivElement>(null);
     const textOverlayRef = useRef<HTMLHeadingElement>(null);
@@ -109,6 +117,9 @@ export const TransitionProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         
         // 3. Set state to mount the overlay elements
         setActiveItem({ offering, imageRect, textRect, categoryRect });
+
+        // Also mark transition state as animating so pages can react immediately
+        setTransitionState({ isTransitioning: true, phase: 'animating' });
     };
 
     // Use useLayoutEffect to prevent FOUC (Flash of Unstyled Content) during animation setup
@@ -189,12 +200,17 @@ export const TransitionProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                     logTransition('Animation Started');
                     lastLoggedIdRef.current = offering.id;
                 }
+                // Mark that we're animating
+                setTransitionState({ isTransitioning: true, phase: 'animating' });
             },
             onComplete: () => {
                 if (!isMounted) return;
                 
                 logTransition('Animation Complete -> Cleanup');
                 
+                // When the GSAP animation completes we mark the transition as complete/finished
+                setTransitionState({ isTransitioning: false, phase: 'complete' });
+
                 if (debugMode) {
                     setTimeout(() => {
                         if (isMounted) clearDebugBoxes();
@@ -219,6 +235,8 @@ export const TransitionProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         timelineRef.current = tl;
 
         // Perform Navigation immediately so the underlying page is ready when we fade out
+        // Mark that we're navigating (so pages can keep hero background visible but hide content)
+        setTransitionState({ isTransitioning: true, phase: 'navigating' });
         navigate(`/course/${offering.id}`);
 
         // The FLIP Animation
@@ -267,7 +285,7 @@ export const TransitionProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     }, [activeItem, navigate, debugMode]);
 
     return (
-        <TransitionContext.Provider value={{ startTransition, debugMode, toggleDebug }}>
+        <TransitionContext.Provider value={{ startTransition, debugMode, toggleDebug, transitionState }}>
             {children}
             
             {activeItem && (
@@ -297,7 +315,7 @@ export const TransitionProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                     </span>
 
                     {/* 3. Text Layer */}
-                    <h3 
+                    <h3
                         ref={textOverlayRef}
                         className="pointer-events-none transform-origin-top-left"
                     >

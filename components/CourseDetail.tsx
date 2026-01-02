@@ -1,41 +1,32 @@
-
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { useParams, Link, useLocation } from 'react-router-dom';
-import { COURSE_DETAILS, OFFERINGS, ACCREDITATION_LOGOS } from '../constants.tsx';
+import { useParams, Link } from 'react-router-dom';
+import { COURSE_DETAILS, OFFERINGS } from '../constants';
 import { Button } from './ui/Button';
 import { useCart } from '../context/CartContext';
-import { useCompare } from '../context/CompareContext';
-import { MultiStepForm } from './ui/MultiStepForm';
+/// <reference types="styled-components" />
+// Explicitly specify the path to the type declarations
+import 'styled-components';
+// @ts-ignore
 import {
-    Clock,
-    GraduationCap,
-    MapPin,
-    Calendar,
     CheckCircle,
     Download,
-    ArrowLeft,
     Award,
-    Check,
     ChevronUp,
     ChevronDown,
     ShoppingBag,
-    HelpCircle,
-    ArrowUpCircle,
-    ChevronLeft,
-    ChevronRight,
-    Eye,
-    BarChart2,
-    X,
     ArrowRight,
-    BookOpen,
+    ArrowLeft,
     Circle,
-    FileText,
-    MessageSquare
+    MessageSquare,
+    Clock,
+    MapPin
 } from 'lucide-react';
 import { Offering, CourseDetail as CourseDetailType } from '../types';
-import { QuickViewModal } from './QuickViewModal';
 import { ApplicationModal } from './ApplicationModal';
 import { CheckoutModal } from './CheckoutModal';
+import { useTransition } from '../context/TransitionContext';
+import { CourseCardSlider } from './CourseCardSlider';
+
 
 // --- Light Theme Accordion for Mobile Course Detail ---
 interface LightAccordionProps {
@@ -51,7 +42,8 @@ const LightAccordionItem: React.FC<LightAccordionProps> = ({ title, children, is
     const wasOpen = useRef(isOpen);
 
     useEffect(() => {
-        if (isOpen && !wasOpen.current && itemRef.current) {
+        // Only scroll on mobile
+        if (isOpen && !wasOpen.current && itemRef.current && window.innerWidth < 1024) {
             setTimeout(() => {
                 itemRef.current?.scrollIntoView({
                     behavior: 'smooth',
@@ -63,9 +55,9 @@ const LightAccordionItem: React.FC<LightAccordionProps> = ({ title, children, is
     }, [isOpen]);
 
     return (
-        <div ref={itemRef} id={id} className={`border-b border-gray-200 bg-white ${isOpen ? 'scroll-mt-[180px]' : ''}`}>
+        <div ref={itemRef} id={id} className={`border-b border-gray-200 bg-white lg:border-none lg:bg-transparent ${isOpen ? 'scroll-mt-[180px]' : ''}`}>
             <button
-                className="w-full flex justify-between items-center py-5 px-4 text-left focus:outline-none"
+                className="w-full flex justify-between items-center py-5 px-4 text-left focus:outline-none lg:hidden"
                 onClick={onToggle}
             >
                 <span className={`font-serif font-bold text-lg ${isOpen ? 'text-brand-primary' : 'text-gray-700'}`}>
@@ -74,9 +66,9 @@ const LightAccordionItem: React.FC<LightAccordionProps> = ({ title, children, is
                 {isOpen ? <ChevronUp className="text-brand-accent" /> : <ChevronDown className="text-gray-400" />}
             </button>
             <div
-                className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-[2000px] opacity-100 mb-6' : 'max-h-0 opacity-0'}`}
+                className={`overflow-hidden transition-all duration-300 ease-in-out lg:max-h-none lg:opacity-100 lg:overflow-visible ${isOpen ? 'max-h-[2000px] opacity-100 mb-6 lg:mb-0' : 'max-h-0 opacity-0 lg:mb-0'}`}
             >
-                <div className="px-4 text-gray-600 text-sm leading-relaxed">
+                <div className="px-4 text-gray-600 text-sm leading-relaxed lg:px-0">
                     {children}
                 </div>
             </div>
@@ -84,17 +76,49 @@ const LightAccordionItem: React.FC<LightAccordionProps> = ({ title, children, is
     );
 };
 
+// --- Reusable Accreditation Row ---
+const AccreditationRow = ({ accreditations }: { accreditations: string[] }) => {
+    if (!accreditations || accreditations.length === 0) return null;
+
+    return (
+        <div className="flex flex-wrap justify-center gap-4 items-center pt-6 border-t border-gray-100 mt-6">
+            {accreditations.map((acc, idx) => {
+                let src = '';
+                // Check for specific overrides requested
+                if (acc === 'IHS' || acc === 'International Hotel School') {
+                    src = 'components/assets/logos/ihs-logo-dark.png';
+                } else if (acc === 'AHLEI') {
+                    src = 'components/assets/logos/american-hotel-lodging-educational-institute-r6djf1a4jfs1u9sokoij74ckub80bbe63d3o4wvozc.png';
+                }
+
+                // Fallback to URL check if not matched above
+                if (!src && (/^https?:\/\//.test(acc) || /\.(svg|png|jpe?g|webp)$/i.test(acc))) {
+                    src = acc;
+                }
+
+                if (src) {
+                    return (
+                        <img key={idx} src={src} alt={acc} className="h-[3.5rem] w-auto object-contain opacity-80 hover:opacity-100 transition-opacity" />
+                    );
+                } else {
+                    return null;
+                }
+            })}
+        </div>
+    );
+};
+
 // --- Bottom Drawer Component (Mobile Conversion) ---
-const MobileFeesDrawer = ({ 
-    course, 
-    isOpen, 
-    onToggle, 
-    onApply,
-    showTitle
-}: { 
-    course: CourseDetailType, 
-    isOpen: boolean, 
-    onToggle: () => void, 
+const MobileFeesDrawer = ({
+                              course,
+                              isOpen,
+                              onToggle,
+                              onApply,
+                              showTitle
+                          }: {
+    course: CourseDetailType,
+    isOpen: boolean,
+    onToggle: () => void,
     onApply: () => void,
     showTitle: boolean
 }) => {
@@ -112,8 +136,8 @@ const MobileFeesDrawer = ({
     }, [isOpen, onToggle]);
 
     return (
-        <div 
-            className="group fixed bottom-0 left-0 right-0 z-[100] lg:hidden bg-white shadow-[0_-5px_40px_rgba(0,0,0,0.15)] rounded-t-3xl flex flex-col items-center mx-auto max-w-4xl border-t border-x border-slate-100 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
+        <div
+            className="group fixed bottom-0 left-0 right-0 z-[100] lg:hidden bg-white rounded-t-3xl flex flex-col items-center mx-auto max-w-4xl border-t border-x border-slate-100 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
             data-state={isOpen ? 'open' : 'closed'}
             role="region"
             aria-label="Course Fees Details"
@@ -127,37 +151,37 @@ const MobileFeesDrawer = ({
                 <span className="w-12 h-1.5 bg-slate-300 rounded-full"></span>
             </button>
 
-            <div 
+            <div
                 className="w-full px-6 md:px-10 pb-4 cursor-pointer flex flex-col"
                 onClick={onToggle}
             >
                 <div className="flex justify-between items-center w-full gap-4 h-12 overflow-hidden relative">
                     <div className="flex-1 relative h-full">
-                        <div 
+                        <div
                             className={`absolute inset-0 flex items-center justify-between transition-all duration-500 ease-in-out ${showTitle ? '-translate-y-full opacity-0' : 'translate-y-0 opacity-100'}`}
                         >
-                             <p className="text-gray-500 text-[10px] uppercase tracking-[1px] font-bold">Per Year</p>
-                             <p className="text-2xl font-serif text-[#002B4E] font-bold leading-none">{course.fees.tuition}</p>
+                            <p className="text-gray-500 text-[10px] uppercase tracking-[1px] font-bold">Per Year</p>
+                            <p className="text-2xl font-serif text-[#002B4E] font-bold leading-none">{course.fees.tuition}</p>
                         </div>
 
-                        <div 
-                            className={`absolute inset-0 flex items-center transition-all duration-500 ease-in-out ${showTitle ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'}`}
+                        <div
+                            className={`absolute inset-0 flex items-center justify-center transition-all duration-500 ease-in-out ${showTitle ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'}`}
                         >
-                             <h3 className="font-serif text-lg font-bold text-[#002B4E] truncate leading-normal pr-2">
+                            <h3 className="font-serif text-lg font-bold text-[#002B4E] truncate leading-normal px-4 text-center">
                                 {course.title}
                             </h3>
                         </div>
                     </div>
 
                     <div className={`text-[#C2B067] transition-transform duration-500 shrink-0 ${isOpen ? 'rotate-180' : ''}`}>
-                         <ChevronUp size={24} />
+                        <ChevronUp size={24} />
                     </div>
                 </div>
             </div>
 
             <div className="w-full px-6 md:px-10 overflow-hidden transition-[max-height,opacity,padding] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] max-h-0 opacity-0 pb-0 group-data-[state=open]:max-h-[85vh] group-data-[state=open]:opacity-100 group-data-[state=open]:pb-10">
                 <div className="pt-2 border-t border-slate-100 mt-2">
-                    <div className="mb-8 mt-2">
+                    <div className="mb-4 mt-2">
                         {showTitle && (
                             <div className="mb-4 flex justify-between items-center border-b border-gray-100 pb-4">
                                 <p className="text-gray-500 text-[10px] uppercase tracking-[1px] font-bold">Tuition</p>
@@ -175,9 +199,13 @@ const MobileFeesDrawer = ({
                                 <span className="text-[#002B4E] font-bold">Monthly / Annually</span>
                             </div>
                         </div>
-                         <p className="text-[10px] text-slate-400 mt-4 italic leading-relaxed">
+                        <p className="text-[10px] text-slate-400 mt-4 italic leading-relaxed text-center">
                             *{course.fees.note}
                         </p>
+                    </div>
+
+                    <div className="mb-6">
+                        <AccreditationRow accreditations={course.accreditations} />
                     </div>
 
                     <div className="flex flex-col gap-3">
@@ -186,13 +214,18 @@ const MobileFeesDrawer = ({
                                 e.stopPropagation();
                                 onApply();
                             }}
-                            className="inline-flex items-center justify-center font-bold uppercase transition-all duration-300 text-xs px-6 py-4 rounded-sm bg-[#C2B067] text-[#002B4E] hover:bg-white hover:text-[#002B4E] border border-transparent hover:border-[#C2B067] w-full shadow-md tracking-[1px]"
+                            className="inline-flex items-center justify-center font-bold uppercase transition-all duration-300 text-xs px-6 py-4 rounded-sm bg-[#C2B067] text-white hover:bg-[#B8A558] border border-[#C2B067] w-full tracking-[1px]"
                         >
                             {ctaLabel}
                         </button>
-                        
-                        <button className="w-full border border-[#002B4E] text-[#002B4E] bg-white hover:bg-slate-50 font-bold uppercase text-xs py-4 rounded-sm transition-colors flex items-center justify-center gap-2 tracking-[1px]">
-                            Download Prospectus <Download size={14} />
+
+                        <button className="w-full border border-[#C2B067] text-[#C2B067] bg-white/0 hover:bg-slate-50 font-bold uppercase text-xs py-4 rounded-sm transition-colors flex items-center justify-center gap-2 tracking-[1px]">
+                            Download Prospectus
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-download">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" x2="12" y1="15" y2="3"></line>
+                            </svg>
                         </button>
                     </div>
                 </div>
@@ -208,15 +241,15 @@ const NeedGuidanceCard = () => {
             <div className="absolute -right-6 -top-6 text-white/5 transform rotate-12">
                 <MessageSquare size={140} fill="currentColor" />
             </div>
-            
+
             <div className="relative z-10">
                 <h3 className="font-serif text-2xl font-bold text-white mb-3">Need Guidance?</h3>
                 <p className="text-white/80 text-sm leading-relaxed mb-8">
                     Speak to our admissions team to find the perfect fit for your career goals.
                 </p>
-                
+
                 <button className="flex items-center gap-3 text-brand-gold font-bold text-xs uppercase hover:text-white transition-colors group tracking-[1px]">
-                    Start Live Chat 
+                    Start Live Chat
                     <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                 </button>
             </div>
@@ -276,16 +309,23 @@ const FeesCard = ({ course }: { course: CourseDetailType }) => {
                         Download Prospectus
                     </Button>
                 </div>
+
+                <AccreditationRow accreditations={course.accreditations} />
             </div>
         </div>
     );
+};
+
+// Ensure setContentReady is defined
+const setContentReady = (state: boolean) => {
+    console.log(`Content ready state: ${state}`);
 };
 
 export const CourseDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const [activeSection, setActiveSection] = useState('overview');
     const [isTabsSticky, setIsTabsSticky] = useState(false);
-    
+
     // Header Visibility State sync (mirrored logic from Header.tsx)
     const [isHeaderVisible, setIsHeaderVisible] = useState(true);
     const lastScrollY = useRef(0);
@@ -297,32 +337,83 @@ export const CourseDetail: React.FC = () => {
     const [showCheckout, setShowCheckout] = useState(false);
     const heroRef = useRef<HTMLDivElement>(null);
     const { addToCart } = useCart();
-    
-    const course = id && COURSE_DETAILS[id] ? COURSE_DETAILS[id] : COURSE_DETAILS['1'];
-    
-    const SECTIONS = useMemo(() => [
-        { id: 'overview', label: 'Overview' },
-        { id: 'content', label: 'Programme Content' },
-        { id: 'focus', label: course.qualification === 'Degree' ? 'Degree Focus Area' : 'Focus Areas' },
-        { id: 'requirements', label: 'Entry Requirements' },
-        { id: 'certification', label: 'Certification' },
-        { id: 'faq', label: 'FAQs' },
-        { id: 'fees', label: 'Fees' },
-    ], [course.qualification]);
 
-    const isEcommerce = course.programmeTypes.some((type: string) => 
+    // Safeguard transition state access to prevent undefined error
+    const transitionData = useTransition();
+    // Fallback if transitionData itself is undefined (though context provider should prevent this)
+    const transitionState = transitionData?.transitionState || { phase: 'idle', isTransitioning: false };
+    const { startTransition } = transitionData || { startTransition: () => {} };
+
+    // Removed unused variable `contentReady`
+
+    const course = id && COURSE_DETAILS[id] ? COURSE_DETAILS[id] : COURSE_DETAILS['1'];
+
+    // --- Related Programmes Logic ---
+    const relatedOfferings = useMemo(() => {
+        return OFFERINGS.filter(o =>
+            o.id !== course.id &&
+            (o.category === course.category || o.programmeTypes.some(t => course.programmeTypes.includes(t)))
+        ).slice(0, 6); // Up to 6 for the slider
+    }, [course]);
+
+    const SECTIONS = useMemo(() => {
+        const sections = [
+            { id: 'overview', label: 'Overview' },
+            { id: 'content', label: 'Programme Curriculum' },
+            { id: 'focus', label: course.qualification === 'Degree' ? 'Degree Focus Area' : 'Focus Areas' },
+            { id: 'requirements', label: 'Entry Requirements' },
+            { id: 'certification', label: 'Certification' },
+            { id: 'faq', label: 'FAQs' },
+            { id: 'fees', label: 'Fees' },
+        ];
+
+        if (course.workIntegratedLearning) {
+            // Insert WIL after content
+            sections.splice(2, 0, { id: 'wil', label: 'Work Integrated Learning' });
+        }
+
+        return sections;
+    }, [course]);
+
+    const isEcommerce = course.programmeTypes.some((type: string) =>
         ['Online Learning', 'Part Time Learning'].includes(type)
     );
 
+    // Helpers for Breadcrumbs
+    const primaryType = course.programmeTypes[0] || 'Programme';
+    const getArchiveLink = (type: string) => {
+        if(type.includes('Full Time')) return '/programmes/full-time';
+        if(type.includes('Blended')) return '/programmes/blended';
+        if(type.includes('In-Service')) return '/programmes/in-service';
+        if(type.includes('Part Time')) return '/programmes/part-time';
+        if(type.includes('Online')) return '/programmes/online';
+        return '/';
+    };
+    const archiveLink = getArchiveLink(primaryType);
+
     useEffect(() => {
         window.scrollTo(0, 0);
+        // Reset content ready state when navigating to new course
+        setContentReady(false);
     }, [id]);
+
+    // Manage content visibility during page transition
+    useEffect(() => {
+        // Keep content hidden while transitioning overlays are active
+        if (transitionState.phase === 'complete' || transitionState.phase === 'idle') {
+            // Small delay to ensure overlays have faded out
+            const timer = setTimeout(() => setContentReady(true), 50);
+            return () => clearTimeout(timer);
+        } else {
+            setContentReady(false);
+        }
+    }, [transitionState.phase]);
 
     useEffect(() => {
         const handleScroll = () => {
             const currentScrollY = window.scrollY;
             const heroHeight = heroRef.current?.offsetHeight || 400;
-            
+
             // Header Visibility Logic (Matches Header.tsx)
             if (currentScrollY < 10) {
                 setIsHeaderVisible(true);
@@ -333,8 +424,8 @@ export const CourseDetail: React.FC = () => {
             }
             lastScrollY.current = currentScrollY;
 
-            // Sticky Logic
-            const isSticky = window.scrollY >= (heroHeight - 80);
+            // Sticky Logic - Adjusted for breadcrumb bar (approx 56px)
+            const isSticky = window.scrollY >= (heroHeight + 56 - 80);
             setIsTabsSticky(isSticky);
             setScrolledPastHero(window.scrollY > (heroHeight - 150));
 
@@ -342,7 +433,7 @@ export const CourseDetail: React.FC = () => {
             if (window.innerWidth >= 1024) {
                 const offset = 200;
                 const scrollPosition = window.scrollY + offset;
-                
+
                 for (const section of SECTIONS) {
                     const element = document.getElementById(section.id);
                     if (element) {
@@ -363,7 +454,7 @@ export const CourseDetail: React.FC = () => {
 
     const handleTabClick = (sectionId: string) => {
         setActiveSection(sectionId);
-        
+
         if (sectionId === 'fees') {
             if (window.innerWidth < 1024) {
                 setIsDrawerOpen(true);
@@ -403,6 +494,10 @@ export const CourseDetail: React.FC = () => {
         }
     };
 
+    const handleRelatedExpand = (offering: Offering, imgRect: DOMRect, txtRect: DOMRect, catRect: DOMRect) => {
+        startTransition(offering, imgRect, txtRect, catRect);
+    };
+
     if (!course) return <div>Loading...</div>;
 
     const typeOfStudy = course.programmeTypes.some(t => t.includes('Full Time')) ? 'Full Time' :
@@ -410,47 +505,76 @@ export const CourseDetail: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-gray-50 pt-0 pb-20 lg:pb-0">
-            
+
             {/* Hero Section */}
-            <section ref={heroRef} className="relative bg-brand-primary h-[50vh] lg:h-[80vh] flex items-end pb-8 lg:pb-16 overflow-hidden">
-                <div className="absolute inset-0 z-0">
-                    <img src={course.image} alt={course.title} className="w-full h-full object-cover opacity-60" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-brand-primary via-brand-primary/60 to-transparent"></div>
+            <section ref={heroRef} className="relative bg-brand-primary h-[450px] lg:h-[90vh] flex flex-col">
+                {/* Background Layer */}
+                <div className="absolute inset-0 z-0 bg-brand-primary overflow-hidden">
+                    {course.video && (
+                        <video
+                            src={course.video}
+                            loop
+                            playsInline
+                            autoPlay
+                            muted
+                            className="w-full h-full object-cover opacity-70"
+                        />
+                    )}
+                    <div className="absolute inset-0 z-10 bg-brand-primary/30" />
+                    <div className="absolute inset-0 z-10 bg-gradient-to-r from-brand-primary via-brand-primary/50 to-transparent" />
                 </div>
-                
-                <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-                    <div className="lg:w-2/3">
-                        <Link to="/" className="inline-flex items-center text-white/70 hover:text-white mb-6 text-xs font-bold uppercase tracking-[1px]">
-                            <ArrowLeft size={14} className="mr-2" /> Back to Programmes
-                        </Link>
-                        
-                        <div className="flex flex-wrap gap-2 mb-4">
-                            <span className="bg-brand-gold text-brand-primary text-[10px] font-bold px-2 py-1 uppercase rounded-sm tracking-[1px]">
-                                {course.category}
-                            </span>
-                            <span className="bg-white/20 text-white text-[10px] font-bold px-2 py-1 uppercase rounded-sm tracking-[1px]">
-                                {course.qualification}
-                            </span>
-                        </div>
 
-                        <h1 className="font-serif text-3xl lg:text-6xl text-white font-bold leading-tight mb-6 lg:mb-8 line-clamp-3 lg:line-clamp-none">
-                            {course.title}
-                        </h1>
+                {/* Content Layer */}
+                <div className="relative z-20 flex-grow flex items-center">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+                        <div className="lg:w-2/3 w-full pb-5 lg:pb-0 relative">
+                            {/* Back Navigation */}
+                            <Link
+                                to={archiveLink}
+                                className="inline-flex items-center gap-2 text-white/70 hover:text-white hover:translate-x-1 transition-all duration-300 text-xs font-bold uppercase tracking-widest mb-6"
+                            >
+                                <ArrowLeft className="w-4 h-4" /> Back to Programmes
+                            </Link>
 
-                        <div className="lg:hidden flex flex-col gap-3">
-                            <div className="flex items-center gap-4 text-white/80 text-xs mb-2">
-                                <span className="flex items-center gap-1"><Clock size={14} /> {course.duration}</span>
-                                <span className="flex items-center gap-1"><MapPin size={14} /> {typeOfStudy}</span>
+                            {/* Mobile Meta - MOVED ABOVE TITLE */}
+                            <div className="lg:hidden flex items-center gap-4 text-white/80 text-xs mb-[2rem] font-bold uppercase tracking-widest">
+                                <span className="flex items-center gap-1">
+                                    <Clock className="w-4 h-4 text-brand-gold" /> {course.duration}
+                                </span>
+                                <span className="flex items-center gap-1">
+                                    <MapPin className="w-4 h-4 text-brand-gold" /> {typeOfStudy}
+                                </span>
                             </div>
-                            <Button variant="primary" onClick={handleApply} className="w-full justify-center tracking-[1px]">
-                                {isEcommerce ? 'Buy Now' : 'Apply Now'}
-                            </Button>
-                            <Button variant="secondary" className="w-full justify-center text-xs py-3 tracking-[1px]">
-                                Download Prospectus
-                            </Button>
-                        </div>
 
-                        <div className="hidden lg:grid grid-cols-4 gap-8 border-t border-white/20 pt-8">
+                            {/* Title - Line Height 1.25 */}
+                            <h1 className="font-serif text-3xl md:text-3xl lg:text-6xl text-white font-semibold leading-[1.35] mb-[3rem] drop-shadow-lg text-wrap: balance">
+                                {course.title}
+                            </h1>
+
+                            {/* Mobile Buttons */}
+                            <div className="lg:hidden flex flex-col gap-3">
+                                <button className="inline-flex items-center justify-center font-bold uppercase transition-all duration-300 text-xs px-6 py-4 rounded-sm bg-[#C2B067] text-white hover:bg-[#B8A558] border border-[#C2B067] w-full tracking-[1px]">
+                                    Apply Now
+                                </button>
+                                <button className="w-full border border-[#C2B067] text-[#C2B067] bg-white hover:bg-slate-50 font-bold uppercase text-xs py-4 rounded-sm transition-colors flex items-center justify-center gap-2 tracking-[1px]">
+                                    Download Prospectus
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-download">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <polyline points="7 10 12 15 17 10"></polyline>
+                                        <line x1="12" x2="12" y1="15" y2="3"></line>
+                                    </svg>
+                                </button>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                {/* Course Meta Section - Desktop Only */}
+                <div className="hidden lg:flex relative z-30 mt-auto h-[115px] bg-white/0 border-t border-white/10 items-center">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+                        {/* Constrained to 66.6% (2/3) to match content */}
+                        <div className="lg:w-2/3 grid grid-cols-4 gap-8">
                             <div>
                                 <p className="text-brand-gold text-xs uppercase font-bold mb-1 tracking-[1px]">Duration</p>
                                 <p className="text-white font-semibold">{course.duration}</p>
@@ -472,8 +596,21 @@ export const CourseDetail: React.FC = () => {
                 </div>
             </section>
 
+            {/* Breadcrumb Bar - Positioned Below Hero, Above Tabs */}
+            <div className="bg-[#002B4E] border-b border-white/10 py-4 relative z-20 hidden">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <nav className="flex items-center gap-2 text-xs font-bold uppercase tracking-[1px] text-white flex-wrap">
+                        <Link to="/" className="text-brand-gold hover:text-white transition-colors">Home</Link>
+                        <span className="text-white/40">/</span>
+                        <Link to={archiveLink} className="text-brand-gold hover:text-white transition-colors">{primaryType}</Link>
+                        <span className="text-white/40">/</span>
+                        <span className="text-white line-clamp-1">{course.title}</span>
+                    </nav>
+                </div>
+            </div>
+
             {/* Sticky Header Tabs - Dynamically positioned based on header visibility */}
-            <div 
+            <div
                 className={`sticky z-30 bg-white border-b border-gray-200 transition-all duration-300 ease-in-out ${
                     isTabsSticky ? 'shadow-md' : ''
                 }`}
@@ -488,9 +625,9 @@ export const CourseDetail: React.FC = () => {
                                 key={sec.id}
                                 onClick={() => handleTabClick(sec.id)}
                                 className={`px-4 py-2 rounded-full text-xs font-bold uppercase whitespace-nowrap transition-colors tracking-[1px] ${
-                                    activeSection === sec.id 
-                                    ? 'bg-brand-primary text-white' 
-                                    : 'text-gray-500 hover:bg-gray-100'
+                                    activeSection === sec.id
+                                        ? 'bg-brand-primary text-white'
+                                        : 'text-gray-500 hover:bg-gray-100'
                                 }`}
                             >
                                 {sec.label}
@@ -503,32 +640,32 @@ export const CourseDetail: React.FC = () => {
             {/* Content Container */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-                    
+
                     {/* Left Column: Content */}
                     <div className="lg:col-span-2 space-y-4 lg:space-y-16">
-                        
+
                         {/* 1. Overview */}
                         <div className="lg:block">
-                            <LightAccordionItem 
+                            <LightAccordionItem
                                 id="mobile-overview"
-                                title="Overview" 
-                                isOpen={window.innerWidth < 1024 ? openMobileSection === 'overview' : true} 
+                                title="Overview"
+                                isOpen={window.innerWidth < 1024 ? openMobileSection === 'overview' : true}
                                 onToggle={() => setOpenMobileSection(openMobileSection === 'overview' ? null : 'overview')}
                             >
                                 <div id="overview" className="bg-white lg:p-8 lg:rounded-sm lg:shadow-sm lg:border lg:border-gray-100">
                                     <h2 className="hidden lg:block text-2xl font-serif text-brand-primary mb-6 font-bold">Overview</h2>
-                                    <p className="text-base leading-relaxed text-gray-600">
+                                    <p className="text-base leading-relaxed text-gray-600 whitespace-pre-line">
                                         {course.fullDescription}
                                     </p>
                                 </div>
                             </LightAccordionItem>
                         </div>
 
-                        {/* 2. Content / Curriculum */}
-                        <LightAccordionItem 
+                        {/* 2. Programme Curriculum (Formerly Programme Content) */}
+                        <LightAccordionItem
                             id="mobile-content"
-                            title="Programme Content" 
-                            isOpen={window.innerWidth < 1024 ? openMobileSection === 'content' : true} 
+                            title="Programme Curriculum"
+                            isOpen={window.innerWidth < 1024 ? openMobileSection === 'content' : true}
                             onToggle={() => setOpenMobileSection(openMobileSection === 'content' ? null : 'content')}
                         >
                             <div id="content" className="lg:bg-white lg:p-8 lg:rounded-sm lg:shadow-sm lg:border lg:border-gray-100">
@@ -536,13 +673,13 @@ export const CourseDetail: React.FC = () => {
                                     <span className="w-8 h-1 bg-brand-gold rounded-full"></span>
                                     Programme Curriculum
                                 </h3>
-                                
+
                                 {course.programContentIncludes && (
                                     <div className="mb-8">
-                                        <h4 className="font-bold text-gray-800 mb-4 text-sm uppercase tracking-[1px]">What you will learn</h4>
-                                        <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        <h4 className="font-bold text-gray-800 mb-4 text-sm uppercase tracking-[1px]">WHAT YOU WILL LEARN</h4>
+                                        <ul className="flex flex-col gap-3">
                                             {course.programContentIncludes.map((item, i) => (
-                                                <li key={i} className="flex items-center gap-3 text-sm text-gray-600 bg-gray-50 p-3 rounded-sm">
+                                                <li key={i} className="flex items-center gap-3 text-sm text-gray-600 bg-gray-50 border border-gray-100 p-4 rounded-sm w-full">
                                                     <Circle size={8} className="text-brand-gold shrink-0" fill="currentColor" />
                                                     {item}
                                                 </li>
@@ -551,39 +688,62 @@ export const CourseDetail: React.FC = () => {
                                     </div>
                                 )}
 
-                                <div className="space-y-4">
-                                    {course.curriculum.map((year, idx) => (
-                                        <div key={idx} className="border border-gray-200 rounded-sm">
-                                            <div className="bg-gray-50 px-4 py-3 font-bold text-brand-primary border-b border-gray-200">
-                                                {year.year}
+                                {course.curriculum && course.curriculum.length > 0 && (
+                                    <div className="space-y-4">
+                                        <h4 className="font-bold text-gray-800 mb-4 text-sm uppercase tracking-[1px] mt-8">Module Breakdown</h4>
+                                        {course.curriculum.map((year, idx) => (
+                                            <div key={idx} className="border border-gray-200 rounded-sm">
+                                                <div className="bg-gray-50 px-4 py-3 font-bold text-brand-primary border-b border-gray-200">
+                                                    {year.year}
+                                                </div>
+                                                <div className="p-4 grid grid-cols-1 gap-4">
+                                                    {year.modules.map((mod, mIdx) => (
+                                                        <div key={mIdx}>
+                                                            <span className="font-bold text-gray-700 text-sm block mb-1">{mod.title}</span>
+                                                            <p className="text-xs text-gray-500">{mod.topics.join(', ')}</p>
+                                                        </div>
+                                                    ))}
+                                                </div>
                                             </div>
-                                            <div className="p-4 grid grid-cols-1 gap-4">
-                                                {year.modules.map((mod, mIdx) => (
-                                                    <div key={mIdx}>
-                                                        <span className="font-bold text-gray-700 text-sm block mb-1">{mod.title}</span>
-                                                        <p className="text-xs text-gray-500">{mod.topics.join(', ')}</p>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         </LightAccordionItem>
 
+                        {/* 2.5 Work Integrated Learning (New Section) */}
+                        {course.workIntegratedLearning && (
+                            <LightAccordionItem
+                                id="mobile-wil"
+                                title="Work Integrated Learning"
+                                isOpen={window.innerWidth < 1024 ? openMobileSection === 'wil' : true}
+                                onToggle={() => setOpenMobileSection(openMobileSection === 'wil' ? null : 'wil')}
+                            >
+                                <div id="wil" className="lg:bg-white lg:p-8 lg:rounded-sm lg:shadow-sm lg:border lg:border-gray-100">
+                                    <h3 className="hidden lg:flex text-brand-primary font-serif text-2xl mb-6 items-center gap-3 font-bold">
+                                        <span className="w-8 h-1 bg-brand-gold rounded-full"></span>
+                                        Work Integrated Learning
+                                    </h3>
+                                    <div className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
+                                        {course.workIntegratedLearning}
+                                    </div>
+                                </div>
+                            </LightAccordionItem>
+                        )}
+
                         {/* 3. Focus Areas */}
-                        <LightAccordionItem 
+                        <LightAccordionItem
                             id="mobile-focus"
                             title={course.qualification === 'Degree' ? 'Degree Focus Area' : 'Focus Areas'}
-                            isOpen={window.innerWidth < 1024 ? openMobileSection === 'focus' : true} 
+                            isOpen={window.innerWidth < 1024 ? openMobileSection === 'focus' : true}
                             onToggle={() => setOpenMobileSection(openMobileSection === 'focus' ? null : 'focus')}
                         >
-                            <div id="focus" className="lg:bg-white lg:p-0 lg:shadow-none lg:border-0">
+                            <div id="focus" className="lg:bg-white lg:p-8 lg:shadow-none lg:border lg:border-gray-100">
                                 <h3 className="hidden lg:flex text-brand-primary font-serif text-2xl mb-6 items-center gap-3 font-bold">
                                     <span className="w-8 h-1 bg-brand-gold rounded-full"></span>
                                     Focus Areas
                                 </h3>
-                                
+
                                 {course.extendedFocusAreas ? (
                                     <div className="space-y-4">
                                         {course.extendedFocusAreas.map((area, idx) => (
@@ -608,10 +768,10 @@ export const CourseDetail: React.FC = () => {
                         </LightAccordionItem>
 
                         {/* 4. Requirements */}
-                        <LightAccordionItem 
+                        <LightAccordionItem
                             id="mobile-requirements"
-                            title="Entry Requirements" 
-                            isOpen={window.innerWidth < 1024 ? openMobileSection === 'requirements' : true} 
+                            title="Entry Requirements"
+                            isOpen={window.innerWidth < 1024 ? openMobileSection === 'requirements' : true}
                             onToggle={() => setOpenMobileSection(openMobileSection === 'requirements' ? null : 'requirements')}
                         >
                             <div id="requirements" className="lg:bg-white lg:p-8 lg:rounded-sm lg:shadow-sm lg:border lg:border-gray-100">
@@ -632,10 +792,10 @@ export const CourseDetail: React.FC = () => {
 
                         {/* 5. Certification */}
                         {course.certification && (
-                            <LightAccordionItem 
+                            <LightAccordionItem
                                 id="mobile-certification"
-                                title="Certification" 
-                                isOpen={window.innerWidth < 1024 ? openMobileSection === 'certification' : true} 
+                                title="Certification"
+                                isOpen={window.innerWidth < 1024 ? openMobileSection === 'certification' : true}
                                 onToggle={() => setOpenMobileSection(openMobileSection === 'certification' ? null : 'certification')}
                             >
                                 <div id="certification" className="lg:bg-white lg:p-8 lg:rounded-sm lg:shadow-sm lg:border lg:border-gray-100">
@@ -650,17 +810,6 @@ export const CourseDetail: React.FC = () => {
                                         <div>
                                             <h4 className="font-bold text-gray-900 mb-2">Qualification Awarded</h4>
                                             <p className="text-sm text-gray-600 leading-relaxed mb-6">{course.certification}</p>
-                                            
-                                            <div>
-                                                <p className="text-xs font-bold text-gray-400 uppercase tracking-[1px] mb-3">Accredited By</p>
-                                                <div className="flex flex-wrap gap-3">
-                                                    {course.accreditations.map((acc, idx) => (
-                                                        <span key={idx} className="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-bold rounded-sm border border-gray-200">
-                                                            {acc}
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -668,10 +817,10 @@ export const CourseDetail: React.FC = () => {
                         )}
 
                         {/* 6. FAQs */}
-                        <LightAccordionItem 
+                        <LightAccordionItem
                             id="mobile-faq"
-                            title="FAQs" 
-                            isOpen={window.innerWidth < 1024 ? openMobileSection === 'faq' : true} 
+                            title="FAQs"
+                            isOpen={window.innerWidth < 1024 ? openMobileSection === 'faq' : true}
                             onToggle={() => setOpenMobileSection(openMobileSection === 'faq' ? null : 'faq')}
                         >
                             <div id="faq" className="lg:bg-white lg:p-8 lg:rounded-sm lg:shadow-sm lg:border lg:border-gray-100">
@@ -707,18 +856,19 @@ export const CourseDetail: React.FC = () => {
 
                     {/* Right Column: Sidebar (Desktop Only) */}
                     <div className="hidden lg:block lg:col-span-1">
-                        {/* 
+                        {/*
                             Sidebar Sticky Logic:
                             - `top-[160px]` when header is visible (80px header + 80px tabs).
                             - `top-[80px]` when header is hidden (0px header + 80px tabs).
                         */}
-                        <div 
+                        <div
                             className="sticky space-y-6 transition-all duration-300 ease-in-out"
                             style={{
                                 top: isHeaderVisible ? '160px' : '80px'
                             }}
                         >
                             <FeesCard course={course} />
+
                             <NeedGuidanceCard />
                         </div>
                     </div>
@@ -726,23 +876,41 @@ export const CourseDetail: React.FC = () => {
                 </div>
             </div>
 
+            {/* Related Programmes Section */}
+            {relatedOfferings.length > 0 && (
+                <section className="bg-brand-primary py-24 border-t border-white/5">
+                    <CourseCardSlider
+                        title={
+                            <div className="mb-4">
+                                <h2 className="font-serif text-3xl md:text-4xl text-white mb-4">
+                                    Related <span className="text-brand-gold italic">Programmes</span>
+                                </h2>
+                            </div>
+                        }
+                        offerings={relatedOfferings}
+                        onExpand={handleRelatedExpand}
+                        dark={true}
+                    />
+                </section>
+            )}
+
             {/* Mobile Bottom Drawer */}
-            <MobileFeesDrawer 
-                course={course} 
-                isOpen={isDrawerOpen} 
+            <MobileFeesDrawer
+                course={course}
+                isOpen={isDrawerOpen}
                 onToggle={() => setIsDrawerOpen(!isDrawerOpen)}
                 onApply={handleApply}
                 showTitle={scrolledPastHero}
             />
 
             {/* Modals */}
-            <ApplicationModal 
-                isOpen={showApplication} 
-                onClose={() => setShowApplication(false)} 
+            <ApplicationModal
+                isOpen={showApplication}
+                onClose={() => setShowApplication(false)}
                 courseTitle={course.title}
             />
-            
-            <CheckoutModal 
+
+            <CheckoutModal
                 isOpen={showCheckout}
                 onClose={() => setShowCheckout(false)}
             />

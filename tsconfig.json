@@ -1,4 +1,3 @@
-
 {
   "compilerOptions": {
     "target": "ES2020",
@@ -15,7 +14,9 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "typeRoots": ["./node_modules/@types"],
+    "types": ["styled-components"]
   },
   "include": ["**/*.ts", "**/*.tsx"]
 }

@@ -1,32 +1,20 @@
-
 import React, { useState, useEffect, useRef } from 'react';
-import { OFFERINGS } from '../constants.tsx';
+import { OFFERINGS } from '../constants';
 import { Button } from './ui/Button';
 import { CheckboxGroup } from './ui/CheckboxGroup';
 import {
-    Clock,
-    GraduationCap,
-    ArrowRight,
-    Eye,
-    BarChart2,
-    ShoppingBag,
-    X,
     SlidersHorizontal,
     ChevronLeft,
     ChevronRight,
     Search,
     Filter,
-    FileText
+    X,
+    Eye
 } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
-import { QuickViewModal } from './QuickViewModal';
 import { Offering } from '../types';
-import { useCart } from '../context/CartContext';
-import { useCompare } from '../context/CompareContext';
 import { useTransition } from '../context/TransitionContext';
-import { ApplicationModal } from './ApplicationModal';
-import { CheckoutModal } from './CheckoutModal';
 import gsap from 'gsap';
+import { CourseCard } from './CourseCard';
 
 // --- Tabs / Filter Options ---
 const TABS = [
@@ -70,159 +58,18 @@ const ACCREDITATIONS = [
 // Helper to convert strings to options for CheckboxGroup
 const toOptions = (items: string[]) => items.map(item => ({ label: item, value: item }));
 
-// --- Sub-component for individual course cards ---
-const CourseCardItem: React.FC<{ offering: Offering; onExpand: (o: Offering, img: DOMRect, txt: DOMRect, cat: DOMRect) => void }> = ({ offering, onExpand }) => {
-    const videoRef = useRef<HTMLVideoElement>(null);
-    const mediaRef = useRef<HTMLDivElement>(null);
-    const titleRef = useRef<HTMLHeadingElement>(null);
-    const categoryRef = useRef<HTMLSpanElement>(null);
-    
-    const { addToCart } = useCart();
-    const { addToCompare, isInCompare, removeFromCompare } = useCompare();
-
-    const [selectedOffering, setSelectedOffering] = useState<Offering | null>(null);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [modalOrigin, setModalOrigin] = useState<{ x: number; y: number } | null>(null);
-    const [showApplication, setShowApplication] = useState(false);
-    const [showCheckout, setShowCheckout] = useState(false);
-
-    const isEcommerce = offering.programmeTypes.some((type: string) =>
-        ['Online Learning', 'Part Time Learning'].includes(type)
-    );
-    const inCompare = isInCompare(offering.id);
-
-    const handleMouseEnter = () => {
-        if (videoRef.current) videoRef.current.play().catch(() => {});
-    };
-
-    const handleMouseLeave = () => {
-        if (videoRef.current) {
-            videoRef.current.pause();
-            videoRef.current.currentTime = 0;
-        }
-    };
-
-    const handleQuickView = (e: React.MouseEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const rect = (e.currentTarget as HTMLElement).closest('.group')?.getBoundingClientRect();
-        if (rect) setModalOrigin({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 });
-        setSelectedOffering(offering);
-        setIsModalOpen(true);
-    };
-
-    const handleAction = (e: React.MouseEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (isEcommerce) {
-            addToCart(offering);
-            setShowCheckout(true);
-        } else {
-            setShowApplication(true);
-        }
-    };
-
-    // Refactored to allow "Course Details" button to trigger transition via bubbling
-    const handleCardClick = (e: React.MouseEvent) => {
-        e.preventDefault();
-        if (mediaRef.current && titleRef.current && categoryRef.current) {
-            const imgRect = mediaRef.current.getBoundingClientRect();
-            const txtRect = titleRef.current.getBoundingClientRect();
-            const catRect = categoryRef.current.getBoundingClientRect();
-            onExpand(offering, imgRect, txtRect, catRect);
-        }
-    };
-
-    return (
-        <>
-            <div className="flex flex-col h-full course-card cursor-pointer" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} onClick={handleCardClick}>
-                {/* Updated border radius to 1px */}
-                <div className="bg-white w-full group rounded-[1px] overflow-hidden flex flex-col h-full shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 relative">
-                    <div ref={mediaRef} className="relative h-60 overflow-hidden shrink-0 bg-gray-100">
-                        <video ref={videoRef} src={offering.video} muted loop playsInline className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                        <div className="absolute top-4 left-4 z-10">
-                            <span ref={categoryRef} className="bg-[#f8fafc] border border-[#eff4f7] text-[#002a4e] text-[10px] font-bold px-3 py-1.5 uppercase rounded-sm shadow-md hover:bg-[#c2b068] hover:border-[#d4c999] hover:text-[#fff] transition-colors inline-block tracking-[1px]">
-                                {offering.category}
-                            </span>
-                        </div>
-                        
-                        {/* Slide-Up Overlay: Quick View & Compare */}
-                        <div className="absolute bottom-0 left-0 right-0 bg-[#002B4E]/95 backdrop-blur-sm p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 flex gap-2 z-20">
-                            <button onClick={handleQuickView} className="flex-1 bg-white text-[#002B4E] hover:bg-[#C2B067] hover:text-white text-[10px] font-bold uppercase py-2.5 rounded-sm flex items-center justify-center gap-2 border border-transparent transition-colors tracking-[1px]">
-                                <Eye size={14} /> Quick View
-                            </button>
-                            <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); inCompare ? removeFromCompare(offering.id) : addToCompare(offering); }} className={`flex-1 bg-transparent border border-white/30 hover:bg-white/10 text-white text-[10px] font-bold uppercase py-2.5 rounded-sm flex items-center justify-center gap-2 transition-colors tracking-[1px] ${inCompare ? 'bg-white text-[#002B4E]' : ''}`}>
-                                {inCompare ? <X size={16} /> : <BarChart2 size={16} />} {inCompare ? 'Remove' : 'Compare'}
-                            </button>
-                        </div>
-                    </div>
-                    
-                    {/* Content Area - Reduced Padding to p-4 */}
-                    <div className="p-4 flex-1 flex flex-col relative z-10 bg-white">
-                        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-gray-500 font-medium mb-4">
-                            <div className="flex items-center gap-1.5">
-                                <Clock size={16} className="text-[#002B4E]" />
-                                <span>{offering.duration}</span>
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                                <GraduationCap size={16} className="text-[#002B4E]" />
-                                <span>{offering.qualification}</span>
-                            </div>
-                        </div>
-                        <h3 ref={titleRef} className="text-lg lg:text-xl font-serif font-bold text-[#002B4E] mb-4 leading-tight group-hover:text-[#1289fe] transition-colors origin-top-left">
-                            {offering.title}
-                        </h3>
-                        <div className="mt-auto"></div>
-                        <div className="mb-4 flex justify-between items-end border-t border-gray-100 pt-3">
-                            <div>
-                                <p className="text-[10px] uppercase text-gray-400 font-bold mb-1 tracking-[1px]">Tuition</p>
-                                <p className="text-lg font-bold text-[#002B4E]">R {offering.price?.toLocaleString()}</p>
-                            </div>
-                            <div className="text-right">
-                                <p className="text-[10px] uppercase text-gray-400 font-bold mb-1 tracking-[1px]">Next Intake</p>
-                                <p className="text-xs font-bold text-[#002B4E]">{offering.startDate}</p>
-                            </div>
-                        </div>
-                        
-                        {/* Main Buttons: Course Details & Apply Now */}
-                        <div className="flex gap-3 relative z-20 bg-white">
-                            {/* Course Details (Left) - Dark */}
-                            <button className="flex-1 bg-[#002845] border border-[#002845] text-white hover:bg-[#002845]/90 font-bold transition-all duration-300 text-[10px] md:text-xs uppercase px-2 py-3 rounded-sm flex items-center justify-center shadow-none tracking-[1px]">
-                                Course Details
-                            </button>
-                            
-                            {/* Apply Now (Right) - White BG, Navy Border/Text */}
-                            <button 
-                                onClick={handleAction} 
-                                className="flex-1 bg-white border border-[#002B4E] text-[#002B4E] hover:bg-[#002B4E] hover:text-white font-bold transition-all duration-300 text-[10px] md:text-xs uppercase px-2 py-3 rounded-sm flex items-center justify-center gap-2 shadow-none tracking-[1px]"
-                            >
-                                {isEcommerce ? 'Buy Now' : 'Apply Now'} 
-                                {isEcommerce ? <ShoppingBag size={14} /> : <FileText size={14} />}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {selectedOffering && <QuickViewModal offering={selectedOffering} isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} origin={modalOrigin} />}
-            <ApplicationModal isOpen={showApplication} onClose={() => setShowApplication(false)} courseTitle={offering.title} />
-            <CheckoutModal isOpen={showCheckout} onClose={() => setShowCheckout(false)} />
-        </>
-    );
-};
-
 // --- Main CoreOfferings Component ---
 export const CoreOfferings: React.FC = () => {
     const [activeTab, setActiveTab] = useState('All');
     const [isFilterOpen, setIsFilterOpen] = useState(false);
-    
+
     // Animation Refs
     const drawerRef = useRef<HTMLDivElement>(null);
     const backdropRef = useRef<HTMLDivElement>(null);
     const tabsRef = useRef<HTMLDivElement>(null);
     const sliderRef = useRef<HTMLDivElement>(null);
     const cardsContainerRef = useRef<HTMLDivElement>(null);
-    
+
     // Use Global Transition
     const { startTransition } = useTransition();
 
@@ -237,27 +84,27 @@ export const CoreOfferings: React.FC = () => {
         const ctx = gsap.context(() => {
             if (isFilterOpen) {
                 // Open sequence
-                gsap.to(backdropRef.current, { 
-                    autoAlpha: 1, 
-                    duration: 0.4, 
-                    ease: "power2.out" 
+                gsap.to(backdropRef.current, {
+                    autoAlpha: 1,
+                    duration: 0.4,
+                    ease: "power2.out"
                 });
-                gsap.fromTo(drawerRef.current, 
-                    { x: '-100%' }, 
+                gsap.fromTo(drawerRef.current,
+                    { x: '-100%' },
                     { x: '0%', duration: 0.5, ease: "expo.out", delay: 0.1 }
                 );
             } else {
                 // Close sequence
-                gsap.to(drawerRef.current, { 
-                    x: '-100%', 
-                    duration: 0.4, 
-                    ease: "power2.in" 
+                gsap.to(drawerRef.current, {
+                    x: '-100%',
+                    duration: 0.4,
+                    ease: "power2.in"
                 });
-                gsap.to(backdropRef.current, { 
-                    autoAlpha: 0, 
-                    duration: 0.3, 
+                gsap.to(backdropRef.current, {
+                    autoAlpha: 0,
+                    duration: 0.3,
                     delay: 0.1,
-                    ease: "power2.in" 
+                    ease: "power2.in"
                 });
             }
         });
@@ -278,40 +125,36 @@ export const CoreOfferings: React.FC = () => {
         }
         if (selectedFocusAreas.length) {
             filtered = filtered.filter((o: Offering) => selectedFocusAreas.every(area => {
-                 if (area === 'Hospitality') return o.category === 'Hospitality';
-                 if (area === 'Culinary') return o.category === 'Culinary';
-                 if (area === 'Food & Beverage') return o.title.includes('Food') || o.title.includes('Beverage');
-                 if (area === 'Business') return o.title.includes('Business') || o.programmeTypes.includes('Degrees');
-                 if (area === 'Human Resources') return o.description.includes('Human Resources');
-                 if (area === 'Conference & Events') return o.description.includes('Events');
-                 return false;
+                if (area === 'Hospitality') return o.category === 'Hospitality';
+                if (area === 'Culinary') return o.category === 'Culinary';
+                if (area === 'Food & Beverage') return o.title.includes('Food') || o.title.includes('Beverage');
+                if (area === 'Business') return o.title.includes('Business') || o.programmeTypes.includes('Degrees');
+                if (area === 'Human Resources') return o.description.includes('Human Resources');
+                if (area === 'Conference & Events') return o.description.includes('Events');
+                return false;
             }));
         }
         if (selectedAccreditations.length) {
             filtered = filtered.filter((o: Offering) => selectedAccreditations.every(acc => o.accreditations?.includes(acc)));
         }
-        
+
         setDisplayedOfferings(filtered);
     }, [activeTab, searchQuery, selectedStudyLevels, selectedFocusAreas, selectedAccreditations]);
 
     // --- Animation Logic (Runs when displayedOfferings updates) ---
     useEffect(() => {
-        // We use gsap.context scoped to cardsContainerRef to prevent memory leaks and "selector not found" errors
         const ctx = gsap.context(() => {
             const cards = document.querySelectorAll('.course-card');
-            
-            // Only animate if cards actually exist in DOM
             if (cards.length > 0) {
-                gsap.fromTo(cards, 
+                gsap.fromTo(cards,
                     { opacity: 0, y: 20 },
                     { opacity: 1, y: 0, duration: 0.4, stagger: 0.05, ease: "power2.out", clearProps: "all" }
                 );
             }
-        }, cardsContainerRef); // Scope
+        }, cardsContainerRef);
 
         return () => ctx.revert();
     }, [displayedOfferings]);
-
 
     const toggleFilter = (setter: React.Dispatch<React.SetStateAction<string[]>>, value: string) => {
         setter(prev => prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value]);
@@ -340,10 +183,10 @@ export const CoreOfferings: React.FC = () => {
             {/* Filter Pills Display */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-wrap gap-2">
                 {[...selectedStudyLevels, ...selectedFocusAreas, ...selectedAccreditations].map(filter => (
-                    <span 
-                        key={filter} 
-                        className="inline-flex items-center gap-1 bg-brand-accent text-brand-primary px-3 py-1 rounded-full text-xs font-bold uppercase cursor-pointer hover:bg-brand-primary hover:text-white transition-colors tracking-[1px]" 
-                        onClick={() => { 
+                    <span
+                        key={filter}
+                        className="inline-flex items-center gap-1 bg-brand-accent text-brand-primary px-3 py-1 rounded-full text-xs font-bold uppercase cursor-pointer hover:bg-brand-primary hover:text-white transition-colors tracking-[1px]"
+                        onClick={() => {
                             toggleFilter(selectedStudyLevels.includes(filter) ? setSelectedStudyLevels : selectedFocusAreas.includes(filter) ? setSelectedFocusAreas : setSelectedAccreditations, filter);
                         }}
                     >
@@ -353,14 +196,14 @@ export const CoreOfferings: React.FC = () => {
             </div>
 
             {/* GSAP Animated Backdrop */}
-            <div 
+            <div
                 ref={backdropRef}
                 className="fixed inset-0 z-[55] bg-black/40 backdrop-blur-sm opacity-0 invisible"
-                onClick={() => setIsFilterOpen(false)} 
+                onClick={() => setIsFilterOpen(false)}
             />
 
             {/* GSAP Animated Light Theme Drawer */}
-            <div 
+            <div
                 ref={drawerRef}
                 className="fixed top-0 left-0 bottom-0 w-[340px] z-[60] bg-white shadow-2xl transform -translate-x-full will-change-transform flex flex-col border-r border-gray-200"
             >
@@ -372,8 +215,8 @@ export const CoreOfferings: React.FC = () => {
                         </div>
                         <h3 className="text-brand-primary font-serif font-bold text-xl">Filters</h3>
                     </div>
-                    <button 
-                        onClick={() => setIsFilterOpen(false)} 
+                    <button
+                        onClick={() => setIsFilterOpen(false)}
                         className="bg-gray-100 hover:bg-gray-200 p-2 rounded-full text-gray-500 transition-colors"
                     >
                         <X size={20} />
@@ -387,12 +230,12 @@ export const CoreOfferings: React.FC = () => {
                         <label className="text-xs uppercase font-bold text-gray-400 mb-2 block tracking-wider">Search</label>
                         <div className="relative group">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-brand-accent transition-colors" size={18} />
-                            <input 
-                                type="text" 
-                                placeholder="Keywords..." 
-                                value={searchQuery} 
-                                onChange={(e) => setSearchQuery(e.target.value)} 
-                                className="w-full bg-gray-50 border border-gray-200 rounded-sm py-3 pl-10 pr-4 text-sm text-brand-primary focus:border-brand-accent focus:bg-white outline-none transition-all placeholder:text-gray-400" 
+                            <input
+                                type="text"
+                                placeholder="Keywords..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full bg-gray-50 border border-gray-200 rounded-sm py-3 pl-10 pr-4 text-sm text-brand-primary focus:border-brand-accent focus:bg-white outline-none transition-all placeholder:text-gray-400"
                             />
                             {searchQuery && (
                                 <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500">
@@ -404,32 +247,32 @@ export const CoreOfferings: React.FC = () => {
 
                     {/* Accordions */}
                     <div className="divide-y divide-gray-50 mt-4">
-                        <CheckboxGroup 
-                            title="Study Level" 
-                            options={toOptions(STUDY_LEVELS)} 
-                            selectedValues={selectedStudyLevels} 
-                            onChange={(val) => toggleFilter(setSelectedStudyLevels, val)} 
+                        <CheckboxGroup
+                            title="Study Level"
+                            options={toOptions(STUDY_LEVELS)}
+                            selectedValues={selectedStudyLevels}
+                            onChange={(val) => toggleFilter(setSelectedStudyLevels, val)}
                             variant="accordion"
                             theme="light"
-                            defaultOpen={true} 
+                            defaultOpen={true}
                         />
-                        <CheckboxGroup 
-                            title="Focus Areas" 
-                            options={toOptions(FOCUS_AREAS)} 
-                            selectedValues={selectedFocusAreas} 
-                            onChange={(val) => toggleFilter(setSelectedFocusAreas, val)} 
-                            variant="accordion" 
+                        <CheckboxGroup
+                            title="Focus Areas"
+                            options={toOptions(FOCUS_AREAS)}
+                            selectedValues={selectedFocusAreas}
+                            onChange={(val) => toggleFilter(setSelectedFocusAreas, val)}
+                            variant="accordion"
                             theme="light"
-                            defaultOpen={false} 
+                            defaultOpen={false}
                         />
-                        <CheckboxGroup 
-                            title="Accreditation" 
-                            options={toOptions(ACCREDITATIONS)} 
-                            selectedValues={selectedAccreditations} 
-                            onChange={(val) => toggleFilter(setSelectedAccreditations, val)} 
-                            variant="accordion" 
+                        <CheckboxGroup
+                            title="Accreditation"
+                            options={toOptions(ACCREDITATIONS)}
+                            selectedValues={selectedAccreditations}
+                            onChange={(val) => toggleFilter(setSelectedAccreditations, val)}
+                            variant="accordion"
                             theme="light"
-                            defaultOpen={false} 
+                            defaultOpen={false}
                         />
                     </div>
                 </div>
@@ -468,9 +311,9 @@ export const CoreOfferings: React.FC = () => {
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="flex items-center gap-2 md:gap-6">
                             {/* Filter Toggle Button */}
-                            <button 
-                                onClick={() => setIsFilterOpen(true)} 
-                                className="flex-shrink-0 flex items-center justify-center bg-white hover:bg-gray-50 text-brand-primary hover:text-brand-accent rounded-full h-[50px] w-[50px] shadow-lg transition-all duration-300 relative z-10 group" 
+                            <button
+                                onClick={() => setIsFilterOpen(true)}
+                                className="flex-shrink-0 flex items-center justify-center bg-white hover:bg-gray-50 text-brand-primary hover:text-brand-accent rounded-full h-[50px] w-[50px] shadow-lg transition-all duration-300 relative z-10 group"
                                 aria-label="Toggle Filters"
                             >
                                 <SlidersHorizontal size={20} className="group-hover:scale-110 transition-transform" />
@@ -492,7 +335,7 @@ export const CoreOfferings: React.FC = () => {
                                 </div>
                             </div>
 
-                            {/* Desktop Nav Arrows */}
+                            {/* Desktop Nav Arrows (Restored to Floating Bar) */}
                             <div className="hidden md:flex gap-2">
                                 <button onClick={() => scrollSlider('left')} className="w-[50px] h-[50px] bg-white rounded-full text-[#002B4E] flex items-center justify-center shadow-lg hover:bg-[#1289fe] hover:text-white transition-all duration-300" aria-label="Previous programmes">
                                     <ChevronLeft size={20} />
@@ -516,19 +359,17 @@ export const CoreOfferings: React.FC = () => {
                     </div>
 
                     <div className="relative">
-                        {displayedOfferings.length > 0 && (
+                        {displayedOfferings.length > 0 ? (
                             <div ref={sliderRef} className="overflow-x-auto programmes-slider snap-x snap-mandatory no-scrollbar">
                                 <div className="flex gap-6 pb-4" style={{ width: `calc(${displayedOfferings.length} * (340px + 1.5rem))` }}>
                                     {displayedOfferings.map((offering) => (
                                         <div key={offering.id} className="flex-shrink-0 snap-center" style={{ width: '340px' }}>
-                                            <CourseCardItem offering={offering} onExpand={handleCardExpand} />
+                                            <CourseCard offering={offering} onExpand={handleCardExpand} />
                                         </div>
                                     ))}
                                 </div>
                             </div>
-                        )}
-
-                        {displayedOfferings.length === 0 && (
+                        ) : (
                             <div className="text-center py-20 bg-white/10 rounded-sm border border-white/20">
                                 <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-6 text-gray-400 shadow-sm">
                                     <Eye size={40} />

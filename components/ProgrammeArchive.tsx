@@ -1,16 +1,13 @@
 
-import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { OFFERINGS } from '../constants';
-import { Button } from './ui/Button';
 import { FilterSelect, FilterOption } from './ui/FilterSelect';
-import { Clock, GraduationCap, ArrowRight, Eye, Calendar, Tag, ChevronDown, BarChart2, ShoppingBag, MapPin, X } from 'lucide-react';
-import { QuickViewModal } from './QuickViewModal';
+import { ChevronDown, ChevronLeft, ChevronRight, Eye, X } from 'lucide-react';
 import { Offering } from '../types';
-import { useCart } from '../context/CartContext';
-import { useCompare } from '../context/CompareContext';
-import { ApplicationModal } from './ApplicationModal';
-import { CheckoutModal } from './CheckoutModal';
+import { CourseCard } from './CourseCard';
+import { useTransition } from '../context/TransitionContext';
+import gsap from 'gsap';
 
 // --- Constants for Archive Pages ---
 
@@ -78,21 +75,21 @@ const ACCREDITATION_OPTIONS: FilterOption[] = [
     { label: 'École Ducasse', value: 'École Ducasse' }
 ];
 
+const ITEMS_PER_PAGE = 9;
+
 export const ProgrammeArchive: React.FC = () => {
     const { type } = useParams<{ type: string }>();
+    const navigate = useNavigate();
     const config = type ? ARCHIVE_CONFIGS[type] : null;
-    
+
     // States
-    const [selectedCategory, setSelectedCategory] = useState<string>(''); 
+    const [selectedCategory, setSelectedCategory] = useState<string>('');
     const [selectedAccreditations, setSelectedAccreditations] = useState<string[]>([]);
     const [displayedOfferings, setDisplayedOfferings] = useState<Offering[]>([]);
-    const [selectedOffering, setSelectedOffering] = useState<Offering | null>(null);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [showApplication, setShowApplication] = useState(false);
-    const [showCheckout, setShowCheckout] = useState(false);
-    const [currentCourse, setCurrentCourse] = useState<Offering | null>(null);
-    const { addToCart } = useCart();
-    const { addToCompare, isInCompare, removeFromCompare } = useCompare();
+    const [currentPage, setCurrentPage] = useState(1);
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    const { startTransition } = useTransition();
 
     // Initial Data Load & Filter
     useEffect(() => {
@@ -101,6 +98,7 @@ export const ProgrammeArchive: React.FC = () => {
             setDisplayedOfferings(baseItems);
             setSelectedCategory('');
             setSelectedAccreditations([]);
+            setCurrentPage(1);
         }
     }, [type, config]);
 
@@ -125,6 +123,7 @@ export const ProgrammeArchive: React.FC = () => {
         });
 
         setDisplayedOfferings(filtered);
+        setCurrentPage(1); // Reset page on filter
     }, [config, selectedCategory, selectedAccreditations]);
 
     useEffect(() => {
@@ -133,39 +132,53 @@ export const ProgrammeArchive: React.FC = () => {
         }
     }, [handleSearch, type]);
 
-    const handleQuickView = (offering: Offering, e: React.MouseEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setSelectedOffering(offering);
-        setIsModalOpen(true);
-    };
+    // GSAP Animation for Cards when page or data changes
+    useEffect(() => {
+        const ctx = gsap.context(() => {
+            const cards = document.querySelectorAll('.course-card');
+            if (cards.length > 0) {
+                gsap.fromTo(cards,
+                    { opacity: 0, y: 20 },
+                    { opacity: 1, y: 0, duration: 0.4, stagger: 0.05, ease: "power2.out", clearProps: "all" }
+                );
+            }
+        }, containerRef);
 
-    const handleAction = (offering: Offering, e: React.MouseEvent) => {
-        e.preventDefault();
-        setCurrentCourse(offering);
-        const isEcommerce = offering.programmeTypes.some((type: string) => 
-            ['Online Learning', 'Part Time Learning'].includes(type)
-        );
+        return () => ctx.revert();
+    }, [displayedOfferings, currentPage]);
 
-        if (isEcommerce) {
-            addToCart(offering);
-            setShowCheckout(true);
-        } else {
-            setShowApplication(true);
-        }
+    const handleCardExpand = (offering: Offering, imgRect: DOMRect, txtRect: DOMRect, catRect: DOMRect) => {
+        startTransition(offering, imgRect, txtRect, catRect);
     };
 
     if (!config) return <div className="min-h-screen pt-32 text-center text-white">Programme type not found.</div>;
 
     const isOnlinePage = type === 'online';
 
+    // Pagination Logic
+    const totalPages = Math.ceil(displayedOfferings.length / ITEMS_PER_PAGE);
+    const paginatedOfferings = displayedOfferings.slice(
+        (currentPage - 1) * ITEMS_PER_PAGE,
+        currentPage * ITEMS_PER_PAGE
+    );
+
+    const scrollToTop = () => {
+        const element = document.getElementById('archive-grid');
+        if (element) {
+            const headerOffset = 100;
+            const elementPosition = element.getBoundingClientRect().top;
+            const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+            window.scrollTo({ top: offsetPosition, behavior: "smooth" });
+        }
+    };
+
     return (
-        <div className="min-h-screen bg-brand-dark">
+        <div className="min-h-screen bg-[#001D36]">
             {/* --- Hero Section --- */}
             <div className={`relative ${isOnlinePage ? 'py-32 md:py-40' : 'h-[50vh] min-h-[400px]'} flex flex-col justify-center`}>
                 <div className="absolute inset-0 z-0">
                     <img src={config.heroImage} alt={config.title} className="w-full h-full object-cover" />
-                    <div className={`absolute inset-0 ${isOnlinePage ? 'bg-gradient-to-r from-[#0B1221]/90 to-[#0B1221]/80' : 'bg-brand-dark/70'}`}></div>
+                    <div className={`absolute inset-0 ${isOnlinePage ? 'bg-gradient-to-r from-[#0B1221]/90 to-[#0B1221]/80' : 'bg-[#001D36]/80'}`}></div>
                 </div>
 
                 <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full text-center">
@@ -190,24 +203,24 @@ export const ProgrammeArchive: React.FC = () => {
                                         </div>
                                     </div>
                                     <div className="md:col-span-3">
-                                        <FilterSelect 
-                                            label="Any Focus Area" 
-                                            options={FOCUS_AREA_OPTIONS} 
-                                            value={selectedCategory} 
+                                        <FilterSelect
+                                            label="Any Focus Area"
+                                            options={FOCUS_AREA_OPTIONS}
+                                            value={selectedCategory}
                                             onChange={setSelectedCategory}
                                         />
                                     </div>
                                     <div className="md:col-span-3">
-                                        <FilterSelect 
-                                            label="Any Accreditation" 
-                                            options={ACCREDITATION_OPTIONS} 
-                                            value={selectedAccreditations} 
-                                            onChange={setSelectedAccreditations} 
+                                        <FilterSelect
+                                            label="Any Accreditation"
+                                            options={ACCREDITATION_OPTIONS}
+                                            value={selectedAccreditations}
+                                            onChange={setSelectedAccreditations}
                                             multiple={true}
                                         />
                                     </div>
                                     <div className="md:col-span-3">
-                                        <button 
+                                        <button
                                             onClick={handleSearch}
                                             className="w-full h-full bg-brand-gold text-brand-dark font-bold py-3 rounded-sm hover:bg-white transition-colors uppercase tracking-widest text-sm tracking-[1px]"
                                         >
@@ -225,19 +238,19 @@ export const ProgrammeArchive: React.FC = () => {
                             <p className="text-lg text-gray-200 leading-relaxed mb-8">
                                 {config.description}
                             </p>
-                            
+
                             {config.hasFilters && config.allowedFilters && (
                                 <div className="flex flex-wrap justify-center gap-4 mt-8">
-                                    <button 
+                                    <button
                                         onClick={() => setSelectedCategory('')}
                                         className={`px-6 py-2 rounded-full border text-sm uppercase tracking-wider transition-colors tracking-[1px] ${selectedCategory === '' ? 'bg-brand-gold border-brand-gold text-brand-dark font-bold' : 'border-white/30 text-white hover:bg-white/10'}`}
                                     >
                                         All
                                     </button>
                                     {config.allowedFilters.map(filter => (
-                                        <button 
+                                        <button
                                             key={filter}
-                                            onClick={() => { 
+                                            onClick={() => {
                                                 const newVal = selectedCategory === filter ? '' : filter;
                                                 setSelectedCategory(newVal);
                                             }}
@@ -254,110 +267,14 @@ export const ProgrammeArchive: React.FC = () => {
             </div>
 
             {/* --- Results Grid --- */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-                
+            <div id="archive-grid" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24" ref={containerRef}>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {displayedOfferings.map((offering) => {
-                        const isEcommerce = offering.programmeTypes.some((type: string) => 
-                            ['Online Learning', 'Part Time Learning'].includes(type)
-                        );
-                        const typeOfStudy = offering.programmeTypes.some(t => t.includes('Online')) ? 'Online' : 'Full-Time';
-                        const inCompare = isInCompare(offering.id);
-
-                        return (
-                        <div key={offering.id} className="bg-brand-card group rounded-lg overflow-hidden border border-white/5 hover:border-brand-gold/30 transition-all duration-300 flex flex-col h-full hover:shadow-[0_10px_40px_rgba(0,0,0,0.5)] hover:-translate-y-1 relative">
-                            {/* Image Area */}
-                            <div className="relative h-60 overflow-hidden">
-                                <div className="absolute top-4 left-4 z-10">
-                                    <span className="bg-brand-gold text-brand-dark text-xs font-bold px-4 py-1.5 rounded-full tracking-wide">
-                                        {offering.category}
-                                    </span>
-                                </div>
-                                <img 
-                                    src={offering.image} 
-                                    alt={offering.title} 
-                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-brand-card via-transparent to-transparent opacity-60"></div>
-                                
-                                {/* Hover Actions Panel - Slides up from bottom of image */}
-                                <div className="absolute bottom-0 left-0 right-0 bg-[#131B2C]/90 backdrop-blur-sm p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 flex gap-2">
-                                    <button 
-                                        onClick={(e) => handleAction(offering, e)}
-                                        className="flex-[2] bg-brand-gold text-brand-dark hover:bg-white hover:text-brand-dark text-[10px] font-bold uppercase tracking-wider py-2.5 rounded-sm transition-all flex items-center justify-center gap-2 tracking-[1px]"
-                                    >
-                                        {isEcommerce ? (
-                                            <><ShoppingBag size={14} /> Buy Now</>
-                                        ) : (
-                                            <>Apply Now <ArrowRight size={14} /></>
-                                        )}
-                                    </button>
-                                    <button 
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            if (inCompare) removeFromCompare(offering.id);
-                                            else addToCompare(offering);
-                                        }}
-                                        className={`flex-1 bg-transparent border border-white/20 hover:bg-white/5 text-white text-[10px] font-bold uppercase tracking-wider py-2.5 rounded-sm transition-all flex items-center justify-center gap-2 tracking-[1px] ${inCompare ? 'bg-brand-gold/20 border-brand-gold text-brand-gold' : ''}`}
-                                    >
-                                        {inCompare ? <X size={16} /> : <BarChart2 size={16} />}
-                                        {inCompare ? 'Remove' : 'Compare'}
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Content Area */}
-                            <div className="p-6 flex-1 flex flex-col bg-brand-card relative z-10">
-                                <Link to={`/course/${offering.id}`} className="block">
-                                    <h3 className="text-2xl font-serif font-bold text-white mb-3 leading-tight group-hover:text-brand-gold transition-colors">{offering.title}</h3>
-                                </Link>
-                                
-                                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-400 mb-4">
-                                    <div className="flex items-center gap-2">
-                                        <Clock size={16} className="text-brand-gold" />
-                                        <span>{offering.duration}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <GraduationCap size={16} className="text-brand-gold" />
-                                        <span>{offering.qualification}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <MapPin size={16} className="text-brand-gold" />
-                                        <span>{typeOfStudy}</span>
-                                    </div>
-                                </div>
-
-                                <p className="text-gray-400 text-sm mb-4 flex-1 line-clamp-3 leading-relaxed">
-                                    {offering.description}
-                                </p>
-                                
-                                <div className="mb-6 pt-4 border-t border-white/5">
-                                    <p className="text-3xl font-serif text-brand-gold font-bold">
-                                        R {offering.price?.toLocaleString()}
-                                    </p>
-                                    <p className="text-xs text-gray-500 mt-1 uppercase tracking-wider">Starting: {offering.startDate}</p>
-                                </div>
-
-                                {/* Default Footer - Always Visible */}
-                                <div className="mt-auto flex gap-3">
-                                    <Link 
-                                        to={`/course/${offering.id}`}
-                                        className="flex-1 bg-brand-gold text-brand-dark hover:bg-white hover:text-brand-dark font-bold transition-all duration-300 text-xs uppercase tracking-wider px-4 py-3 rounded-sm flex items-center justify-center gap-2 tracking-[1px]"
-                                    >
-                                        View More
-                                    </Link>
-                                    <button 
-                                        onClick={(e) => handleQuickView(offering, e)}
-                                        className="h-full aspect-square flex items-center justify-center bg-transparent border border-white/20 hover:border-brand-gold hover:text-brand-gold text-white rounded-sm transition-all" 
-                                        aria-label="Quick View"
-                                    >
-                                        <Eye size={20} />
-                                    </button>
-                                </div>
-                            </div>
+                    {paginatedOfferings.map((offering) => (
+                        <div key={offering.id} className="h-full">
+                            <CourseCard offering={offering} onExpand={handleCardExpand} />
                         </div>
-                    )})}
+                    ))}
 
                     {displayedOfferings.length === 0 && (
                         <div className="col-span-full text-center py-12 bg-white/5 rounded-sm border border-white/5">
@@ -368,7 +285,7 @@ export const ProgrammeArchive: React.FC = () => {
                             <p className="text-gray-500 max-w-md mx-auto mb-6">
                                 We couldn't find any courses matching your specific filters for {config.title}.
                             </p>
-                            <button 
+                            <button
                                 onClick={() => {
                                     setSelectedCategory('');
                                     setSelectedAccreditations([]);
@@ -381,26 +298,51 @@ export const ProgrammeArchive: React.FC = () => {
                         </div>
                     )}
                 </div>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                    <div className="flex justify-center items-center gap-2 mt-16">
+                        <button
+                            onClick={() => {
+                                setCurrentPage(p => Math.max(1, p - 1));
+                                scrollToTop();
+                            }}
+                            disabled={currentPage === 1}
+                            className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${currentPage === 1 ? 'text-gray-600 cursor-not-allowed' : 'bg-white text-[#002B4E] hover:bg-brand-gold'}`}
+                        >
+                            <ChevronLeft size={20} />
+                        </button>
+
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                            <button
+                                key={page}
+                                onClick={() => {
+                                    setCurrentPage(page);
+                                    scrollToTop();
+                                }}
+                                className={`w-10 h-10 rounded-full text-sm font-bold transition-all ${
+                                    currentPage === page
+                                        ? 'bg-brand-gold text-[#002B4E] scale-110'
+                                        : 'bg-white text-[#002B4E] hover:bg-gray-100'
+                                }`}
+                            >
+                                {page}
+                            </button>
+                        ))}
+
+                        <button
+                            onClick={() => {
+                                setCurrentPage(p => Math.min(totalPages, p + 1));
+                                scrollToTop();
+                            }}
+                            disabled={currentPage === totalPages}
+                            className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${currentPage === totalPages ? 'text-gray-600 cursor-not-allowed' : 'bg-white text-[#002B4E] hover:bg-brand-gold'}`}
+                        >
+                            <ChevronRight size={20} />
+                        </button>
+                    </div>
+                )}
             </div>
-
-            {selectedOffering && (
-                <QuickViewModal 
-                    offering={selectedOffering} 
-                    isOpen={isModalOpen} 
-                    onClose={() => setIsModalOpen(false)} 
-                />
-            )}
-
-            <ApplicationModal 
-                isOpen={showApplication} 
-                onClose={() => setShowApplication(false)} 
-                courseTitle={currentCourse?.title}
-            />
-            
-            <CheckoutModal 
-                isOpen={showCheckout}
-                onClose={() => setShowCheckout(false)}
-            />
         </div>
     );
 };
