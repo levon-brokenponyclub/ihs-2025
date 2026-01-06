@@ -6,7 +6,10 @@ export interface Offering {
   title: string;
   duration: string;
   qualification: string;
-  description: string;
+
+  description: string;          // Long / marketing description
+  shortDescription: string;     // 👈 Compare, cards, summaries
+
   image?: string; // Legacy: optional, use video instead
   video?: string; // Added for hover video loops
   programmeTypes: string[];
@@ -43,6 +46,10 @@ export interface CurriculumYear {
   modules: CourseModule[];
 }
 
+/**
+ * CourseDetail extends Offering
+ * shortDescription is inherited automatically
+ */
 export interface CourseDetail extends Offering {
   fullDescription: string;
   level: string;
@@ -53,12 +60,16 @@ export interface CourseDetail extends Offering {
   careerOutcomes: string[];
   certification?: string;
   focusAreas?: string[];
-  extendedFocusAreas?: { title: string; description: string }[]; // Added for detailed BBA focus areas
-  programContentIncludes?: string[]; // Added for highlight grid
+  extendedFocusAreas?: { title: string; description: string }[];
+  programContentIncludes?: string[];
   fees: {
     tuition: string;
     registration: string;
     note: string;
   };
-  workIntegratedLearning?: string; // Added optional property
+  workIntegratedLearning?: string;
+  effort?: string;
+  faq?: { question: string; answer: string }[];
+  successfulGraduates?: string;
+  wilDuration?: string;
 }

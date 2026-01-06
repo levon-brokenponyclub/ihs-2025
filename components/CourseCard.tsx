@@ -6,19 +6,26 @@ import { useCompare } from '../context/CompareContext';
 import { QuickViewModal } from './QuickViewModal';
 import { ApplicationModal } from './ApplicationModal';
 import { CheckoutModal } from './CheckoutModal';
-import { Clock, GraduationCap, Eye, BarChart2, X, ShoppingBag, FileText, Layers } from 'lucide-react';
+import { Clock, GraduationCap, Eye, BarChart2, X, ArrowRight, Target, ShoppingBag } from 'lucide-react';
+import { Button } from './ui/Button';
 
 interface CourseCardProps {
     offering: Offering;
     onExpand: (o: Offering, img: DOMRect, txt: DOMRect, cat: DOMRect) => void;
 }
 
+// Helper for Ecommerce Check (Consolidated logic)
+const checkIsEcommerce = (course: Offering) => {
+    // Only "Purchasing for Food Service Operations" (ID 19) is Buy Now
+    return course.id === '19';
+};
+
 export const CourseCard: React.FC<CourseCardProps> = ({ offering, onExpand }) => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const mediaRef = useRef<HTMLDivElement>(null);
     const titleRef = useRef<HTMLHeadingElement>(null);
     const categoryRef = useRef<HTMLSpanElement>(null);
-    
+
     const { addToCart } = useCart();
     const { addToCompare, isInCompare, removeFromCompare } = useCompare();
 
@@ -28,13 +35,11 @@ export const CourseCard: React.FC<CourseCardProps> = ({ offering, onExpand }) =>
     const [showApplication, setShowApplication] = useState(false);
     const [showCheckout, setShowCheckout] = useState(false);
 
-    const isEcommerce = offering.programmeTypes.some((type: string) =>
-        ['Online Learning', 'Part Time Learning'].includes(type)
-    );
+    const isEcommerce = checkIsEcommerce(offering);
     const inCompare = isInCompare(offering.id);
 
     const handleMouseEnter = () => {
-        if (videoRef.current) videoRef.current.play().catch(() => {});
+        if (videoRef.current) videoRef.current.play().catch(() => { });
     };
 
     const handleMouseLeave = () => {
@@ -58,7 +63,8 @@ export const CourseCard: React.FC<CourseCardProps> = ({ offering, onExpand }) =>
         e.stopPropagation();
         if (isEcommerce) {
             addToCart(offering);
-            setShowCheckout(true);
+            // Intentionally not showing checkout modal immediately based on feedback
+            // Sidebar cart will open automatically via context
         } else {
             setShowApplication(true);
         }
@@ -81,21 +87,27 @@ export const CourseCard: React.FC<CourseCardProps> = ({ offering, onExpand }) =>
                     <div ref={mediaRef} className="relative h-60 overflow-hidden shrink-0 bg-gray-100">
                         <video ref={videoRef} src={offering.video} muted loop playsInline className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                         <div className="absolute top-4 left-4 z-10">
-                            <span ref={categoryRef} className="bg-[#f8fafc] border border-[#eff4f7] text-[#002a4e] text-[10px] font-bold px-3 py-1.5 uppercase rounded-sm shadow-md hover:bg-[#c2b068] hover:border-[#d4c999] hover:text-[#fff] transition-colors inline-block tracking-[1px]">
+                            <span ref={categoryRef} className="bg-brand-gold text-white border border-brand-gold/50 text-[10px] font-bold px-3 py-1.5 uppercase rounded-sm shadow-md inline-block tracking-[1px]">
                                 {offering.category}
                             </span>
                         </div>
-                        
+
                         <div className="absolute bottom-0 left-0 right-0 bg-[#002B4E]/95 backdrop-blur-sm p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 flex gap-2 z-20">
                             <button onClick={handleQuickView} className="flex-1 bg-white text-[#002B4E] hover:bg-[#C2B067] hover:text-white text-[10px] font-bold uppercase py-2.5 rounded-sm flex items-center justify-center gap-2 border border-transparent transition-colors tracking-[1px]">
                                 <Eye size={14} /> Quick View
                             </button>
-                            <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); inCompare ? removeFromCompare(offering.id) : addToCompare(offering); }} className={`flex-1 bg-transparent border border-white/30 hover:bg-white/10 text-white text-[10px] font-bold uppercase py-2.5 rounded-sm flex items-center justify-center gap-2 transition-colors tracking-[1px] ${inCompare ? 'bg-white text-[#002B4E]' : ''}`}>
-                                {inCompare ? <X size={16} /> : <BarChart2 size={16} />} {inCompare ? 'Remove' : 'Compare'}
+                            <button
+                                onClick={(e) => { e.preventDefault(); e.stopPropagation(); inCompare ? removeFromCompare(offering.id) : addToCompare(offering); }}
+                                className={`flex-1 text-[10px] font-bold uppercase py-2.5 rounded-sm flex items-center justify-center gap-2 transition-all tracking-[1px] ${inCompare
+                                    ? 'bg-[#C2B067] text-white border-transparent hover:bg-[#B09F58]'
+                                    : 'bg-transparent border border-white/30 hover:bg-white/10 text-white'
+                                    }`}
+                            >
+                                {inCompare ? <X size={16} className="text-white" /> : <BarChart2 size={16} />} {inCompare ? 'REMOVE' : 'COMPARE'}
                             </button>
                         </div>
                     </div>
-                    
+
                     <div className="p-4 flex-1 flex flex-col relative z-10 bg-white">
                         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-gray-500 font-medium mb-4">
                             <div className="flex items-center gap-1.5">
@@ -107,7 +119,7 @@ export const CourseCard: React.FC<CourseCardProps> = ({ offering, onExpand }) =>
                                 <span>{offering.qualification}</span>
                             </div>
                             <div className="flex items-center gap-1.5">
-                                <Layers size={16} className="text-[#002B4E]" />
+                                <Target size={16} className="text-[#002B4E]" />
                                 <span>{offering.category}</span>
                             </div>
                         </div>
@@ -121,23 +133,36 @@ export const CourseCard: React.FC<CourseCardProps> = ({ offering, onExpand }) =>
                                 <p className="text-lg font-bold text-[#002B4E]">R {offering.price?.toLocaleString()}</p>
                             </div>
                             <div className="text-right">
-                                <p className="text-[10px] uppercase text-gray-400 font-bold mb-1 tracking-[1px]">Next Intake</p>
-                                <p className="text-xs font-bold text-[#002B4E]">{offering.startDate}</p>
+                                <p className="text-[10px] uppercase text-gray-400 font-bold mb-1 tracking-[1px]">Start Date</p>
+                                <div className="flex flex-col items-end">
+                                    <p className="text-xs font-bold text-[#002B4E]">
+                                        Next: {offering.startDate?.split(',')[0]}
+                                    </p>
+                                    {offering.startDate?.includes(',') && (
+                                        <p className="text-[10px] text-gray-400 italic">
+                                            Upcoming: {offering.startDate?.split(',').slice(1).join(', ')}
+                                        </p>
+                                    )}
+                                </div>
                             </div>
                         </div>
-                        
+
                         <div className="flex gap-3 relative z-20 bg-white">
-                            <button className="flex-1 bg-[#002845] border border-[#002845] text-white hover:bg-[#002845]/90 font-bold transition-all duration-300 text-[10px] md:text-xs uppercase px-2 py-3 rounded-sm flex items-center justify-center shadow-none tracking-[1px]">
-                                Learn More
-                            </button>
-                            
-                            <button 
-                                onClick={handleAction} 
-                                className="flex-1 bg-white border border-[#002B4E] text-[#002B4E] hover:bg-[#002B4E] hover:text-white font-bold transition-all duration-300 text-[10px] md:text-xs uppercase px-2 py-3 rounded-sm flex items-center justify-center gap-2 shadow-none tracking-[1px]"
+                            <Button
+                                variant="primary"
+                                className="flex-1 !px-2 !py-3 !text-[10px] md:!text-xs"
                             >
-                                {isEcommerce ? 'Buy Now' : 'Apply Now'} 
-                                {isEcommerce ? <ShoppingBag size={14} /> : <FileText size={14} />}
-                            </button>
+                                Learn More
+                            </Button>
+
+                            <Button
+                                variant="outline"
+                                onClick={handleAction}
+                                className="flex-1 !px-2 !py-3 !text-[10px] md:!text-xs"
+                                icon={isEcommerce ? <ShoppingBag size={14} /> : <ArrowRight size={14} />}
+                            >
+                                {isEcommerce ? 'Buy Now' : 'Apply Now'}
+                            </Button>
                         </div>
                     </div>
                 </div>

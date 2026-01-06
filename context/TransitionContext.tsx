@@ -34,7 +34,7 @@ const createDebugBox = (id: string, rect: DOMRect, color: string, label: string)
     div.style.zIndex = '9999';
     div.style.pointerEvents = 'none';
     div.style.opacity = '0.8';
-    
+
     const span = document.createElement('span');
     span.innerText = label;
     span.style.color = 'white';
@@ -48,7 +48,7 @@ const createDebugBox = (id: string, rect: DOMRect, color: string, label: string)
     span.style.left = '-2px';
     span.style.whiteSpace = 'nowrap';
     span.style.borderRadius = '2px 2px 0 0';
-    
+
     div.appendChild(span);
     document.body.appendChild(div);
 };
@@ -61,17 +61,17 @@ const clearDebugBoxes = () => {
 const logTransition = (step: string, details?: any) => {
     // Only log specific transition events with styling to make them stand out
     console.log(
-        `%c[Transition] ${step}`, 
-        'color: #C2B067; font-weight: bold; background: #002B4E; padding: 2px 4px; border-radius: 2px;', 
+        `%c[Transition] ${step}`,
+        'color: #C2B067; font-weight: bold; background: #002B4E; padding: 2px 4px; border-radius: 2px;',
         details || ''
     );
 };
 
 export const TransitionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [debugMode, setDebugMode] = useState(false);
-    const [activeItem, setActiveItem] = useState<{ 
-        offering: Offering; 
-        imageRect: DOMRect; 
+    const [activeItem, setActiveItem] = useState<{
+        offering: Offering;
+        imageRect: DOMRect;
         textRect: DOMRect;
         categoryRect: DOMRect;
     } | null>(null);
@@ -81,14 +81,12 @@ export const TransitionProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
     // Refs for the temporary transition elements
     const imageOverlayRef = useRef<HTMLDivElement>(null);
-    const textOverlayRef = useRef<HTMLHeadingElement>(null);
-    const categoryOverlayRef = useRef<HTMLSpanElement>(null);
-    const backdropRef = useRef<HTMLDivElement>(null); 
+    const backdropRef = useRef<HTMLDivElement>(null);
     const timelineRef = useRef<gsap.core.Timeline | null>(null);
-    
+
     // Deduplication ref for Strict Mode logging
     const lastLoggedIdRef = useRef<string | null>(null);
-    
+
     const navigate = useNavigate();
 
     const toggleDebug = () => {
@@ -110,11 +108,11 @@ export const TransitionProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         }
 
         // 2. Log start
-        logTransition('Start Initiated', { 
+        logTransition('Start Initiated', {
             title: offering.title,
             id: offering.id
         });
-        
+
         // 3. Set state to mount the overlay elements
         setActiveItem({ offering, imageRect, textRect, categoryRect });
 
@@ -125,36 +123,24 @@ export const TransitionProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     // Use useLayoutEffect to prevent FOUC (Flash of Unstyled Content) during animation setup
     useLayoutEffect(() => {
         let isMounted = true;
-        
+
         if (!activeItem) return;
 
         // Safety check for refs
-        if (!imageOverlayRef.current || !textOverlayRef.current || !backdropRef.current || !categoryOverlayRef.current) {
+        if (!imageOverlayRef.current || !backdropRef.current) {
             return;
         }
 
-        const { imageRect, textRect, categoryRect, offering } = activeItem;
-        
+        const { imageRect, offering } = activeItem;
+
         // --- CALCULATION PHASE ---
-        const headerHeight = 80;
         const isDesktop = window.innerWidth >= 1024;
-        const targetHeroHeight = isDesktop ? window.innerHeight * 0.8 : window.innerHeight * 0.5;
-        
-        // Target Text Position Logic
-        const containerPadding = isDesktop ? 32 : 16;
-        const maxContainerWidth = 1280;
-        const windowWidth = window.innerWidth;
-        const targetTextLeft = windowWidth > maxContainerWidth 
-            ? (windowWidth - maxContainerWidth) / 2 + containerPadding 
-            : containerPadding;
-        
-        const targetTextBottom = isDesktop ? 64 : 32; 
-        const targetTextTop = headerHeight + targetHeroHeight - targetTextBottom - 80; 
+        const targetHeroHeight = isDesktop ? window.innerHeight - 80 : 450;
 
         // --- SETUP PHASE ---
         document.body.style.overflow = 'hidden';
 
-        // OPTIMIZATION: Z-Indices set below 40 (Header is 40) to keep Header visible
+        // Set initial states - Z-Indices MUST be below 40 (Header is z-40)
         gsap.set(backdropRef.current, { opacity: 0, zIndex: 30 });
         gsap.set(imageOverlayRef.current, {
             position: 'fixed',
@@ -162,124 +148,80 @@ export const TransitionProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             left: imageRect.left,
             width: imageRect.width,
             height: imageRect.height,
-            zIndex: 35, // Below Header (40), Above Content
-            borderRadius: '1rem',
-            objectFit: 'cover'
-        });
-        gsap.set(categoryOverlayRef.current, {
-            position: 'fixed',
-            top: categoryRect.top,
-            left: categoryRect.left,
-            width: categoryRect.width,
-            zIndex: 36,
-            fontSize: '10px',
-            opacity: 1
-        });
-        gsap.set(textOverlayRef.current, {
-            position: 'fixed',
-            top: textRect.top,
-            left: textRect.left,
-            width: textRect.width,
-            zIndex: 36,
-            margin: 0,
-            color: '#002B4E',
-            fontSize: isDesktop ? '1.25rem' : '1.125rem',
-            lineHeight: 1.25,
-            fontWeight: 700,
-            fontFamily: '"Playfair Display", serif'
+            zIndex: 35,
+            borderRadius: '1px',
+            overflow: 'hidden',
+            backgroundColor: '#002B4E'
         });
 
         // --- ANIMATION PHASE ---
-        // Kill previous timeline if exists (React Strict Mode safety)
         if (timelineRef.current) timelineRef.current.kill();
 
         const tl = gsap.timeline({
             onStart: () => {
-                // Strict Mode Check: Prevent duplicate logging for same item
                 if (isMounted && lastLoggedIdRef.current !== offering.id) {
                     logTransition('Animation Started');
                     lastLoggedIdRef.current = offering.id;
                 }
-                // Mark that we're animating
                 setTransitionState({ isTransitioning: true, phase: 'animating' });
             },
             onComplete: () => {
                 if (!isMounted) return;
-                
-                logTransition('Animation Complete -> Cleanup');
-                
-                // When the GSAP animation completes we mark the transition as complete/finished
-                setTransitionState({ isTransitioning: false, phase: 'complete' });
 
-                if (debugMode) {
-                    setTimeout(() => {
-                        if (isMounted) clearDebugBoxes();
-                    }, 2000);
-                }
+                logTransition('Video Motion Complete -> Holding for 1s');
 
-                // Fade out overlays to reveal actual page content
-                gsap.to([imageOverlayRef.current, textOverlayRef.current, categoryOverlayRef.current, backdropRef.current], {
-                    opacity: 0,
-                    duration: 0.3, 
-                    ease: "power2.inOut",
-                    onComplete: () => {
-                        if (!isMounted) return;
-                        setActiveItem(null); // Unmount overlays
-                        lastLoggedIdRef.current = null; // Reset logged ID
-                        document.body.style.overflow = '';
-                    }
-                });
+                // Requirement: Wait 1s after video transition completes before showing content
+                setTimeout(() => {
+                    if (!isMounted) return;
+
+                    logTransition('Hold Complete -> Fading Overlays & Releasing Content');
+                    setTransitionState({ isTransitioning: false, phase: 'complete' });
+
+                    // Smoothly fade out the transition elements as the real page takes over
+                    gsap.to([imageOverlayRef.current, backdropRef.current], {
+                        opacity: 0,
+                        duration: 0.6,
+                        ease: "power2.inOut",
+                        onComplete: () => {
+                            if (!isMounted) return;
+                            setActiveItem(null);
+                            lastLoggedIdRef.current = null;
+                            document.body.style.overflow = '';
+                        }
+                    });
+                }, 1000);
             }
         });
-        
+
         timelineRef.current = tl;
 
-        // Perform Navigation immediately so the underlying page is ready when we fade out
-        // Mark that we're navigating (so pages can keep hero background visible but hide content)
-        setTransitionState({ isTransitioning: true, phase: 'navigating' });
-        navigate(`/course/${offering.id}`);
+        // Navigation happens early to allow underlying page to mount
+        setTimeout(() => {
+            if (isMounted) {
+                setTransitionState({ isTransitioning: true, phase: 'navigating' });
+                navigate(`/course/${offering.id}`);
+            }
+        }, 100);
 
-        // The FLIP Animation
+        // FLIP Animation sequence
         tl.to(imageOverlayRef.current, {
-            top: 0, // Animate to 0 (under header) to match destination page Hero
+            top: 80, // Land below the 80px fixed header
             left: 0,
             width: '100vw',
             height: targetHeroHeight,
             borderRadius: 0,
-            opacity: 0.6,
-            backgroundColor: '#002B4E',
             duration: 0.8,
             ease: "expo.inOut"
         });
 
-        tl.to(textOverlayRef.current, {
-            top: targetTextTop,
-            left: targetTextLeft,
-            color: '#FFFFFF',
-            fontSize: isDesktop ? '3.75rem' : '1.875rem',
-            width: isDesktop ? '60%' : '90%',
-            duration: 0.8,
-            ease: "expo.inOut"
-        }, "<");
-
-        tl.to(categoryOverlayRef.current, {
-            top: targetTextTop - 40,
-            left: targetTextLeft,
-            backgroundColor: '#C2B067',
-            color: '#002B4E',
-            borderColor: '#C2B067',
-            duration: 0.8,
-            ease: "expo.inOut"
-        }, "<");
-
         tl.to(backdropRef.current, {
             opacity: 1,
-            duration: 0.2
+            duration: 0.3
         }, "<");
 
-        return () => { 
+        return () => {
             isMounted = false;
-            document.body.style.overflow = ''; 
+            document.body.style.overflow = '';
             if (timelineRef.current) timelineRef.current.kill();
         };
     }, [activeItem, navigate, debugMode]);
@@ -287,40 +229,37 @@ export const TransitionProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     return (
         <TransitionContext.Provider value={{ startTransition, debugMode, toggleDebug, transitionState }}>
             {children}
-            
+
             {activeItem && (
                 <>
                     {/* Backdrop covers the listing page while transition happens */}
-                    <div ref={backdropRef} className="fixed inset-0 bg-white pointer-events-none" />
-                    
-                    {/* 1. Image Layer */}
-                    <div 
-                        ref={imageOverlayRef} 
-                        className="overflow-hidden bg-brand-primary pointer-events-none shadow-2xl"
+                    <div ref={backdropRef} className="fixed inset-0 bg-white z-[30] pointer-events-none" />
+
+                    {/* 1. Media Overlay (Video or Image) */}
+                    <div
+                        ref={imageOverlayRef}
+                        className="bg-brand-primary pointer-events-none shadow-2xl overflow-hidden"
                     >
-                        <img 
-                            src={activeItem.offering.image} 
-                            className="w-full h-full object-cover"
-                            alt=""
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-brand-primary via-brand-primary/60 to-transparent"></div>
+                        {activeItem.offering.video ? (
+                            <video
+                                src={activeItem.offering.video}
+                                autoPlay
+                                muted
+                                loop
+                                playsInline
+                                className="w-full h-full object-cover opacity-70"
+                            />
+                        ) : (
+                            <img
+                                src={activeItem.offering.image}
+                                className="w-full h-full object-cover opacity-70"
+                                alt=""
+                            />
+                        )}
+                        {/* Match Hero Overlays */}
+                        <div className="absolute inset-0 bg-brand-primary/30 z-10" />
+                        <div className="absolute inset-0 bg-gradient-to-r from-brand-primary via-brand-primary/50 to-transparent z-10" />
                     </div>
-
-                    {/* 2. Category Layer */}
-                    <span 
-                        ref={categoryOverlayRef}
-                        className="pointer-events-none bg-[#f8fafc] border border-[#eff4f7] text-[#002a4e] text-[10px] font-bold px-3 py-1.5 uppercase tracking-widest rounded-sm shadow-sm flex items-center justify-center whitespace-nowrap"
-                    >
-                        {activeItem.offering.category}
-                    </span>
-
-                    {/* 3. Text Layer */}
-                    <h3
-                        ref={textOverlayRef}
-                        className="pointer-events-none transform-origin-top-left"
-                    >
-                        {activeItem.offering.title}
-                    </h3>
                 </>
             )}
         </TransitionContext.Provider>

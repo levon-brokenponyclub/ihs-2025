@@ -40,32 +40,47 @@ const SLIDES = [
 
 export const Hero: React.FC = () => {
   const [activeSlide, setActiveSlide] = useState(0);
+  const [isExiting, setIsExiting] = useState(false);
   const [isVideoLoaded, setIsVideoLoaded] = useState(false);
 
-  // Auto-advance slider every 8 seconds
+  // Auto-advance slider every 8 seconds, with exit transition
   useEffect(() => {
-    const timer = setInterval(() => {
+    const exitDelay = 7200; // Start exiting 800ms before slide change
+    const totalDelay = 8000;
+
+    const exitTimer = setTimeout(() => {
+      setIsExiting(true);
+    }, exitDelay);
+
+    const changeTimer = setTimeout(() => {
       setActiveSlide((prev) => (prev + 1) % SLIDES.length);
-    }, 8000);
-    return () => clearInterval(timer);
-  }, []);
+      setIsExiting(false);
+    }, totalDelay);
+
+    return () => {
+      clearTimeout(exitTimer);
+      clearTimeout(changeTimer);
+    };
+  }, [activeSlide]);
 
   const handleManualChange = (index: number) => {
-    setActiveSlide(index);
+    if (index === activeSlide || isExiting) return;
+    setIsExiting(true);
+    setTimeout(() => {
+      setActiveSlide(index);
+      setIsExiting(false);
+    }, 800); // 800ms exit animation duration
   };
 
-  const currentSlide = SLIDES[activeSlide];
-
   return (
-    <section className="relative h-[550px] lg:h-[90vh] flex flex-col bg-brand-primary">
+    <section className="relative h-[550px] lg:h-[90vh] flex flex-col bg-brand-primary overflow-hidden">
       {/* Background Layer */}
       <div className="absolute inset-0 z-0 bg-brand-primary overflow-hidden">
         {SLIDES.map((slide, index) => (
           <div
             key={slide.id}
-            className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-              activeSlide === index ? 'opacity-100' : 'opacity-0'
-            }`}
+            className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${activeSlide === index ? 'opacity-100' : 'opacity-0'
+              }`}
           >
             {/* Gradient overlays for text readability */}
             <div className="absolute inset-0 z-10 bg-brand-primary/30" />
@@ -76,9 +91,8 @@ export const Hero: React.FC = () => {
                 <img
                   src={slide.poster}
                   alt="Background"
-                  className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
-                    isVideoLoaded ? 'opacity-0' : 'opacity-100'
-                  }`}
+                  className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${isVideoLoaded ? 'opacity-0' : 'opacity-100'
+                    }`}
                 />
                 <video
                   autoPlay
@@ -106,58 +120,84 @@ export const Hero: React.FC = () => {
       <div className="relative z-20 flex-grow flex items-center">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
           <div className="w-full pb-20 lg:pb-0 relative">
-            {SLIDES.map((slide, index) => (
-              <div
-                key={slide.id}
-                className={`w-full max-w-3xl mx-auto lg:mx-0 text-center lg:text-left transition-all duration-700 ease-out transform ${
-                  activeSlide === index
-                    ? 'relative opacity-100 translate-x-0 z-10'
-                    : 'absolute top-0 left-0 right-0 lg:left-0 lg:right-auto opacity-0 -translate-x-10 z-0 pointer-events-none'
-                }`}
-              >
-                {/* Eyebrow */}
-                <div className="flex items-center justify-center lg:justify-start gap-3 mb-6">
-                  <span className="w-12 h-[2px] bg-brand-accent"></span>
-                  <span className="text-sm font-bold tracking-widest uppercase text-brand-accent">
-                    {slide.preTitle}
-                  </span>
+            {SLIDES.map((slide, index) => {
+              const isActive = activeSlide === index;
+              if (!isActive && !isExiting) return null; // Only render active slide or exiting slide
+
+              return (
+                <div
+                  key={slide.id}
+                  className={`w-full max-w-3xl mx-auto lg:mx-0 text-center lg:text-left ${isActive
+                    ? 'relative z-10'
+                    : 'absolute top-0 left-0 right-0 lg:left-0 lg:right-auto z-0 pointer-events-none'
+                    }`}
+                >
+                  {/* Eyebrow */}
+                  <div className="overflow-hidden mb-6">
+                    <div className={`flex items-center justify-center lg:justify-start gap-3 ${isActive
+                      ? (isExiting ? 'hero-exit exit-delay-300' : 'hero-enter animation-delay-100')
+                      : 'opacity-0'
+                      }`}>
+                      <span className="w-12 h-[2px] bg-brand-accent"></span>
+                      <span className="text-sm font-bold tracking-widest uppercase text-brand-accent">
+                        {slide.preTitle}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Headline */}
+                  <div className="overflow-hidden mb-8 pb-4">
+                    <h1 className={`font-serif text-5xl md:text-6xl lg:text-7xl text-white font-semibold leading-[1.1] drop-shadow-lg ${isActive
+                      ? (isExiting ? 'hero-exit exit-delay-200' : 'hero-enter animation-delay-300')
+                      : 'opacity-0'
+                      }`}>
+                      {slide.title}
+                    </h1>
+                  </div>
+
+                  {/* Description */}
+                  <div className="overflow-hidden mb-10">
+                    <p className={`text-lg md:text-xl leading-relaxed max-w-xl mx-auto lg:mx-0 text-white/90 font-light ${isActive
+                      ? (isExiting ? 'hero-exit exit-delay-100' : 'hero-enter animation-delay-500')
+                      : 'opacity-0'
+                      }`}>
+                      {slide.description}
+                    </p>
+                  </div>
+
+                  {/* CTA Buttons */}
+                  <div className="overflow-hidden">
+                    <div className={`flex flex-wrap justify-center lg:justify-start gap-4 ${isActive
+                      ? (isExiting ? 'hero-exit exit-delay-0' : 'hero-enter animation-delay-700')
+                      : 'opacity-0'
+                      }`}>
+                      <Button
+                        variant="gold"
+                        icon={<slide.primaryBtn.icon size={16} />}
+                        onClick={() => {
+                          if (slide.primaryBtn.action === 'finder') {
+                            document.getElementById('offerings')?.scrollIntoView({ behavior: 'smooth' });
+                          }
+                        }}
+                        className="hover:scale-105 transition-transform duration-300"
+                      >
+                        {slide.primaryBtn.label}
+                      </Button>
+
+                      {slide.secondaryBtn && (
+                        <Button
+                          variant="outline-gold"
+                          icon={<slide.secondaryBtn.icon size={16} />}
+                          className="hover:scale-105 transition-transform duration-300 bg-white/5"
+                        >
+                          {slide.secondaryBtn.label}
+                        </Button>
+                      )}
+                    </div>
+                  </div>
                 </div>
-
-                {/* Headline */}
-                <h1 className="font-serif text-5xl md:text-6xl lg:text-7xl text-white font-semibold leading-[1.1] mb-8 drop-shadow-lg">
-                  {slide.title}
-                </h1>
-
-                {/* Description */}
-                <p className="text-lg md:text-xl leading-relaxed mb-10 max-w-xl mx-auto lg:mx-0 text-white/90 font-light">
-                  {slide.description}
-                </p>
-
-                {/* CTA Buttons */}
-                <div className="flex flex-wrap justify-center lg:justify-start gap-4">
-                  <Button
-                    variant="primary"
-                    icon={<slide.primaryBtn.icon size={16} />}
-                    onClick={() => {
-                      document.getElementById('offerings')?.scrollIntoView({ behavior: 'smooth' });
-                    }}
-                    className="hover:scale-105 transition-transform duration-300"
-                  >
-                    {slide.primaryBtn.label}
-                  </Button>
-
-                  {slide.secondaryBtn && (
-                    <Button
-                      variant="secondary"
-                      icon={<slide.secondaryBtn.icon size={16} />}
-                      className="hover:scale-105 transition-transform duration-300"
-                    >
-                      {slide.secondaryBtn.label}
-                    </Button>
-                  )}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
@@ -196,9 +236,8 @@ export const Hero: React.FC = () => {
                 <button
                   key={idx}
                   onClick={() => handleManualChange(idx)}
-                  className={`px-8 py-8 text-left transition-all duration-300 relative group overflow-hidden ${
-                    isActive ? 'bg-brand-surface' : 'bg-white hover:bg-brand-surface'
-                  }`}
+                  className={`px-8 py-8 text-left transition-all duration-300 relative group overflow-hidden ${isActive ? 'bg-brand-surface' : 'bg-white hover:bg-brand-surface'
+                    }`}
                   aria-label={`Go to slide ${idx + 1}: ${s.title}`}
                 >
                   {/* Progress Bar */}
@@ -207,9 +246,8 @@ export const Hero: React.FC = () => {
                     <div className="absolute top-0 left-0 h-1 bg-brand-accent animate-progress-load z-10"></div>
                   )}
 
-                  <span className={`text-[10px] font-bold uppercase tracking-widest block mb-2 transition-colors ${
-                    isActive ? 'text-brand-highlight' : 'text-text-secondary/70 group-hover:text-brand-highlight'
-                  }`}>
+                  <span className={`text-[10px] font-bold uppercase tracking-widest block mb-2 transition-colors ${isActive ? 'text-brand-highlight' : 'text-text-secondary/70 group-hover:text-brand-highlight'
+                    }`}>
                     {s.preTitle}
                   </span>
 
@@ -221,17 +259,21 @@ export const Hero: React.FC = () => {
             })}
 
             {/* Apply Now Block */}
-            <div className="relative bg-brand-accent px-8 py-8 cursor-pointer hover:bg-opacity-90 transition-colors group flex items-center justify-between z-10">
-              <div className="relative z-10">
-                <span className="text-[10px] font-bold text-brand-primary/70 uppercase tracking-widest block mb-2 group-hover:translate-x-1 transition-transform">
+            <div className="relative bg-brand-accent px-8 py-8 cursor-pointer hover:bg-brand-accent/90 transition-all duration-300 group flex items-center justify-between z-10">
+              <div className="relative z-10 text-white">
+                <span className="text-[10px] font-bold text-white/70 uppercase tracking-widest block mb-2 group-hover:translate-x-1 transition-transform">
                   Interested?
                 </span>
-                <h3 className="text-xl font-serif font-semibold text-brand-primary transition-colors">
+                <h3 className="text-xl font-serif font-semibold text-white transition-colors">
                   Apply Now
                 </h3>
               </div>
-              <div className="relative z-10 text-brand-primary group-hover:scale-110 transition-transform">
-                <ArrowRight size={28} strokeWidth={1.5} />
+              <div className="relative z-20 flex items-center justify-center w-12 h-12 rounded-full transition-all duration-500 group-hover:bg-brand-primary">
+                <ArrowRight
+                  size={24}
+                  strokeWidth={2}
+                  className="text-white transition-transform duration-500 group-hover:rotate-90"
+                />
               </div>
             </div>
           </div>

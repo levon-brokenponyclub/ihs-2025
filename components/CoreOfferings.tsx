@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { OFFERINGS } from '../constants';
 import { Button } from './ui/Button';
@@ -125,12 +126,14 @@ export const CoreOfferings: React.FC = () => {
         }
         if (selectedFocusAreas.length) {
             filtered = filtered.filter((o: Offering) => selectedFocusAreas.every(area => {
-                if (area === 'Hospitality') return o.category === 'Hospitality';
-                if (area === 'Culinary') return o.category === 'Culinary';
-                if (area === 'Food & Beverage') return o.title.includes('Food') || o.title.includes('Beverage');
-                if (area === 'Business') return o.title.includes('Business') || o.programmeTypes.includes('Degrees');
-                if (area === 'Human Resources') return o.description.includes('Human Resources');
-                if (area === 'Conference & Events') return o.description.includes('Events');
+                // Primary Check: Category match
+                if (o.category === area) return true;
+
+                // Fallback / Specific Logic
+                if (area === 'Business' && (o.title.includes('Business') || o.programmeTypes.includes('Degrees'))) return true;
+                if (area === 'Conference & Events' && o.description.includes('Events')) return true;
+                if (area === 'Human Resources' && o.description.toLowerCase().includes('human resources')) return true;
+
                 return false;
             }));
         }
@@ -352,7 +355,7 @@ export const CoreOfferings: React.FC = () => {
             {/* --- RESULTS SLIDER (Dark) --- */}
             <div ref={cardsContainerRef} className="bg-[#072136] pt-24 pb-20">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    
+
 
                     <div className="relative">
                         {displayedOfferings.length > 0 ? (

@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from './ui/Button';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, MessageSquare, Mail } from 'lucide-react';
+import { CallMeBackModal } from './CallMeBackModal';
 
 export const FinalCTA: React.FC = () => {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
     return (
         <section className="relative py-32 overflow-hidden">
             {/* Background Image with Overlay */}
@@ -19,24 +22,44 @@ export const FinalCTA: React.FC = () => {
                     Join Africa's leading hospitality and culinary school. Take the first step towards your dream career today.
                 </p>
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                    <Button variant="primary" className="w-full sm:w-auto px-10 py-4 text-base" icon={<ArrowRight size={18} />}>
+                    <Button variant="gold" className="w-full sm:w-auto px-10 py-4 text-base" icon={<ArrowRight size={18} />}>
                         Apply Now
                     </Button>
-                    <Button variant="secondary" className="w-full sm:w-auto px-10 py-4 text-base">
+                    <Button variant="outline-gold" className="w-full sm:w-auto px-10 py-4 text-base bg-white/5">
                         Request Information
                     </Button>
                 </div>
 
-                <div className="mt-12 flex justify-center gap-8 text-brand-gold text-sm">
-                    <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 bg-brand-gold rounded-full animate-pulse"></span>
-                        Call Me Back
+                <div className="mt-16 flex flex-col md:flex-row items-center justify-center gap-8 text-white/80">
+                    <div
+                        onClick={() => setIsModalOpen(true)}
+                        className="group flex items-center gap-3 px-6 py-3 bg-white/5 border border-white/10 rounded-full cursor-pointer hover:bg-white/10 hover:border-brand-gold/30 hover:text-white transition-all duration-300"
+                    >
+                        <div className="relative">
+                            <div className="w-10 h-10 bg-brand-gold/10 rounded-full flex items-center justify-center text-brand-gold group-hover:scale-110 transition-transform duration-300">
+                                <MessageSquare size={18} />
+                            </div>
+                            <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[#162036] rounded-full animate-pulse"></span>
+                        </div>
+                        <div className="text-left">
+                            <p className="text-xs uppercase tracking-widest font-bold text-brand-gold/80 group-hover:text-brand-gold">Online Now</p>
+                            <p className="text-sm font-medium">Call Me Back</p>
+                        </div>
                     </div>
-                    <div>
-                        info@hotelschool.co.za
-                    </div>
+
+                    <a href="mailto:info@hotelschool.co.za" className="flex items-center gap-3 px-6 py-3 bg-white/5 border border-white/10 rounded-full hover:bg-white/10 hover:text-white transition-all duration-300">
+                        <div className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center text-gray-400">
+                            <Mail size={18} />
+                        </div>
+                        <div className="text-left">
+                            <p className="text-xs uppercase tracking-widest font-bold text-gray-500">Email Us</p>
+                            <p className="text-sm font-medium">info@hotelschool.co.za</p>
+                        </div>
+                    </a>
                 </div>
             </div>
+
+            <CallMeBackModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
         </section>
     );
 };

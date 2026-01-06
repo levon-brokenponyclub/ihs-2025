@@ -1,8 +1,7 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { OFFERINGS, FOCUS_AREAS } from '../constants';
-import { ArrowRight, Clock, ShoppingBag, FileText } from 'lucide-react';
+import { ArrowRight, ShoppingBag } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { Offering } from '../types';
 
@@ -14,7 +13,7 @@ const PROGRAMME_TYPES = [
     { label: 'Online Learning', value: 'Online Learning', slug: 'online' },
 ];
 
-const STUDY_LEVELS = ['Degrees', 'Diplomas', 'Certificates'];
+const STUDY_LEVELS = ['Degrees', 'Diplomas', 'Certificates', 'Short Courses'];
 
 interface MegaMenuProps {
     isOpen: boolean;
@@ -22,31 +21,26 @@ interface MegaMenuProps {
     onMouseLeave?: () => void;
 }
 
-// Helper to determine if a course is e-commerce (Buy Now) vs Application (Apply Now)
+// Consolidated Ecommerce Check
 const checkIsEcommerce = (course: Offering) => {
-    if (['Degree', 'Diploma', 'Certificate', 'Higher Certificate'].includes(course.qualification)) {
-        return false;
-    }
-    if (['Specialisation', 'Short Course'].includes(course.qualification)) {
-        return true;
-    }
-    return false;
+    // Only "Purchasing for Food Service Operations" (ID 19) is Buy Now
+    return course.id === '19';
 };
 
 // ------------------------------------------
 // Sub-Component: Programme Type Link (Col 1)
 // ------------------------------------------
-const MenuLink = ({ 
-    text, 
-    isActive = false, 
-    onClick, 
+const MenuLink = ({
+    text,
+    isActive = false,
+    onClick,
     to,
     delayIndex = 0,
     isOpen,
     baseDelay = 0
-}: { 
-    text: string; 
-    isActive?: boolean; 
+}: {
+    text: string;
+    isActive?: boolean;
     onClick?: () => void;
     to?: string;
     delayIndex: number;
@@ -55,11 +49,11 @@ const MenuLink = ({
 }) => {
     // Base Classes
     const containerClasses = `relative block overflow-hidden group cursor-pointer py-2`;
-    
+
     // Animation State Classes for Entrance
     const animClasses = `transition-all duration-500 ease-out transform`;
-    const stateClasses = isOpen 
-        ? 'translate-y-0 opacity-100' 
+    const stateClasses = isOpen
+        ? 'translate-y-0 opacity-100'
         : 'translate-y-4 opacity-0';
 
     const innerContent = (
@@ -68,7 +62,7 @@ const MenuLink = ({
             <div className={`transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:-translate-y-[120%] whitespace-nowrap text-2xl font-serif font-bold leading-tight ${isActive ? 'text-[#C2B067]' : 'text-white'}`}>
                 {text}
             </div>
-            
+
             {/* Duplicate Text (Slides up from bottom) */}
             <div className={`absolute top-0 left-0 w-full transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] translate-y-[120%] group-hover:translate-y-0 whitespace-nowrap text-2xl font-serif font-bold leading-tight text-[#C2B067]`}>
                 {text}
@@ -80,8 +74,8 @@ const MenuLink = ({
 
     if (to) {
         return (
-            <Link 
-                to={to} 
+            <Link
+                to={to}
                 className={`${containerClasses} ${animClasses} ${stateClasses}`}
                 style={{ transitionDelay: `${delay}ms` }}
             >
@@ -91,7 +85,7 @@ const MenuLink = ({
     }
 
     return (
-        <div 
+        <div
             onClick={onClick}
             className={`${containerClasses} ${animClasses} ${stateClasses}`}
             style={{ transitionDelay: `${delay}ms` }}
@@ -113,23 +107,22 @@ interface FilterLinkProps {
     index: number;
 }
 
-const FilterLink: React.FC<FilterLinkProps> = ({ 
-    label, 
-    isActive, 
-    onClick, 
-    isOpen, 
-    baseDelay, 
-    index 
+const FilterLink: React.FC<FilterLinkProps> = ({
+    label,
+    isActive,
+    onClick,
+    isOpen,
+    baseDelay,
+    index
 }) => {
     const delay = isOpen ? baseDelay + (index * 40) : 0;
-    
+
     return (
         <button
             onClick={onClick}
-            className={`block text-left text-base transition-all duration-500 ease-out transform ${
-                isActive ? 'text-brand-gold translate-x-2 font-bold' : 'text-gray-300 font-medium hover:text-brand-gold'
-            } ${isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
-            style={{ 
+            className={`block text-left text-base transition-all duration-500 ease-out transform ${isActive ? 'text-brand-gold translate-x-2 font-bold' : 'text-gray-300 font-medium hover:text-brand-gold'
+                } ${isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+            style={{
                 transitionDelay: `${delay}ms`
             }}
         >
@@ -143,7 +136,7 @@ export const MegaMenu: React.FC<MegaMenuProps> = ({ isOpen, onMouseEnter, onMous
     const [activeSubFilter, setActiveSubFilter] = useState<string | null>(null);
     const { addToCart } = useCart();
     const navigate = useNavigate();
-    
+
     // Reset state when closed
     useEffect(() => {
         if (!isOpen) {
@@ -169,23 +162,30 @@ export const MegaMenu: React.FC<MegaMenuProps> = ({ isOpen, onMouseEnter, onMous
     const availableLevels = useMemo(() => {
         const quals = new Set(baseOfferings.map(o => o.qualification));
         return STUDY_LEVELS.filter(level => {
-            const singular = level.slice(0, -1);
-            return quals.has(singular);
+            const singular = level.slice(0, -1); // e.g. "Degrees" -> "Degree"
+            // Special handling for 'Short Courses' -> 'Short Course'
+            const check = level === 'Short Courses' ? 'Short Course' : singular;
+            return quals.has(check);
         });
     }, [baseOfferings]);
 
     // 3. Final Displayed Offerings (Base + SubFilter)
     const displayedOfferings = useMemo(() => {
         if (!activeSubFilter) return baseOfferings;
-        
-        const cleanFilter = activeSubFilter === 'Degrees' ? 'Degree' :
-                            activeSubFilter === 'Diplomas' ? 'Diploma' :
-                            activeSubFilter === 'Certificates' ? 'Certificate' : activeSubFilter;
-                            
+
+        let cleanFilter = activeSubFilter;
+        // Mapping plurals to singulars for comparison
+        if (activeSubFilter === 'Degrees') cleanFilter = 'Degree';
+        else if (activeSubFilter === 'Diplomas') cleanFilter = 'Diploma';
+        else if (activeSubFilter === 'Certificates') cleanFilter = 'Certificate';
+        else if (activeSubFilter === 'Short Courses') cleanFilter = 'Short Course';
+
         return baseOfferings.filter(o => o.category === cleanFilter || o.qualification === cleanFilter);
     }, [baseOfferings, activeSubFilter]);
 
-    const handleApplyClick = (course: Offering) => {
+    const handleApplyClick = (e: React.MouseEvent, course: Offering) => {
+        e.stopPropagation();
+        e.preventDefault();
         const isEcommerce = checkIsEcommerce(course);
         if (isEcommerce) {
             addToCart(course);
@@ -195,53 +195,52 @@ export const MegaMenu: React.FC<MegaMenuProps> = ({ isOpen, onMouseEnter, onMous
     };
 
     return (
-        <div 
+        <div
             className="fixed top-[80px] left-0 right-0 z-50 overflow-hidden pointer-events-none"
             style={{ height: '600px' }}
         >
             {/* Curtain Container */}
-            <div 
+            <div
                 className={`w-full h-full shadow-2xl flex relative transition-all duration-700 ease-[cubic-bezier(0.76,0,0.24,1)] pointer-events-auto`}
-                style={{ 
+                style={{
                     clipPath: isOpen ? 'inset(0 0 0% 0)' : 'inset(0 0 100% 0)',
-                    opacity: isOpen ? 1 : 0 
+                    opacity: isOpen ? 1 : 0
                 }}
                 onMouseEnter={onMouseEnter}
                 onMouseLeave={onMouseLeave}
             >
-                {/* Background Layer - 2 Part Split (Col 1+2 Merged, Col 3 Darker) */}
+                {/* Background Layer - 3 Part Split */}
                 <div className="absolute inset-0 flex z-0">
-                    {/* Col 1 (30%) + Col 2 (28%) = 58% */}
-                    <div className="w-[58%] bg-[#002B4E] border-r border-white/5"></div>
-                    {/* Col 3 (42%) */}
+                    <div className="w-[30%] bg-[#002B4E] border-r border-white/5"></div>
+                    <div className="w-[28%] bg-[#002B4E] border-r border-white/5"></div>
                     <div className="w-[42%] bg-[#001D36]"></div>
                 </div>
 
                 {/* Content Layer - Centered Grid */}
                 <div className="relative z-10 max-w-7xl mx-auto px-4 lg:px-8 w-full h-full flex items-start">
-                    
+
                     {/* Column 1: Programme Type (30%) */}
                     <div className="w-[30%] h-full border-r border-white/5 pr-8 py-12 flex flex-col justify-start">
                         <p className={`text-xs font-bold text-gray-500 uppercase tracking-widest mb-8 transition-opacity duration-700 delay-100 ${isOpen ? 'opacity-100' : 'opacity-0'}`}>
                             Programme Type
                         </p>
-                        
+
                         <div className="space-y-4">
                             {PROGRAMME_TYPES.map((type, index) => (
-                                <div 
-                                    key={type.value} 
+                                <div
+                                    key={type.value}
                                     onMouseEnter={() => {
                                         setActiveTypeObj(type);
                                         setActiveSubFilter(null);
                                     }}
                                 >
-                                    <MenuLink 
+                                    <MenuLink
                                         text={type.label}
                                         isActive={activeTypeObj.value === type.value}
                                         onClick={() => setActiveTypeObj(type)}
                                         delayIndex={index}
                                         isOpen={isOpen}
-                                        baseDelay={200} // Start after container opens
+                                        baseDelay={200}
                                     />
                                 </div>
                             ))}
@@ -250,10 +249,10 @@ export const MegaMenu: React.FC<MegaMenuProps> = ({ isOpen, onMouseEnter, onMous
 
                     {/* Column 2: Focus Areas & Level (28%) */}
                     <div className="w-[28%] h-full px-8 py-12 flex flex-col justify-start overflow-y-auto custom-scrollbar">
-                        
+
                         {/* Key forces re-render for animation on type change */}
                         <div key={activeTypeObj.value} className="w-full">
-                            
+
                             {/* Focus Areas Group */}
                             {availableFocusAreas.length > 0 && (
                                 <div className="mb-6">
@@ -268,7 +267,7 @@ export const MegaMenu: React.FC<MegaMenuProps> = ({ isOpen, onMouseEnter, onMous
                                                 isActive={activeSubFilter === area.value}
                                                 onClick={() => setActiveSubFilter(activeSubFilter === area.value ? null : area.value)}
                                                 isOpen={isOpen}
-                                                baseDelay={450} // Staggered start for Col 2 items
+                                                baseDelay={450}
                                                 index={index}
                                             />
                                         ))}
@@ -278,17 +277,17 @@ export const MegaMenu: React.FC<MegaMenuProps> = ({ isOpen, onMouseEnter, onMous
 
                             {/* Divider if both exist */}
                             {availableFocusAreas.length > 0 && availableLevels.length > 0 && (
-                                <div 
+                                <div
                                     className={`w-full h-px bg-white/5 my-6 transition-opacity duration-500 ${isOpen ? 'opacity-100' : 'opacity-0'}`}
                                     style={{ transitionDelay: isOpen ? '500ms' : '0ms' }}
                                 ></div>
                             )}
 
-                            {/* Level of Study Group */}
+                            {/* Study Levels Group */}
                             {availableLevels.length > 0 && (
-                                <div className="mb-8">
-                                    <p className={`text-xs font-bold text-gray-500 uppercase tracking-widest mb-6 transition-opacity duration-500 ${isOpen ? 'opacity-100' : 'opacity-0'}`} style={{ transitionDelay: isOpen ? '500ms' : '0ms' }}>
-                                        Level of Study
+                                <div>
+                                    <p className={`text-xs font-bold text-gray-500 uppercase tracking-widest mb-6 transition-opacity duration-500 ${isOpen ? 'opacity-100' : 'opacity-0'}`} style={{ transitionDelay: isOpen ? '550ms' : '0ms' }}>
+                                        Qualification Level
                                     </p>
                                     <div className="space-y-3">
                                         {availableLevels.map((level, index) => (
@@ -298,135 +297,68 @@ export const MegaMenu: React.FC<MegaMenuProps> = ({ isOpen, onMouseEnter, onMous
                                                 isActive={activeSubFilter === level}
                                                 onClick={() => setActiveSubFilter(activeSubFilter === level ? null : level)}
                                                 isOpen={isOpen}
-                                                baseDelay={550} // Staggered after Focus Areas
+                                                baseDelay={600}
                                                 index={index}
                                             />
                                         ))}
                                     </div>
                                 </div>
                             )}
-
-                             {availableFocusAreas.length === 0 && availableLevels.length === 0 && (
-                                <div className="text-gray-500 italic text-sm mb-8 animate-fadeIn">
-                                    No filters available for this programme type.
-                                </div>
-                            )}
-
-                            {/* View All Link */}
-                            <div 
-                                className={`mt-4 pt-6 transition-all duration-500 transform ${isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
-                                style={{ transitionDelay: isOpen ? '650ms' : '0ms' }}
-                            >
-                                <Link 
-                                    to={`/programmes/${activeTypeObj.slug}`} 
-                                    className="flex items-center gap-2 text-[#C2B067] text-xs font-bold uppercase group tracking-[1px] hover:text-white transition-colors"
-                                >
-                                    View All Programmes
-                                    <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
-                                </Link>
-                            </div>
                         </div>
                     </div>
 
-                    {/* Column 3: Results (42%) - Updated Layout */}
-                    <div className="w-[42%] h-full pl-12 py-12 relative overflow-y-auto custom-scrollbar flex flex-col justify-start">
-                        <div className="relative z-10 h-full flex flex-col">
-                            <div className={`mb-8 flex items-center justify-between transition-opacity duration-700 delay-500 ${isOpen ? 'opacity-100' : 'opacity-0'}`}>
-                                <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">
-                                    Available Programmes
-                                </p>
-                                {activeSubFilter && (
-                                    <span className="text-brand-gold text-xs font-bold uppercase tracking-widest border border-brand-gold/30 px-2 py-1 rounded-sm animate-fadeIn">
-                                        Filtering by: {activeSubFilter}
-                                    </span>
-                                )}
-                            </div>
+                    {/* Column 3: Course List (42%) */}
+                    <div className="w-[42%] h-full pl-8 py-12 flex flex-col justify-start bg-[#001D36] relative overflow-hidden">
+                        <p className={`text-xs font-bold text-[#C2B067] uppercase tracking-widest mb-8 transition-opacity duration-700 delay-200 ${isOpen ? 'opacity-100' : 'opacity-0'}`}>
+                            {displayedOfferings.length} {displayedOfferings.length === 1 ? 'Programme' : 'Programmes'} Found
+                        </p>
 
-                            <div className="flex flex-col gap-6">
-                                {/* Key on wrapper to force re-render when type changes */}
-                                <div key={activeTypeObj.value} className="contents">
-                                {displayedOfferings.length > 0 ? (
-                                    displayedOfferings.map((offering, index) => {
-                                        const isEcommerce = checkIsEcommerce(offering);
-                                        return (
-                                        <div 
-                                            key={offering.id} 
-                                            className={`group bg-white/5 rounded-sm p-5 border border-white/5 hover:border-brand-gold/50 transition-all duration-500 ease-out transform ${isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}
-                                            style={{ transitionDelay: `${isOpen ? 600 + (index * 60) : 0}ms` }} 
+                        <div className="flex-1 overflow-y-auto custom-scrollbar pr-4 -mr-4">
+                            <div className="space-y-4 pb-20">
+                                {displayedOfferings.map((course, index) => {
+                                    const isEcommerce = checkIsEcommerce(course);
+                                    // Stagger entrance of courses
+                                    const delay = isOpen ? 400 + (index * 50) : 0;
+
+                                    return (
+                                        <div
+                                            key={course.id}
+                                            className={`group relative bg-[#0a233f] border border-white/5 hover:border-[#C2B067]/30 p-5 rounded-sm transition-all duration-500 ${isOpen ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}
+                                            style={{ transitionDelay: `${delay}ms` }}
                                         >
-                                            
-                                            {/* Row 2: Title */}
-                                            <Link 
-                                                to={`/course/${offering.id}`}
-                                                className="block mb-4"
-                                            >
-                                                <h4 className="text-lg font-serif font-bold text-white leading-tight group-hover:text-brand-gold transition-colors">
-                                                    {offering.title}
+                                            <Link to={`/course/${course.id}`} className="block">
+                                                <div className="flex justify-between items-start mb-2">
+                                                    <span className="text-[10px] font-bold text-[#C2B067] uppercase tracking-wider">{course.category}</span>
+                                                    <span className="text-[10px] font-bold text-gray-500 uppercase">{course.qualification}</span>
+                                                </div>
+                                                <h4 className="text-white font-serif font-bold text-lg mb-2 group-hover:text-[#C2B067] transition-colors leading-tight">
+                                                    {course.title}
                                                 </h4>
+                                                <div className="flex items-center justify-between mt-4 border-t border-white/5 pt-3">
+                                                    <span className="text-sm font-bold text-white">R {course.price?.toLocaleString() || 'TBA'}</span>
+
+                                                    <button
+                                                        onClick={(e) => handleApplyClick(e, course)}
+                                                        className="text-[10px] font-bold uppercase tracking-[1px] text-white hover:text-[#C2B067] flex items-center gap-2 transition-colors"
+                                                    >
+                                                        {isEcommerce ? 'Buy Now' : 'Apply Now'} <ArrowRight size={12} />
+                                                    </button>
+                                                </div>
                                             </Link>
-
-                                            {/* Row 3: Tuition & Intake */}
-                                            <div className="flex justify-between items-end mb-5 border-t border-white/10 pt-4">
-                                                <div>
-                                                    <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-1">Tuition</p>
-                                                    <p className="text-base font-bold text-white">R {offering.price?.toLocaleString() || 'TBA'}</p>
-                                                </div>
-                                                <div className="text-right">
-                                                    <p className="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-1">Next Intake</p>
-                                                    <p className="text-xs font-bold text-brand-gold">{offering.startDate}</p>
-                                                </div>
-                                            </div>
-
-                                            {/* Row 4: Actions */}
-                                            <div className="flex gap-3">
-                                                <Link 
-                                                    to={`/course/${offering.id}`}
-                                                    className="flex-1 py-2.5 border border-white/20 text-white rounded-sm text-[10px] font-bold uppercase hover:bg-white hover:text-[#002B4E] transition-colors tracking-[1px] text-center"
-                                                >
-                                                    Learn More
-                                                </Link>
-                                                
-                                                <button 
-                                                    onClick={() => handleApplyClick(offering)}
-                                                    className="flex-1 py-2.5 bg-brand-gold text-[#002B4E] text-[10px] font-bold uppercase rounded-sm hover:bg-white hover:text-[#002B4E] transition-colors shadow-none tracking-[1px] text-center flex items-center justify-center gap-2"
-                                                >
-                                                    {isEcommerce ? 'Buy Now' : 'Apply Now'}
-                                                    {isEcommerce ? <ShoppingBag size={12} /> : <FileText size={12} />}
-                                                </button>
-                                            </div>
                                         </div>
-                                    )})
-                                ) : (
-                                    <div className={`text-white/40 italic transition-opacity duration-500 mt-8 ${isOpen ? 'opacity-100' : 'opacity-0'}`}>
-                                        No programmes found matching these criteria.
+                                    );
+                                })}
+
+                                {displayedOfferings.length === 0 && (
+                                    <div className="text-gray-400 italic text-sm">
+                                        Select a filter to view programmes.
                                     </div>
                                 )}
-                                </div>
                             </div>
                         </div>
                     </div>
 
                 </div>
-
-                {/* Bottom Gold Accent Bar (Animated) */}
-                <div 
-                    className="absolute bottom-0 left-0 h-1.5 bg-[#C2B067] transition-all duration-1000 ease-out"
-                    style={{ 
-                        width: isOpen ? '100%' : '0%',
-                        transitionDelay: isOpen ? '300ms' : '0ms'
-                    }}
-                ></div>
-                
-                {/* Internal Styles for Animations */}
-                <style>{`
-                    .animate-fadeIn {
-                        animation: fadeIn 0.5s ease-out forwards;
-                    }
-                    @keyframes fadeIn {
-                        from { opacity: 0; }
-                        to { opacity: 1; }
-                    }
-                `}</style>
             </div>
         </div>
     );

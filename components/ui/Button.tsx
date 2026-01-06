@@ -2,38 +2,47 @@
 import React from 'react';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'gold' | 'outline-gold';
+  size?: 'sm' | 'md' | 'lg' | 'xl';
   children: React.ReactNode;
   icon?: React.ReactNode;
 }
 
-export const Button: React.FC<ButtonProps> = ({ 
-  variant = 'primary', 
-  children, 
-  className = '', 
+export const Button: React.FC<ButtonProps> = ({
+  variant = 'primary',
+  size = 'md',
+  children,
+  className = '',
   icon,
-  ...props 
+  ...props
 }) => {
-  // Base styles: Added tracking-[1px]
-  const baseStyles = "inline-flex items-center justify-center font-bold uppercase transition-colors duration-300 rounded-sm text-xs px-6 py-3 shadow-none tracking-[1px]";
-  
+  // Base styles: tracking-[1px], rounded-sm
+  const baseStyles = "inline-flex items-center justify-center font-bold uppercase transition-all duration-300 rounded-sm shadow-none tracking-[1px]";
+
   const variants = {
-    // Primary: Gold BG, White Text
-    primary: "bg-brand-accent text-white hover:bg-brand-goldHover",
-    
-    // Secondary: Bordered white/gold
-    secondary: "bg-transparent border border-white text-white hover:bg-white/10 hover:border-brand-gold",
-    
-    // Outline: Blue/Dark context usually
-    outline: "bg-transparent border border-brand-accent text-brand-accent hover:bg-brand-accent hover:text-white",
-    
-    // Ghost: Simple text hover
-    ghost: "text-brand-accent hover:text-white !px-0 !py-0"
+    // Brand Blue - Standard
+    primary: "bg-brand-primary text-white hover:bg-[#001f38] border border-brand-primary",
+    secondary: "bg-transparent border border-brand-primary text-brand-primary hover:bg-brand-primary hover:text-white",
+    outline: "bg-transparent border border-brand-primary text-brand-primary hover:bg-brand-primary hover:text-white",
+
+    // Brand Gold - For dark/blue backgrounds
+    gold: "bg-brand-accent text-white hover:bg-brand-goldHover border border-brand-accent",
+    "outline-gold": "bg-transparent border border-brand-accent text-brand-accent hover:bg-brand-accent hover:text-white",
+
+    // Ghost: Simple text
+    ghost: "text-brand-primary hover:text-brand-gold !px-0 !py-0"
+  };
+
+  const sizes = {
+    sm: "text-[10px] px-4 py-2",
+    md: "text-xs px-6 py-4",
+    lg: "text-sm px-8 py-4",
+    xl: "text-base px-10 py-5"
   };
 
   return (
-    <button 
-      className={`${baseStyles} ${variants[variant]} ${className}`}
+    <button
+      className={`${baseStyles} ${sizes[size]} ${variants[variant]} ${className}`}
       {...props}
     >
       {children}

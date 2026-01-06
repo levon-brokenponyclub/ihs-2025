@@ -9,13 +9,13 @@ interface MultiStepFormProps {
     showSteps?: boolean;
 }
 
-export const MultiStepForm: React.FC<MultiStepFormProps> = ({ 
-    onComplete, 
+export const MultiStepForm: React.FC<MultiStepFormProps> = ({
+    onComplete,
     submitLabel = "Submit Application",
     showSteps = true
 }) => {
     const [step, setStep] = useState(1);
-    
+
     // Step 1: Contact
     const [firstName, setFirstName] = useState('');
     const [surname, setSurname] = useState('');
@@ -64,15 +64,14 @@ export const MultiStepForm: React.FC<MultiStepFormProps> = ({
 
     const InputGroup = ({ label, required = false, type = "text", value, onChange, placeholder = "" }: any) => (
         <div>
-            <label className="block text-xs uppercase tracking-wider text-brand-muted mb-2">
+            <label className="block text-[10px] font-bold uppercase tracking-[2px] text-gray-400 mb-2">
                 {label} {required && '*'}
             </label>
-            <input 
+            <input
                 type={type}
-                // required={required} // Disabled for testing
                 value={value}
                 onChange={e => onChange(e.target.value)}
-                className="w-full bg-black/20 border border-white/10 rounded-sm p-3 text-white focus:border-brand-gold outline-none transition-colors placeholder:text-gray-700"
+                className="w-full bg-white border border-gray-200 rounded-sm p-3 text-brand-primary focus:border-brand-gold outline-none transition-colors placeholder:text-gray-400 text-sm"
                 placeholder={placeholder}
             />
         </div>
@@ -80,20 +79,19 @@ export const MultiStepForm: React.FC<MultiStepFormProps> = ({
 
     const PhoneInput = ({ label, required = false, value, onChange, placeholder = "" }: any) => (
         <div>
-             <label className="block text-xs uppercase tracking-wider text-brand-muted mb-2">
+            <label className="block text-[10px] font-bold uppercase tracking-[2px] text-gray-400 mb-2">
                 {label} {required && '*'}
             </label>
-            <div className="flex bg-black/20 border border-white/10 rounded-sm overflow-hidden focus-within:border-brand-gold transition-colors">
-                <div className="bg-white/5 px-3 flex items-center justify-center border-r border-white/10 gap-1 min-w-[70px]">
+            <div className="flex bg-white border border-gray-200 rounded-sm overflow-hidden focus-within:border-brand-gold transition-colors">
+                <div className="bg-gray-50 px-3 flex items-center justify-center border-r border-gray-200 gap-1 min-w-[70px]">
                     <span className="text-lg">🇿🇦</span>
-                    <span className="text-gray-400 text-sm">+27</span>
+                    <span className="text-gray-400 text-xs font-bold uppercase">+27</span>
                 </div>
-                <input 
+                <input
                     type="tel"
-                    // required={required} // Disabled for testing
                     value={value}
                     onChange={e => onChange(e.target.value)}
-                    className="flex-1 bg-transparent p-3 text-white outline-none placeholder:text-gray-700"
+                    className="flex-1 bg-transparent p-3 text-brand-primary outline-none placeholder:text-gray-400 text-sm"
                     placeholder={placeholder}
                 />
             </div>
@@ -103,12 +101,12 @@ export const MultiStepForm: React.FC<MultiStepFormProps> = ({
     return (
         <div>
             {showSteps && (
-                <div className="flex items-center justify-between mb-8 text-sm">
-                    <span className={`font-bold uppercase tracking-widest ${step === 1 ? 'text-brand-gold' : 'text-gray-500'}`}>01 Contact</span>
-                    <div className="h-px bg-white/10 flex-1 mx-4"></div>
-                    <span className={`font-bold uppercase tracking-widest ${step === 2 ? 'text-brand-gold' : 'text-gray-500'}`}>02 Details</span>
-                    <div className="h-px bg-white/10 flex-1 mx-4"></div>
-                    <span className={`font-bold uppercase tracking-widest ${step === 3 ? 'text-brand-gold' : 'text-gray-500'}`}>03 Payment</span>
+                <div className="flex items-center justify-between mb-8 text-[10px] font-bold uppercase tracking-[2px]">
+                    <span className={`${step === 1 ? 'text-brand-gold' : 'text-gray-300'}`}>01 Contact</span>
+                    <div className="h-px bg-gray-100 flex-1 mx-4"></div>
+                    <span className={`${step === 2 ? 'text-brand-gold' : 'text-gray-300'}`}>02 Details</span>
+                    <div className="h-px bg-gray-100 flex-1 mx-4"></div>
+                    <span className={`${step === 3 ? 'text-brand-gold' : 'text-gray-300'}`}>03 Payment</span>
                 </div>
             )}
 
@@ -128,35 +126,34 @@ export const MultiStepForm: React.FC<MultiStepFormProps> = ({
                 {step === 2 && (
                     <>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                             <InputGroup label="ID Number / Passport Number" required value={idNumber} onChange={setIdNumber} />
-                             <div>
-                                <label className="block text-xs uppercase tracking-wider text-brand-muted mb-2">Gender *</label>
-                                <select 
-                                    className="w-full bg-black/20 border border-white/10 rounded-sm p-3 text-white focus:border-brand-gold outline-none"
+                            <InputGroup label="ID Number / Passport Number" required value={idNumber} onChange={setIdNumber} />
+                            <div>
+                                <label className="block text-[10px] font-bold uppercase tracking-[2px] text-gray-400 mb-2">Gender *</label>
+                                <select
+                                    className="w-full bg-white border border-gray-200 rounded-sm p-3 text-brand-primary focus:border-brand-gold outline-none text-sm"
                                     value={gender}
                                     onChange={e => setGender(e.target.value)}
-                                    // required // Disabled for testing
                                 >
                                     <option value="" className="text-gray-500">Select...</option>
-                                    <option value="Male" className="text-black">Male</option>
-                                    <option value="Female" className="text-black">Female</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
                                 </select>
-                             </div>
+                            </div>
                         </div>
                         <InputGroup label="Street Address" required value={street1} onChange={setStreet1} />
                         <InputGroup label="Street Address 2" value={street2} onChange={setStreet2} />
                         <div className="grid grid-cols-2 gap-6">
-                             <InputGroup label="City" required value={city} onChange={setCity} />
-                             <InputGroup label="Province" required value={province} onChange={setProvince} />
+                            <InputGroup label="City" required value={city} onChange={setCity} />
+                            <InputGroup label="Province" required value={province} onChange={setProvince} />
                         </div>
                         <div className="grid grid-cols-2 gap-6">
-                             <InputGroup label="Postal Code" required value={postalCode} onChange={setPostalCode} />
-                             <div>
-                                <label className="block text-xs uppercase tracking-wider text-brand-muted mb-2">Country *</label>
-                                <div className="w-full bg-black/20 border border-white/10 rounded-sm p-3 text-white opacity-75 cursor-not-allowed">
+                            <InputGroup label="Postal Code" required value={postalCode} onChange={setPostalCode} />
+                            <div>
+                                <label className="block text-[10px] font-bold uppercase tracking-[2px] text-gray-400 mb-2">Country *</label>
+                                <div className="w-full bg-gray-50 border border-gray-200 rounded-sm p-3 text-brand-primary opacity-75 cursor-not-allowed text-sm">
                                     South Africa
                                 </div>
-                             </div>
+                            </div>
                         </div>
                         <InputGroup label="Last School Attended" required value={school} onChange={setSchool} />
                         <InputGroup label="Highest Qualification" required value={qualification} onChange={setQualification} />
@@ -165,46 +162,46 @@ export const MultiStepForm: React.FC<MultiStepFormProps> = ({
 
                 {step === 3 && (
                     <>
-                        <div className="bg-white/5 p-4 rounded-sm border border-white/10 mb-2">
-                             <h4 className="text-white font-bold mb-4 border-b border-white/10 pb-2">Person Responsible for Payment</h4>
-                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="bg-gray-50 p-6 rounded-sm border border-gray-200 mb-2 shadow-sm">
+                            <h4 className="text-brand-primary font-serif font-bold mb-6 border-b border-gray-200 pb-3 text-lg">Person Responsible for Payment</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <InputGroup label="Sponsor First Name" required value={sponsorFirst} onChange={setSponsorFirst} />
                                 <InputGroup label="Sponsor Last Name" required value={sponsorLast} onChange={setSponsorLast} />
-                             </div>
-                             <div className="mt-4">
+                            </div>
+                            <div className="mt-4">
                                 <InputGroup label="Sponsor ID Number" required value={sponsorId} onChange={setSponsorId} />
-                             </div>
-                             <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                            </div>
+                            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <InputGroup label="Sponsor Email" required type="email" value={sponsorEmail} onChange={setSponsorEmail} />
                                 <PhoneInput label="Sponsor Mobile" required value={sponsorMobile} onChange={setSponsorMobile} />
-                             </div>
-                             <div className="mt-4">
+                            </div>
+                            <div className="mt-4">
                                 <PhoneInput label="Sponsor Phone (Other)" value={sponsorPhone} onChange={setSponsorPhone} />
-                             </div>
+                            </div>
                         </div>
 
                         <div className="space-y-4">
                             <label className="flex items-start gap-3 cursor-pointer group">
-                                <input type="checkbox" checked={consentPrivacy} onChange={e => setConsentPrivacy(e.target.checked)} className="mt-1 w-4 h-4 rounded border-white/20 bg-black/20 text-brand-gold focus:ring-brand-gold" />
-                                <span className="text-xs text-gray-400 group-hover:text-gray-300">
-                                    By ticking this box you agree to our <a href="#" className="text-brand-gold hover:underline">Privacy Policy</a> and our usage of your personal data and further you give us permission to send you information and marketing material about our company and courses.
+                                <input type="checkbox" checked={consentPrivacy} onChange={e => setConsentPrivacy(e.target.checked)} className="mt-1 w-4 h-4 rounded border-gray-300 bg-white text-brand-primary focus:ring-brand-gold" />
+                                <span className="text-xs text-gray-500 group-hover:text-gray-700 leading-relaxed">
+                                    By ticking this box you agree to our <a href="#" className="text-brand-gold font-bold hover:underline">Privacy Policy</a> and our usage of your personal data and further you give us permission to send you information and marketing material about our company and courses.
                                 </span>
                             </label>
                             <label className="flex items-start gap-3 cursor-pointer group">
-                                <input type="checkbox" checked={consentTerms} onChange={e => setConsentTerms(e.target.checked)} className="mt-1 w-4 h-4 rounded border-white/20 bg-black/20 text-brand-gold focus:ring-brand-gold" />
-                                <span className="text-xs text-gray-400 group-hover:text-gray-300">
+                                <input type="checkbox" checked={consentTerms} onChange={e => setConsentTerms(e.target.checked)} className="mt-1 w-4 h-4 rounded border-gray-300 bg-white text-brand-primary focus:ring-brand-gold" />
+                                <span className="text-xs text-gray-500 font-bold uppercase tracking-wider group-hover:text-gray-700">
                                     I Accept the Terms and Conditions*
                                 </span>
                             </label>
                             <label className="flex items-start gap-3 cursor-pointer group">
-                                <input type="checkbox" checked={consentAge} onChange={e => setConsentAge(e.target.checked)} className="mt-1 w-4 h-4 rounded border-white/20 bg-black/20 text-brand-gold focus:ring-brand-gold" />
-                                <span className="text-xs text-gray-400 group-hover:text-gray-300">
+                                <input type="checkbox" checked={consentAge} onChange={e => setConsentAge(e.target.checked)} className="mt-1 w-4 h-4 rounded border-gray-300 bg-white text-brand-primary focus:ring-brand-gold" />
+                                <span className="text-xs text-gray-500 font-bold uppercase tracking-wider group-hover:text-gray-700">
                                     I’m older than 16 years old
                                 </span>
                             </label>
                             <label className="flex items-start gap-3 cursor-pointer group">
-                                <input type="checkbox" checked={consentCost} onChange={e => setConsentCost(e.target.checked)} className="mt-1 w-4 h-4 rounded border-white/20 bg-black/20 text-brand-gold focus:ring-brand-gold" />
-                                <span className="text-xs text-gray-400 group-hover:text-gray-300">
+                                <input type="checkbox" checked={consentCost} onChange={e => setConsentCost(e.target.checked)} className="mt-1 w-4 h-4 rounded border-gray-300 bg-white text-brand-primary focus:ring-brand-gold" />
+                                <span className="text-xs text-gray-500 font-bold uppercase tracking-wider group-hover:text-gray-700">
                                     Aware this is not a free programme
                                 </span>
                             </label>
@@ -212,20 +209,20 @@ export const MultiStepForm: React.FC<MultiStepFormProps> = ({
                     </>
                 )}
 
-                <div className="flex justify-between pt-4 border-t border-white/10 mt-8">
+                <div className="flex justify-between pt-6 border-t border-gray-100 mt-8">
                     {step > 1 ? (
-                        <Button type="button" variant="secondary" onClick={handlePrev} icon={<ArrowLeft size={16} />}>
+                        <Button type="button" variant="outline" onClick={handlePrev} icon={<ArrowLeft size={16} />}>
                             Previous
                         </Button>
                     ) : <div></div>}
-                    
+
                     <Button type="submit" variant="primary" icon={<ArrowRight size={16} />}>
-                        {step === 3 ? submitLabel : 'Next'}
+                        {step === 3 ? submitLabel : 'Next Step'}
                     </Button>
                 </div>
-                
-                <div className="text-center text-xs text-gray-600 mt-2">
-                    Step {step}/3
+
+                <div className="text-center text-[10px] font-bold uppercase tracking-widest text-gray-300 mt-6">
+                    Step {step} of 3
                 </div>
             </form>
         </div>

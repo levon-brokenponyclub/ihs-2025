@@ -1,149 +1,156 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>International Hotel School</title>
-    <link rel="shortcut icon" href="./components/assets/img/favicon.png" type="image/x-icon" />
-    <link rel="apple-touch-icon" href="./components/assets/img/favicon.png" />
-    <!-- Tailwind CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Merriweather:wght@300;400;700;900&display=swap" rel="stylesheet">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>International Hotel School</title>
+  <link rel="shortcut icon" href="./components/assets/img/favicon.png" type="image/x-icon" />
+  <link rel="apple-touch-icon" href="./components/assets/img/favicon.png" />
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Tailwind Config -->
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              brand: {
-                primary: '#002B4E',
-                accent: '#C2B067',
-                highlight: '#002B4E',
-                dark: '#002B4E',
-                soft: '#1e3a8a',
-                gold: '#C2B067',
-                goldHover: '#B09F58',
-                goldMuted: '#C2B067',
-                surface: '#F8FAFC',
-                alt: '#F1F5F9',
-                text: '#002B4E',
-                textSecondary: '#475569',
-                border: '#E2E8F0',
-                red: '#EF4444'
-              },
-              surface: {
-                main: '#F8FAFC',
-                subtle: '#FFFFFF',
-              },
-              text: {
-                primary: '#002B4E',
-                secondary: '#475569',
-                inverse: '#FFFFFF',
-                accent: '#C2B067',
-              },
-              border: {
-                subtle: '#E2E8F0',
-              }
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Merriweather:wght@300;400;700;900&display=swap"
+    rel="stylesheet">
+
+  <!-- Tailwind Config -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              primary: '#002B4E',
+              accent: '#C2B067',
+              highlight: '#002B4E',
+              dark: '#002B4E',
+              soft: '#1e3a8a',
+              gold: '#C2B067',
+              goldHover: '#B09F58',
+              goldMuted: '#C2B067',
+              surface: '#F8FAFC',
+              alt: '#F1F5F9',
+              text: '#002B4E',
+              textSecondary: '#475569',
+              border: '#E2E8F0',
+              red: '#EF4444'
             },
-            fontFamily: {
-              sans: ['Inter', 'sans-serif'],
-              serif: ['Playfair Display', 'serif'],
-              merriweather: ['Merriweather', 'serif'],
+            surface: {
+              main: '#F8FAFC',
+              subtle: '#FFFFFF',
             },
-
-            /* 🔥 MARQUEE KEYFRAMES */
-            keyframes: {
-              fadeIn: {
-                '0%': { opacity: '0' },
-                '100%': { opacity: '1' },
-              },
-              slideUp: {
-                '0%': { transform: 'translateY(20px)', opacity: '0' },
-                '100%': { transform: 'translateY(0)', opacity: '1' },
-              },
-
-              marqueeLeft: {
-                '0%': { transform: 'translateX(0%)' },
-                '100%': { transform: 'translateX(-50%)' },
-              },
-              marqueeRight: {
-                '0%': { transform: 'translateX(-50%)' },
-                '100%': { transform: 'translateX(0%)' },
-              },
+            text: {
+              primary: '#002B4E',
+              secondary: '#475569',
+              inverse: '#FFFFFF',
+              accent: '#C2B067',
             },
-
-            /* 🔥 RESPONSIVE SPEEDS */
-            animation: {
-              fadeIn: 'fadeIn 0.5s ease-out forwards',
-              slideUp: 'slideUp 0.8s ease-out forwards',
-
-              /* Mobile */
-              'marquee-left': 'marqueeLeft 60s linear infinite',
-              'marquee-right': 'marqueeRight 60s linear infinite',
-
-              /* Desktop */
-              'marquee-left-fast': 'marqueeLeft 40s linear infinite',
-              'marquee-right-fast': 'marqueeRight 40s linear infinite',
+            border: {
+              subtle: '#E2E8F0',
             }
           },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            serif: ['Playfair Display', 'serif'],
+            merriweather: ['Merriweather', 'serif'],
+          },
+
+          /* 🔥 MARQUEE KEYFRAMES */
+          keyframes: {
+            fadeIn: {
+              '0%': { opacity: '0' },
+              '100%': { opacity: '1' },
+            },
+            slideUp: {
+              '0%': { transform: 'translateY(20px)', opacity: '0' },
+              '100%': { transform: 'translateY(0)', opacity: '1' },
+            },
+
+            marqueeLeft: {
+              '0%': { transform: 'translateX(0%)' },
+              '100%': { transform: 'translateX(-50%)' },
+            },
+            marqueeRight: {
+              '0%': { transform: 'translateX(-50%)' },
+              '100%': { transform: 'translateX(0%)' },
+            },
+          },
+
+          /* 🔥 RESPONSIVE SPEEDS */
+          animation: {
+            fadeIn: 'fadeIn 0.5s ease-out forwards',
+            slideUp: 'slideUp 0.8s ease-out forwards',
+
+            /* Mobile */
+            'marquee-left': 'marqueeLeft 60s linear infinite',
+            'marquee-right': 'marqueeRight 60s linear infinite',
+
+            /* Desktop */
+            'marquee-left-fast': 'marqueeLeft 40s linear infinite',
+            'marquee-right-fast': 'marqueeRight 40s linear infinite',
+          }
         },
-      }
-    </script>
+      },
+    }
+  </script>
 
-    <!-- Global Styles -->
-    <style>
-      body {
-        background-color: #F8FAFC;
-        color: #002B4E;
-      }
+  <!-- Global Styles -->
+  <style>
+    body {
+      background-color: #F8FAFC;
+      color: #002B4E;
+    }
 
-      /* Pause marquee on hover */
-      .hover-pause:hover {
-        animation-play-state: paused;
-      }
+    /* Pause marquee on hover */
+    .hover-pause:hover {
+      animation-play-state: paused;
+    }
 
-      /* Scrollbars */
-      ::-webkit-scrollbar {
-        width: 8px;
-      }
-      ::-webkit-scrollbar-track {
-        background: #F1F5F9;
-      }
-      ::-webkit-scrollbar-thumb {
-        background: #002B4E;
-        border-radius: 4px;
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background: #C2B067;
-      }
+    /* Scrollbars */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
 
-      .no-scrollbar::-webkit-scrollbar {
-        display: none;
-      }
-      .no-scrollbar {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-      }
-      
+    ::-webkit-scrollbar-track {
+      background: #F1F5F9;
+    }
 
-      /* Reduced Motion */
-      @media (prefers-reduced-motion: reduce) {
-        * {
-          animation-duration: 0.01ms !important;
-          animation-iteration-count: 1 !important;
-          transition-duration: 0.01ms !important;
-          scroll-behavior: auto !important;
-        }
-      }
-    </style>
+    ::-webkit-scrollbar-thumb {
+      background: #002B4E;
+      border-radius: 4px;
+    }
 
-    <!-- Import Map -->
-    <script type="importmap">
+    ::-webkit-scrollbar-thumb:hover {
+      background: #C2B067;
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+
+    /* Reduced Motion */
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+
+  <!-- Import Map -->
+  <script type="importmap">
     {
       "imports": {
         "react-router-dom": "https://esm.sh/react-router-dom@^7.11.0",
@@ -160,23 +167,25 @@
       }
     }
     </script>
-  </head>
-  <body>
-    <!-- Site Preloader -->
-    <div id="global-preloader">
-      <!-- Minimal content, just solid color to cover until React boots the GreetingLoader -->
-    </div>
+</head>
 
-    <div id="root"></div>
-    <script type="module" src="/index.tsx"></script>
-    
-    <!-- Preloader Script - Dismiss immediately on load so React GreetingLoader takes over -->
-    <script>
-      window.addEventListener('load', () => {
-          document.body.classList.add('loaded');
-          const preloader = document.getElementById('global-preloader');
-          if(preloader) preloader.style.display = 'none';
-      });
-    </script>
-  </body>
+<body>
+  <!-- Site Preloader -->
+  <div id="global-preloader">
+    <!-- Minimal content, just solid color to cover until React boots the GreetingLoader -->
+  </div>
+
+  <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+
+  <!-- Preloader Script - Dismiss immediately on load so React GreetingLoader takes over -->
+  <script>
+    window.addEventListener('load', () => {
+      document.body.classList.add('loaded');
+      const preloader = document.getElementById('global-preloader');
+      if (preloader) preloader.style.display = 'none';
+    });
+  </script>
+</body>
+
 </html>

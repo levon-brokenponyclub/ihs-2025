@@ -1,25 +1,25 @@
+
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { COURSE_DETAILS, OFFERINGS } from '../constants';
 import { Button } from './ui/Button';
 import { useCart } from '../context/CartContext';
-/// <reference types="styled-components" />
-// Explicitly specify the path to the type declarations
-import 'styled-components';
-// @ts-ignore
 import {
     CheckCircle,
     Download,
     Award,
     ChevronUp,
     ChevronDown,
-    ShoppingBag,
     ArrowRight,
     ArrowLeft,
-    Circle,
-    MessageSquare,
     Clock,
-    MapPin
+    MapPin,
+    Calendar,
+    Target,
+    Zap,
+    GraduationCap,
+    ClipboardCheck,
+    ShoppingBag
 } from 'lucide-react';
 import { Offering, CourseDetail as CourseDetailType } from '../types';
 import { ApplicationModal } from './ApplicationModal';
@@ -27,6 +27,7 @@ import { CheckoutModal } from './CheckoutModal';
 import { useTransition } from '../context/TransitionContext';
 import { CourseCardSlider } from './CourseCardSlider';
 import { Testimonial } from './Testimonial';
+import { FinalCTA } from './FinalCTA';
 
 
 // --- Light Theme Accordion for Mobile Course Detail ---
@@ -77,33 +78,127 @@ const LightAccordionItem: React.FC<LightAccordionProps> = ({ title, children, is
     );
 };
 
-// --- Reusable Accreditation Row ---
+// Helper for Ecommerce Check
+const checkIsEcommerce = (course: Offering) => {
+    // Only "Purchasing for Food Service Operations" (ID 19) is Buy Now
+    return course.id === '19';
+};
+
+// --- 1. Sticky Mini-CTA (Desktop Only) ---
+const StickyMiniCTA = ({
+    course,
+    visible,
+    onApply
+}: {
+    course: CourseDetailType,
+    visible: boolean,
+    onApply: () => void
+}) => {
+    const isEcommerce = checkIsEcommerce(course);
+
+    return (
+        <div
+            className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-[90] hidden lg:flex items-center gap-4 bg-white/90 backdrop-blur-md border border-gray-200 px-6 py-3 rounded-full shadow-2xl transition-all duration-500 ease-out ${visible ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0 pointer-events-none'
+                }`}
+        >
+            <div className="flex flex-col pr-6 border-r border-gray-100">
+                <span className="text-[10px] uppercase tracking-wider font-bold text-gray-400 leading-none mb-1">Studying</span>
+                <span className="text-sm font-bold text-[#002B4E] truncate max-w-[200px] leading-none">{course.title}</span>
+            </div>
+            <div className="flex items-center gap-3">
+                <Button variant="gold" size="sm" onClick={onApply} className="text-[10px] tracking-[1px] font-bold px-6">
+                    {isEcommerce ? 'BUY NOW' : 'APPLY NOW'}
+                </Button>
+                <Button variant="outline-gold" size="sm" className="text-[10px] tracking-[1px] font-bold px-6 border-gray-200 hover:bg-gray-50">
+                    DOWNLOAD BROCHURE
+                </Button>
+            </div>
+        </div>
+    );
+};
+
+// --- 2. Social Proof Block ---
+const SocialProofBlock = () => (
+    <div className="mt-8 pt-8 border-t border-gray-100 flex items-center gap-4">
+        <div className="flex -space-x-2">
+            {[1, 2, 3].map((i) => (
+                <div key={i} className="w-8 h-8 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center overflow-hidden">
+                    <img src={`https://i.pravatar.cc/100?img=${i + 10}`} alt="Student" className="w-full h-full object-cover opacity-80" />
+                </div>
+            ))}
+        </div>
+        <div className="flex flex-col">
+            <div className="flex items-center gap-1 mb-1">
+                {[1, 2, 3, 4, 5].map((s) => (
+                    <Award key={s} size={12} className="text-brand-gold fill-current" />
+                ))}
+            </div>
+            <p className="text-xs text-gray-500 italic">
+                "The practical industry exposure changed my career path entirely." — <span className="font-bold text-gray-700 not-italic">Sarah M., Class of 2024</span>
+            </p>
+        </div>
+    </div>
+);
+
+// --- 4. WIL Info Box ---
+const WILInfoBox = ({ duration }: { duration?: string }) => (
+    <div className="bg-brand-primary/5 border border-brand-primary/10 rounded-sm p-6 mb-8 grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div className="flex flex-col gap-2">
+            <Clock size={16} className="text-brand-gold" />
+            <div>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Duration</p>
+                <p className="text-sm font-bold text-brand-primary">{duration || '12–20 Weeks'}</p>
+            </div>
+        </div>
+        <div className="flex flex-col gap-2">
+            <MapPin size={16} className="text-brand-gold" />
+            <div>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Placement</p>
+                <p className="text-sm font-bold text-brand-primary">Industry Nodes</p>
+            </div>
+        </div>
+        <div className="flex flex-col gap-2">
+            <Award size={16} className="text-brand-gold" />
+            <div>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">RPL</p>
+                <p className="text-sm font-bold text-brand-primary">Up to 50%</p>
+            </div>
+        </div>
+        <div className="flex flex-col gap-2">
+            <CheckCircle size={16} className="text-brand-gold" />
+            <div>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Required</p>
+                <p className="text-sm font-bold text-brand-primary">Portfolio</p>
+            </div>
+        </div>
+    </div>
+);
+
+// --- Accreditation Row Component ---
 const AccreditationRow = ({ accreditations }: { accreditations: string[] }) => {
     if (!accreditations || accreditations.length === 0) return null;
 
     return (
-        <div className="flex flex-wrap justify-center gap-4 items-center pt-6 border-t border-gray-100 mt-6">
+        <div className="flex flex-wrap justify-center gap-6 items-center">
             {accreditations.map((acc, idx) => {
                 let src = '';
-                // Check for specific overrides requested
                 if (acc === 'IHS' || acc === 'International Hotel School') {
+                    // Using matching paths as previously defined in the file
                     src = 'components/assets/logos/ihs-logo-dark.png';
                 } else if (acc === 'AHLEI') {
                     src = 'components/assets/logos/american-hotel-lodging-educational-institute-r6djf1a4jfs1u9sokoij74ckub80bbe63d3o4wvozc.png';
                 }
 
-                // Fallback to URL check if not matched above
                 if (!src && (/^https?:\/\//.test(acc) || /\.(svg|png|jpe?g|webp)$/i.test(acc))) {
                     src = acc;
                 }
 
                 if (src) {
                     return (
-                        <img key={idx} src={src} alt={acc} className="h-[3.5rem] w-auto object-contain opacity-80 hover:opacity-100 transition-opacity" />
+                        <img key={idx} src={src} alt={acc} className="max-h-10 w-auto object-contain opacity-90 transition-opacity" />
                     );
-                } else {
-                    return null;
                 }
+                return null;
             })}
         </div>
     );
@@ -111,21 +206,19 @@ const AccreditationRow = ({ accreditations }: { accreditations: string[] }) => {
 
 // --- Bottom Drawer Component (Mobile Conversion) ---
 const MobileFeesDrawer = ({
-                              course,
-                              isOpen,
-                              onToggle,
-                              onApply,
-                              showTitle
-                          }: {
+    course,
+    isOpen,
+    onToggle,
+    onApply,
+    showTitle
+}: {
     course: CourseDetailType,
     isOpen: boolean,
     onToggle: () => void,
     onApply: () => void,
     showTitle: boolean
 }) => {
-    const isEcommerce = course.programmeTypes.some((type: string) =>
-        ['Online Learning', 'Part Time Learning'].includes(type)
-    );
+    const isEcommerce = checkIsEcommerce(course);
     const ctaLabel = isEcommerce ? 'Buy Now' : 'Apply Now';
 
     // Logic: Show Title in header if scrolled past hero (showTitle=true) OR if drawer is open
@@ -164,7 +257,10 @@ const MobileFeesDrawer = ({
                         <div
                             className={`absolute inset-0 flex items-center justify-between transition-all duration-500 ease-in-out ${displayTitleInHeader ? '-translate-y-full opacity-0' : 'translate-y-0 opacity-100'}`}
                         >
-                            <p className="text-gray-500 text-[10px] uppercase tracking-[1px] font-bold">Per Year</p>
+                            <div className="flex flex-col">
+                                <p className="text-gray-500 text-[10px] uppercase tracking-[1px] font-bold">2026 FEES</p>
+                                <p className="text-gray-400 text-[9px] uppercase tracking-[1px] font-bold -mt-1">Per Year</p>
+                            </div>
                             <p className="text-2xl font-serif text-[#002B4E] font-bold leading-none">{course.fees.tuition}</p>
                         </div>
 
@@ -202,6 +298,12 @@ const MobileFeesDrawer = ({
                                 <span className="text-gray-600">Payment Terms</span>
                                 <span className="text-[#002B4E] font-bold">Monthly / Annually</span>
                             </div>
+                            {course.effort && (
+                                <div className="flex justify-between text-sm border-b border-gray-100 pb-3">
+                                    <span className="text-gray-600">Effort</span>
+                                    <span className="text-[#002B4E] font-bold">{course.effort}</span>
+                                </div>
+                            )}
                         </div>
                         <p className="text-[10px] text-slate-400 mt-4 italic leading-relaxed text-center">
                             *{course.fees.note}
@@ -213,24 +315,21 @@ const MobileFeesDrawer = ({
                     </div>
 
                     <div className="flex flex-col gap-3">
-                        <button
+                        <Button
+                            variant="gold"
                             onClick={(e) => {
                                 e.stopPropagation();
                                 onApply();
                             }}
-                            className="inline-flex items-center justify-center font-bold uppercase transition-all duration-300 text-xs px-6 py-4 rounded-sm bg-[#C2B067] text-white hover:bg-[#B8A558] border border-[#C2B067] w-full tracking-[1px]"
+                            className="w-full"
+                            icon={isEcommerce ? <ShoppingBag size={16} /> : undefined}
                         >
                             {ctaLabel}
-                        </button>
+                        </Button>
 
-                        <button className="w-full border border-[#C2B067] text-[#C2B067] bg-white/0 hover:bg-slate-50 font-bold uppercase text-xs py-4 rounded-sm transition-colors flex items-center justify-center gap-2 tracking-[1px]">
+                        <Button variant="outline-gold" className="w-full bg-white/0" icon={<Download size={16} />}>
                             Download Prospectus
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-download">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                <polyline points="7 10 12 15 17 10"></polyline>
-                                <line x1="12" x2="12" y1="15" y2="3"></line>
-                            </svg>
-                        </button>
+                        </Button>
                     </div>
                 </div>
             </div>
@@ -238,92 +337,167 @@ const MobileFeesDrawer = ({
     );
 };
 
-// --- Need Guidance Card ---
-const NeedGuidanceCard = () => {
+// --- Programme Overview Card ---
+const ProgrammeOverviewCard = ({ course }: { course: CourseDetailType }) => {
     return (
-        <div className="bg-[#002B4E] rounded-sm p-8 relative overflow-hidden shadow-xl border border-white/10">
-            <div className="absolute -right-6 -top-6 text-white/5 transform rotate-12">
-                <MessageSquare size={140} fill="currentColor" />
-            </div>
+        <div className="bg-[#002B4E] border border-white/10 rounded-sm overflow-hidden shadow-xl transition-all duration-500 relative flex flex-col">
+            <div className="p-8 pb-10">
+                <div className="relative z-10">
+                    <h3 className="text-sm font-bold text-white mb-10 uppercase tracking-[1px] text-center border-b border-white/10 pb-4">Programme Overview</h3>
 
-            <div className="relative z-10">
-                <h3 className="font-serif text-2xl font-bold text-white mb-3">Need Guidance?</h3>
-                <p className="text-white/80 text-sm leading-relaxed mb-8">
-                    Speak to our admissions team to find the perfect fit for your career goals.
-                </p>
+                    <div className="space-y-8">
+                        {/* Key Details Section - Vertical with Icons */}
+                        <div className="flex items-start gap-4">
+                            <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center shrink-0">
+                                <Clock size={16} className="text-brand-gold" />
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-bold text-brand-gold uppercase tracking-widest leading-none mb-1.5">DURATION</p>
+                                <p className="text-sm font-bold text-white">{course.duration}</p>
+                            </div>
+                        </div>
 
-                <button className="flex items-center gap-3 text-brand-gold font-bold text-xs uppercase hover:text-white transition-colors group tracking-[1px]">
-                    Start Live Chat
-                    <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-                </button>
+                        {course.effort && (
+                            <div className="flex items-start gap-4">
+                                <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center shrink-0">
+                                    <Zap size={16} className="text-brand-gold" />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-bold text-brand-gold uppercase tracking-widest leading-none mb-1.5">EFFORT</p>
+                                    <p className="text-sm font-bold text-white">{course.effort}</p>
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="flex items-start gap-4">
+                            <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center shrink-0">
+                                <Target size={16} className="text-brand-gold" />
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-bold text-brand-gold uppercase tracking-widest leading-none mb-1.5">FOCUS AREA</p>
+                                <p className="text-sm font-bold text-white">{course.category}</p>
+                            </div>
+                        </div>
+
+                        <div className="flex items-start gap-4">
+                            <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center shrink-0">
+                                <Calendar size={16} className="text-brand-gold" />
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-bold text-brand-gold uppercase tracking-widest leading-none mb-1.5">START DATE</p>
+                                <div className="space-y-0.5">
+                                    <p className="text-sm font-bold text-white">Next: {(course.startDate || course.intake)?.split(',')[0]}</p>
+                                    {(course.startDate || course.intake)?.includes(',') && (
+                                        <p className="text-white/50 text-[10px] italic leading-tight mt-0.5">
+                                            Upcoming: {(course.startDate || course.intake)?.split(',').slice(1).join(', ')}
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Extra Details */}
+                        <div className="pt-8 border-t border-white/10 space-y-8">
+                            <div className="flex items-start gap-4">
+                                <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center shrink-0">
+                                    <GraduationCap size={16} className="text-brand-gold" />
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-bold text-brand-gold uppercase tracking-widest leading-none mb-1.5">QUALIFICATION</p>
+                                    <p className="text-xs font-bold text-white/90 leading-relaxed whitespace-pre-line">{course.certification || course.qualification}</p>
+                                </div>
+                            </div>
+
+                            {course.requirements && course.requirements.length > 0 && (
+                                <div className="flex items-start gap-4">
+                                    <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center shrink-0">
+                                        <ClipboardCheck size={16} className="text-brand-gold" />
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-bold text-brand-gold uppercase tracking-widest leading-none mb-1.5">ENTRY REQUIREMENTS</p>
+                                        <p className="text-[10px] text-white/70 leading-relaxed">{course.requirements[0]}</p>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     );
 };
 
 // --- Desktop Fees Card ---
-const FeesCard = ({ course }: { course: CourseDetailType }) => {
+const FeesCard = ({ course, onApply }: { course: CourseDetailType, onApply: () => void }) => {
     const { addToCart } = useCart();
-    const isEcommerce = course.programmeTypes.some((type: string) =>
-        ['Online Learning', 'Part Time Learning'].includes(type)
-    );
+    const [showMore, setShowMore] = useState(false);
 
-    const handleAction = () => {
-        if (isEcommerce) {
-            addToCart(course);
-        } else {
-            document.getElementById('apply-form')?.scrollIntoView({ behavior: 'smooth' });
-        }
-    };
+    const isEcommerce = checkIsEcommerce(course);
 
     return (
-        <div className="bg-white border border-gray-200 rounded-sm overflow-hidden shadow-xl">
-            <div className="bg-[#002B4E] p-4 text-center">
-                <span className="text-white font-bold uppercase tracking-[1px] text-sm">2026 Fees</span>
+        <div className="bg-white border border-gray-200 rounded-sm overflow-hidden shadow-xl transition-all duration-500">
+            <div className="p-4 text-center bg-[#002B4E]">
+                <span className="font-bold uppercase tracking-[1px] text-sm text-white">2026 Fees</span>
             </div>
-            <div className="p-8 text-center">
-                <p className="text-gray-500 text-xs uppercase tracking-[1px] mb-2">Per Year</p>
-                <p className="text-4xl font-serif text-[#002B4E] font-bold mb-6">{course.fees.tuition}</p>
-
-                <div className="border-t border-gray-200 pt-4 mb-6">
-                    <div className="flex justify-between text-sm mb-2">
-                        <span className="text-gray-600">Registration Fee</span>
-                        <span className="text-[#002B4E] font-bold">{course.fees.registration}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Payment Terms</span>
-                        <span className="text-[#002B4E] font-bold">Monthly / Annually</span>
-                    </div>
+            <div className="p-8">
+                <div className="text-center mb-6">
+                    <p className="text-gray-500 text-xs uppercase tracking-[1px] mb-2">Per Year</p>
+                    <p className="text-4xl font-serif text-[#002B4E] font-bold">{course.fees.tuition}</p>
                 </div>
 
-                <p className="text-xs text-gray-500 mb-8 italic">
-                    *{course.fees.note}
-                </p>
-
-                <div className="space-y-3">
+                <div className="flex flex-col gap-3 mb-8">
                     <Button
-                        variant="primary"
-                        className="w-full tracking-[1px]"
-                        onClick={handleAction}
+                        variant="gold"
+                        className="w-full tracking-[1px] text-[10px] uppercase font-bold py-3"
+                        onClick={onApply}
                         icon={isEcommerce ? <ShoppingBag size={16} /> : undefined}
                     >
                         {isEcommerce ? 'Buy Now' : 'Apply Now'}
                     </Button>
-                    <Button variant="outline" className="w-full tracking-[1px]" icon={<Download size={16} />}>
-                        Download Prospectus
+                    <Button
+                        variant="outline-gold"
+                        className="w-full tracking-[1px] text-[10px] uppercase font-bold py-3"
+                        icon={<Download size={14} />}
+                    >
+                        Download Brochure
                     </Button>
                 </div>
 
-                <AccreditationRow accreditations={course.accreditations} />
+                {/* Accreditations Section - Keeping here as requested previously */}
+                <div className="mb-6 border-t border-gray-100 pt-6">
+                    <AccreditationRow accreditations={course.accreditations} />
+                </div>
+
+                {/* Hidden Section with Show More */}
+                <div className={`overflow-hidden transition-all duration-500 ease-in-out ${showMore ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                    <div className="border-t border-gray-200 pt-6 space-y-4">
+                        <div className="flex justify-between text-sm">
+                            <span className="text-gray-600">Registration Fee</span>
+                            <span className="text-[#002B4E] font-bold">{course.fees.registration}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                            <span className="text-gray-600">Payment Terms</span>
+                            <span className="text-[#002B4E] font-bold">Monthly / Annually</span>
+                        </div>
+                        <p className="text-[10px] text-gray-500 italic leading-relaxed text-center pt-2">
+                            *{course.fees.note}
+                        </p>
+                    </div>
+                </div>
+
+                <button
+                    onClick={() => setShowMore(!showMore)}
+                    className="mt-4 text-[10px] font-bold uppercase tracking-[1px] text-brand-gold hover:text-brand-primary transition-colors flex items-center justify-center gap-2 mx-auto"
+                >
+                    {showMore ? 'Show Less' : 'Show More Details'}
+                    <ChevronDown size={14} className={`transition-transform duration-300 ${showMore ? 'rotate-180' : ''}`} />
+                </button>
             </div>
         </div>
     );
 };
 
-// Ensure setContentReady is defined
-const setContentReady = (state: boolean) => {
-    console.log(`Content ready state: ${state}`);
-};
+
 
 export const CourseDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -337,20 +511,48 @@ export const CourseDetail: React.FC = () => {
     const [openMobileSection, setOpenMobileSection] = useState<string | null>('overview');
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [scrolledPastHero, setScrolledPastHero] = useState(false);
+    const [isNearFooter, setIsNearFooter] = useState(false);
     const [showApplication, setShowApplication] = useState(false);
     const [showCheckout, setShowCheckout] = useState(false);
+    const [contentReady, setContentReady] = useState(false);
+    const [videoLoaded, setVideoLoaded] = useState(false);
     const heroRef = useRef<HTMLDivElement>(null);
+    const footerMeasureRef = useRef<HTMLDivElement>(null);
     const { addToCart } = useCart();
 
     // Safeguard transition state access to prevent undefined error
     const transitionData = useTransition();
     // Fallback if transitionData itself is undefined (though context provider should prevent this)
     const transitionState = transitionData?.transitionState || { phase: 'idle', isTransitioning: false };
-    const { startTransition } = transitionData || { startTransition: () => {} };
+    const { startTransition } = transitionData || { startTransition: () => { } };
 
     // Removed unused variable `contentReady`
 
-    const course = id && COURSE_DETAILS[id] ? COURSE_DETAILS[id] : COURSE_DETAILS['1'];
+    const course = useMemo(() => {
+        if (!id) return COURSE_DETAILS['1'];
+        if (COURSE_DETAILS[id]) return COURSE_DETAILS[id];
+
+        // Fallback: Try to find in OFFERINGS
+        const offering = OFFERINGS.find(o => o.id === id);
+        if (offering) {
+            // Create a minimal CourseDetail object from the Offering
+            return {
+                ...offering,
+                fullDescription: offering.description, // Fallback
+                level: offering.qualification,
+                deliveryMode: offering.programmeTypes.join(', '),
+                accreditations: offering.accreditations,
+                curriculum: [], // Empty default
+                requirements: [],
+                careerOutcomes: [],
+                fees: { tuition: 'View Fees', registration: '', note: '' }
+            } as CourseDetailType;
+        }
+
+        return COURSE_DETAILS['1'];
+    }, [id]);
+
+    const isEcommerce = checkIsEcommerce(course);
 
     // --- Related Programmes Logic ---
     const relatedOfferings = useMemo(() => {
@@ -364,33 +566,29 @@ export const CourseDetail: React.FC = () => {
         const sections = [
             { id: 'overview', label: 'Overview' },
             { id: 'content', label: 'Programme Curriculum' },
-            { id: 'focus', label: course.qualification === 'Degree' ? 'Degree Focus Area' : 'Focus Areas' },
-            { id: 'requirements', label: 'Entry Requirements' },
-            { id: 'certification', label: 'Certification' },
-            { id: 'faq', label: 'FAQs' },
-            { id: 'fees', label: 'Fees' },
         ];
 
-        if (course.workIntegratedLearning) {
-            // Insert WIL after content
-            sections.splice(2, 0, { id: 'wil', label: 'Work Integrated Learning' });
+        if (course.successfulGraduates) {
+            sections.push({ id: 'graduates', label: 'Successful Graduates' });
         }
+
+        if (course.workIntegratedLearning) {
+            sections.push({ id: 'wil', label: 'Work Integrated Learning' });
+        }
+
+        sections.push({ id: 'faq', label: 'FAQs' });
 
         return sections;
     }, [course]);
 
-    const isEcommerce = course.programmeTypes.some((type: string) =>
-        ['Online Learning', 'Part Time Learning'].includes(type)
-    );
-
     // Helpers for Breadcrumbs
     const primaryType = course.programmeTypes[0] || 'Programme';
     const getArchiveLink = (type: string) => {
-        if(type.includes('Full Time')) return '/programmes/full-time';
-        if(type.includes('Blended')) return '/programmes/blended';
-        if(type.includes('In-Service')) return '/programmes/in-service';
-        if(type.includes('Part Time')) return '/programmes/part-time';
-        if(type.includes('Online')) return '/programmes/online';
+        if (type.includes('Full Time')) return '/programmes/full-time';
+        if (type.includes('Blended')) return '/programmes/blended';
+        if (type.includes('In-Service')) return '/programmes/in-service';
+        if (type.includes('Part Time')) return '/programmes/part-time';
+        if (type.includes('Online')) return '/programmes/online';
         return '/';
     };
     const archiveLink = getArchiveLink(primaryType);
@@ -399,6 +597,7 @@ export const CourseDetail: React.FC = () => {
         window.scrollTo(0, 0);
         // Reset content ready state when navigating to new course
         setContentReady(false);
+        setVideoLoaded(false);
     }, [id]);
 
     // Manage content visibility during page transition
@@ -406,7 +605,7 @@ export const CourseDetail: React.FC = () => {
         // Keep content hidden while transitioning overlays are active
         if (transitionState.phase === 'complete' || transitionState.phase === 'idle') {
             // Small delay to ensure overlays have faded out
-            const timer = setTimeout(() => setContentReady(true), 50);
+            const timer = setTimeout(() => setContentReady(true), 500);
             return () => clearTimeout(timer);
         } else {
             setContentReady(false);
@@ -433,6 +632,12 @@ export const CourseDetail: React.FC = () => {
             setIsTabsSticky(isSticky);
             setScrolledPastHero(window.scrollY > (heroHeight - 150));
 
+            // Near Footer Detection for Sticky CTA
+            const scrollHeight = document.documentElement.scrollHeight;
+            const clientHeight = document.documentElement.clientHeight;
+            const nearBottom = scrollHeight - (currentScrollY + clientHeight) < 600;
+            setIsNearFooter(nearBottom);
+
             // Spy Scroll Logic
             if (window.innerWidth >= 1024) {
                 const offset = 200;
@@ -458,15 +663,6 @@ export const CourseDetail: React.FC = () => {
 
     const handleTabClick = (sectionId: string) => {
         setActiveSection(sectionId);
-
-        if (sectionId === 'fees') {
-            if (window.innerWidth < 1024) {
-                setIsDrawerOpen(true);
-            } else {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-            return;
-        }
 
         if (window.innerWidth < 1024) {
             setOpenMobileSection(sectionId);
@@ -502,72 +698,111 @@ export const CourseDetail: React.FC = () => {
         startTransition(offering, imgRect, txtRect, catRect);
     };
 
-    if (!course) return <div>Loading...</div>;
 
-    const typeOfStudy = course.programmeTypes.some(t => t.includes('Full Time')) ? 'Full Time' :
-        course.programmeTypes.some(t => t.includes('Part Time')) ? 'Part Time' : 'Online';
+
+    if (!course) return <div>Loading...</div>;
 
     return (
         <div className="min-h-screen bg-gray-50 pt-0 pb-20 lg:pb-0">
 
             {/* Hero Section */}
-            <section ref={heroRef} className="relative bg-brand-primary h-[450px] lg:h-[90vh] flex flex-col">
+            <section ref={heroRef} className="relative bg-brand-primary h-[450px] lg:h-[calc(100vh-80px)] flex flex-col">
                 {/* Background Layer */}
                 <div className="absolute inset-0 z-0 bg-brand-primary overflow-hidden">
-                    {course.video && (
-                        <video
-                            src={course.video}
-                            loop
-                            playsInline
-                            autoPlay
-                            muted
-                            className="w-full h-full object-cover opacity-70"
-                        />
+                    {course.video ? (
+                        <>
+                            {/* Fallback Image while Video Loads */}
+                            <img
+                                src={course.image}
+                                className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${videoLoaded ? 'opacity-0' : 'opacity-70'}`}
+                                alt=""
+                            />
+                            <video
+                                key={course.video} // Force remount if video source changes
+                                src={course.video}
+                                loop
+                                playsInline
+                                autoPlay
+                                muted
+                                onLoadedData={() => setVideoLoaded(true)}
+                                className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${videoLoaded ? 'opacity-70' : 'opacity-0'}`}
+                            />
+                        </>
+                    ) : (
+                        <img src={course.image} className="w-full h-full object-cover opacity-70" alt="" />
                     )}
                     <div className="absolute inset-0 z-10 bg-brand-primary/30" />
                     <div className="absolute inset-0 z-10 bg-gradient-to-r from-brand-primary via-brand-primary/50 to-transparent" />
                 </div>
 
+
+
                 {/* Content Layer */}
-                <div className="relative z-20 flex-grow flex items-center">
+                <div className={`relative z-20 flex-grow flex items-center transition-opacity duration-700 delay-150 ease-out ${contentReady ? 'opacity-100' : 'opacity-0'}`}>
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
                         <div className="lg:w-2/3 w-full pb-5 lg:pb-0 relative">
                             {/* Back Navigation */}
-                            <Link
-                                to={archiveLink}
-                                className="inline-flex items-center gap-2 text-white/70 hover:text-white hover:translate-x-1 transition-all duration-300 text-xs font-bold uppercase tracking-widest mb-6"
-                            >
-                                <ArrowLeft className="w-4 h-4" /> Back to Programmes
-                            </Link>
+                            <div className="overflow-hidden mb-6">
+                                <Link
+                                    to={archiveLink}
+                                    className={`inline-flex items-center gap-2 text-white/70 hover:text-white transition-colors duration-300 text-xs font-bold uppercase tracking-widest ${contentReady ? 'hero-enter animation-delay-100' : 'translate-y-[110%] opacity-0'}`}
+                                >
+                                    <ArrowLeft className="w-4 h-4" /> Back to Programmes
+                                </Link>
+                            </div>
+
+
 
                             {/* Mobile Meta - MOVED ABOVE TITLE */}
-                            <div className="lg:hidden flex items-center gap-4 text-white/80 text-xs mb-[2rem] font-bold uppercase tracking-widest">
-                                <span className="flex items-center gap-1">
-                                    <Clock className="w-4 h-4 text-brand-gold" /> {course.duration}
-                                </span>
-                                <span className="flex items-center gap-1">
-                                    <MapPin className="w-4 h-4 text-brand-gold" /> {typeOfStudy}
-                                </span>
+                            <div className="lg:hidden overflow-hidden mb-[2rem]">
+                                <div className={`flex items-center gap-4 text-white/80 text-xs font-bold uppercase tracking-widest md:gap-8 ${contentReady ? 'hero-enter animation-delay-200' : 'translate-y-[110%] opacity-0'}`}>
+                                    <span className="flex items-center gap-1">
+                                        <Clock className="w-4 h-4 text-brand-gold" /> {course.duration}
+                                    </span>
+                                    <span className="flex items-center gap-1 text-white">
+                                        <Target className="w-4 h-4 text-brand-gold" /> {course.category}
+                                    </span>
+                                    <span className="flex items-center gap-1 text-white">
+                                        <GraduationCap className="w-4 h-4 text-brand-gold" /> {course.qualification}
+                                    </span>
+                                </div>
                             </div>
 
                             {/* Title - Line Height 1.25 */}
-                            <h1 className="font-serif text-3xl md:text-3xl lg:text-6xl text-white font-semibold leading-[1.35] mb-[3rem] drop-shadow-lg text-wrap: balance">
-                                {course.title}
-                            </h1>
+                            <div className="overflow-hidden mb-[3rem] pb-4">
+                                <h1 className={`font-serif text-3xl md:text-3xl lg:text-6xl text-white font-semibold leading-[1.35] drop-shadow-lg text-wrap: balance ${contentReady ? 'hero-enter animation-delay-300' : 'translate-y-[110%] opacity-0'}`}>
+                                    {course.title}
+                                </h1>
+                            </div>
+
+                            {/* Desktop Buttons */}
+                            <div className="hidden lg:flex gap-4 mt-8 overflow-hidden pb-4">
+                                <div className={`flex gap-4`}>
+                                    <div className={`${contentReady ? 'hero-enter animation-delay-500' : 'translate-y-[110%] opacity-0'}`}>
+                                        <Button variant="gold" className="px-10 py-4 text-sm" icon={isEcommerce ? <ShoppingBag size={18} /> : <ArrowRight size={18} />} onClick={handleApply}>
+                                            {isEcommerce ? 'Buy Now' : 'Apply Now'}
+                                        </Button>
+                                    </div>
+                                    <div className={`${contentReady ? 'hero-enter animation-delay-500' : 'translate-y-[110%] opacity-0'}`}>
+                                        <Button variant="outline-gold" className="px-10 py-4 text-sm bg-transparent" icon={<Download size={18} />}>
+                                            Download Brochure
+                                        </Button>
+                                    </div>
+                                </div>
+                            </div>
 
                             {/* Mobile Buttons */}
                             <div className="lg:hidden flex flex-col gap-3">
-                                <button className="inline-flex items-center justify-center font-bold uppercase transition-all duration-300 text-xs px-6 py-4 rounded-sm bg-[#C2B067] text-white hover:bg-[#B8A558] border border-[#C2B067] w-full tracking-[1px]">
-                                    Apply Now
-                                </button>
-                                <button className="w-full border border-[#C2B067] text-[#C2B067] bg-white hover:bg-slate-50 font-bold uppercase text-xs py-4 rounded-sm transition-colors flex items-center justify-center gap-2 tracking-[1px]">
-                                    Download Prospectus
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-download">
-                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                        <polyline points="7 10 12 15 17 10"></polyline>
-                                        <line x1="12" x2="12" y1="15" y2="3"></line>
-                                    </svg>
-                                </button>
+                                <div className={`${contentReady ? 'hero-enter animation-delay-500' : 'translate-y-[110%] opacity-0'}`}>
+                                    <Button variant="gold" className="w-full" onClick={handleApply} icon={isEcommerce ? <ShoppingBag size={16} /> : undefined}>
+                                        {isEcommerce ? 'Buy Now' : 'Apply Now'}
+                                    </Button>
+                                </div>
+                                <div className={`${contentReady ? 'hero-enter animation-delay-500' : 'translate-y-[110%] opacity-0'}`}>
+                                    <Button variant="outline-gold" className="w-full bg-transparent" icon={<Download size={16} />}>
+                                        Download Brochure
+                                    </Button>
+                                </div>
                             </div>
 
                         </div>
@@ -575,331 +810,311 @@ export const CourseDetail: React.FC = () => {
                 </div>
 
                 {/* Course Meta Section - Desktop Only */}
-                <div className="hidden lg:flex relative z-30 mt-auto h-[115px] bg-white/0 border-t border-white/10 items-center">
+                <div className="hidden lg:flex relative z-30 mt-auto h-[115px] border-t border-white/10 items-center">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-                        {/* Constrained to 66.6% (2/3) to match content */}
-                        <div className="lg:w-2/3 grid grid-cols-4 gap-8">
-                            <div>
-                                <p className="text-brand-gold text-xs uppercase font-bold mb-1 tracking-[1px]">Duration</p>
-                                <p className="text-white font-semibold">{course.duration}</p>
+                        {/* Full width grid for 4 items */}
+                        <div className="w-full grid grid-cols-4 gap-8">
+                            <div className="overflow-hidden pb-1">
+                                <div className={`flex items-center gap-4 ${contentReady ? 'hero-enter animation-delay-400' : 'translate-y-[110%] opacity-0'}`}>
+                                    <div className="shrink-0 w-10 h-10 rounded-full border border-brand-gold/20 flex items-center justify-center">
+                                        <Clock className="w-5 h-5 text-brand-gold" />
+                                    </div>
+                                    <div>
+                                        <p className="text-brand-gold text-xs uppercase font-bold mb-1 tracking-[1px]">Duration</p>
+                                        <p className="text-white font-semibold">{course.duration}</p>
+                                    </div>
+                                </div>
                             </div>
-                            <div>
-                                <p className="text-brand-gold text-xs uppercase font-bold mb-1 tracking-[1px]">Study Mode</p>
-                                <p className="text-white font-semibold">{typeOfStudy}</p>
+                            <div className="overflow-hidden pb-1">
+                                <div className={`flex items-center gap-4 ${contentReady ? 'hero-enter animation-delay-550' : 'translate-y-[110%] opacity-0'}`}>
+                                    <div className="shrink-0 w-10 h-10 rounded-full border border-brand-gold/20 flex items-center justify-center">
+                                        <Target className="w-5 h-5 text-brand-gold" />
+                                    </div>
+                                    <div>
+                                        <p className="text-brand-gold text-xs uppercase font-bold mb-1 tracking-[1px]">Focus Area</p>
+                                        <p className="text-white font-semibold">{course.category}</p>
+                                    </div>
+                                </div>
                             </div>
-                            <div>
-                                <p className="text-brand-gold text-xs uppercase font-bold mb-1 tracking-[1px]">Next Intake</p>
-                                <p className="text-white font-semibold">{course.intake || course.startDate}</p>
+                            <div className="overflow-hidden pb-1">
+                                <div className={`flex items-center gap-4 ${contentReady ? 'hero-enter animation-delay-700' : 'translate-y-[110%] opacity-0'}`}>
+                                    <div className="shrink-0 w-10 h-10 rounded-full border border-brand-gold/20 flex items-center justify-center">
+                                        <GraduationCap className="w-5 h-5 text-brand-gold" />
+                                    </div>
+                                    <div>
+                                        <p className="text-brand-gold text-xs uppercase font-bold mb-1 tracking-[1px]">Level of Study</p>
+                                        <p className="text-white font-semibold">{course.qualification}</p>
+                                    </div>
+                                </div>
                             </div>
-                            <div>
-                                <p className="text-brand-gold text-xs uppercase font-bold mb-1 tracking-[1px]">Level</p>
-                                <p className="text-white font-semibold">{course.level}</p>
+                            <div className="overflow-hidden pb-1">
+                                <div className={`flex items-center gap-4 ${contentReady ? 'hero-enter animation-delay-850' : 'translate-y-[110%] opacity-0'}`}>
+                                    <div className="shrink-0 w-10 h-10 rounded-full border border-brand-gold/20 flex items-center justify-center">
+                                        <Calendar className="w-5 h-5 text-brand-gold" />
+                                    </div>
+                                    <div>
+                                        <p className="text-brand-gold text-xs uppercase font-bold mb-1 tracking-[1px]">Start Date</p>
+                                        <div className="flex flex-col">
+                                            <p className="text-white font-semibold">Next: {(course.startDate || course.intake)?.split(',')[0]}</p>
+                                            {/* {(course.startDate || course.intake)?.includes(',') && (
+                                                <p className="text-white/50 text-[10px] italic leading-tight mt-0.5">
+                                                    Upcoming: {(course.startDate || course.intake)?.split(',').slice(1).join(', ')}
+                                                </p>
+                                            )} */}
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </section>
 
-            {/* Breadcrumb Bar - Positioned Below Hero, Above Tabs */}
-            <div className="bg-[#002B4E] border-b border-white/10 py-4 relative z-20 hidden">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <nav className="flex items-center gap-2 text-xs font-bold uppercase tracking-[1px] text-white flex-wrap">
-                        <Link to="/" className="text-brand-gold hover:text-white transition-colors">Home</Link>
-                        <span className="text-white/40">/</span>
-                        <Link to={archiveLink} className="text-brand-gold hover:text-white transition-colors">{primaryType}</Link>
-                        <span className="text-white/40">/</span>
-                        <span className="text-white line-clamp-1">{course.title}</span>
-                    </nav>
+            <div className={`transition-all duration-1000 delay-150 ease-out ${contentReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}>
+                {/* Breadcrumb Bar - Positioned Below Hero, Above Tabs */}
+                <div className="bg-[#002B4E] border-b border-white/10 py-4 relative z-20 hidden">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <nav className="flex items-center gap-2 text-xs font-bold uppercase tracking-[1px] text-white flex-wrap">
+                            <Link to="/" className="text-brand-gold hover:text-white transition-colors">Home</Link>
+                            <span className="text-white/40">/</span>
+                            <Link to={archiveLink} className="text-brand-gold hover:text-white transition-colors">{primaryType}</Link>
+                            <span className="text-white/40">/</span>
+                            <span className="text-white line-clamp-1">{course.title}</span>
+                        </nav>
+                    </div>
                 </div>
-            </div>
 
-            {/* Sticky Header Tabs - Dynamically positioned based on header visibility */}
-            <div
-                className={`sticky z-30 bg-white border-b border-gray-200 transition-all duration-300 ease-in-out ${
-                    isTabsSticky ? 'shadow-md' : ''
-                }`}
-                style={{
-                    top: isHeaderVisible ? '80px' : '0px'
-                }}
-            >
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-3">
-                        {SECTIONS.map(sec => (
-                            <button
-                                key={sec.id}
-                                onClick={() => handleTabClick(sec.id)}
-                                className={`px-4 py-2 rounded-full text-xs font-bold uppercase whitespace-nowrap transition-colors tracking-[1px] ${
-                                    activeSection === sec.id
+                {/* Sticky Header Tabs - Dynamically positioned based on header visibility */}
+                <div
+                    className={`sticky z-30 bg-white border-b border-gray-200 transition-all duration-300 ease-in-out ${isTabsSticky ? 'shadow-md' : ''
+                        }`}
+                    style={{
+                        top: isHeaderVisible ? '80px' : '0px'
+                    }}
+                >
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-3">
+                            {SECTIONS.map(sec => (
+                                <button
+                                    key={sec.id}
+                                    onClick={() => handleTabClick(sec.id)}
+                                    className={`px-4 py-2 rounded-full text-xs font-bold uppercase whitespace-nowrap transition-colors tracking-[1px] ${activeSection === sec.id
                                         ? 'bg-brand-primary text-white'
                                         : 'text-gray-500 hover:bg-gray-100'
-                                }`}
-                            >
-                                {sec.label}
-                            </button>
-                        ))}
+                                        }`}
+                                >
+                                    {sec.label}
+                                </button>
+                            ))}
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            {/* Content Container */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                {/* Content Container */}
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
 
-                    {/* Left Column: Content */}
-                    <div className="lg:col-span-2 space-y-4 lg:space-y-16">
+                        {/* Left Column: Content */}
+                        <div className="lg:col-span-2 space-y-4 lg:space-y-16">
 
-                        {/* 1. Overview */}
-                        <div className="lg:block">
-                            <LightAccordionItem
-                                id="mobile-overview"
-                                title="Overview"
-                                isOpen={window.innerWidth < 1024 ? openMobileSection === 'overview' : true}
-                                onToggle={() => setOpenMobileSection(openMobileSection === 'overview' ? null : 'overview')}
-                            >
-                                <div id="overview" className="bg-white lg:p-8 lg:rounded-sm lg:shadow-sm lg:border lg:border-gray-100">
-                                    <h2 className="hidden lg:block text-2xl font-serif text-brand-primary mb-6 font-bold">Overview</h2>
-                                    <p className="text-base leading-relaxed text-gray-600 whitespace-pre-line">
-                                        {course.fullDescription}
-                                    </p>
-                                </div>
-                            </LightAccordionItem>
-                        </div>
+                            {/* 1. Overview */}
+                            <div className="lg:block">
+                                <LightAccordionItem
+                                    id="mobile-overview"
+                                    title="Overview"
+                                    isOpen={window.innerWidth < 1024 ? openMobileSection === 'overview' : true}
+                                    onToggle={() => setOpenMobileSection(openMobileSection === 'overview' ? null : 'overview')}
+                                >
+                                    <div id="overview" className="bg-white lg:p-8 lg:rounded-sm lg:shadow-sm lg:border lg:border-gray-100">
+                                        <h2 className="hidden lg:block text-2xl font-serif text-brand-primary mb-6 font-bold">Overview</h2>
+                                        <div className="text-base leading-relaxed text-gray-600 whitespace-pre-line space-y-6">
+                                            <p>{course.fullDescription}</p>
+                                        </div>
 
-                        {/* 2. Programme Curriculum (Formerly Programme Content) */}
-                        <LightAccordionItem
-                            id="mobile-content"
-                            title="Programme Curriculum"
-                            isOpen={window.innerWidth < 1024 ? openMobileSection === 'content' : true}
-                            onToggle={() => setOpenMobileSection(openMobileSection === 'content' ? null : 'content')}
-                        >
-                            <div id="content" className="lg:bg-white lg:p-8 lg:rounded-sm lg:shadow-sm lg:border lg:border-gray-100">
-                                <h3 className="hidden lg:flex text-brand-primary font-serif text-2xl mb-6 items-center gap-3 font-bold">
-                                    <span className="w-8 h-1 bg-brand-gold rounded-full"></span>
-                                    Programme Curriculum
-                                </h3>
-
-                                {course.programContentIncludes && (
-                                    <div className="mb-8">
-                                        <h4 className="font-bold text-gray-800 mb-4 text-sm uppercase tracking-[1px]">WHAT YOU WILL LEARN</h4>
-                                        <ul className="flex flex-col gap-3">
-                                            {course.programContentIncludes.map((item, i) => (
-                                                <li key={i} className="flex items-center gap-3 text-sm text-gray-600 bg-gray-50 border border-gray-100 p-4 rounded-sm w-full">
-                                                    <Circle size={8} className="text-brand-gold shrink-0" fill="currentColor" />
-                                                    {item}
-                                                </li>
-                                            ))}
-                                        </ul>
+                                        {/* Social Proof Injection */}
+                                        <SocialProofBlock />
                                     </div>
-                                )}
+                                </LightAccordionItem>
+                            </div>
 
-                                {course.curriculum && course.curriculum.length > 0 && (
-                                    <div className="space-y-4">
-                                        <h4 className="font-bold text-gray-800 mb-4 text-sm uppercase tracking-[1px] mt-8">Module Breakdown</h4>
-                                        {course.curriculum.map((year, idx) => (
-                                            <div key={idx} className="border border-gray-200 rounded-sm">
-                                                <div className="bg-gray-50 px-4 py-3 font-bold text-brand-primary border-b border-gray-200">
-                                                    {year.year}
-                                                </div>
-                                                <div className="p-4 grid grid-cols-1 gap-4">
-                                                    {year.modules.map((mod, mIdx) => (
-                                                        <div key={mIdx}>
-                                                            <span className="font-bold text-gray-700 text-sm block mb-1">{mod.title}</span>
-                                                            <p className="text-xs text-gray-500">{mod.topics.join(', ')}</p>
+                            {/* 2. Programme Curriculum (Formerly Programme Content) */}
+                            <LightAccordionItem
+                                id="mobile-content"
+                                title="Programme Curriculum"
+                                isOpen={window.innerWidth < 1024 ? openMobileSection === 'content' : true}
+                                onToggle={() => setOpenMobileSection(openMobileSection === 'content' ? null : 'content')}
+                            >
+                                <div id="content" className="lg:bg-white lg:p-8 lg:rounded-sm lg:shadow-sm lg:border lg:border-gray-100">
+                                    <h3 className="hidden lg:flex text-brand-primary font-serif text-2xl mb-6 items-center gap-3 font-bold">
+                                        <span className="w-8 h-1 bg-brand-gold rounded-full"></span>
+                                        Programme Curriculum
+                                    </h3>
+
+                                    {course.programContentIncludes && (
+                                        <div className="mb-8">
+                                            <h4 className="font-bold text-gray-800 mb-6 text-sm uppercase tracking-[1px]">WHAT YOU WILL LEARN</h4>
+                                            <ul className="flex flex-col gap-4">
+                                                {course.programContentIncludes.map((item, i) => (
+                                                    <li key={i} className="flex items-center gap-4 p-5 rounded-sm bg-gray-50/50 border border-gray-100 transition-colors hover:bg-white hover:border-brand-gold/30">
+                                                        <div className="shrink-0 w-8 h-8 rounded-full bg-white flex items-center justify-center border border-gray-100 shadow-sm">
+                                                            <CheckCircle size={14} className="text-brand-gold" />
                                                         </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        </LightAccordionItem>
-
-                        {/* 2.5 Work Integrated Learning (New Section) */}
-                        {course.workIntegratedLearning && (
-                            <LightAccordionItem
-                                id="mobile-wil"
-                                title="Work Integrated Learning"
-                                isOpen={window.innerWidth < 1024 ? openMobileSection === 'wil' : true}
-                                onToggle={() => setOpenMobileSection(openMobileSection === 'wil' ? null : 'wil')}
-                            >
-                                <div id="wil" className="lg:bg-white lg:p-8 lg:rounded-sm lg:shadow-sm lg:border lg:border-gray-100">
-                                    <h3 className="hidden lg:flex text-brand-primary font-serif text-2xl mb-6 items-center gap-3 font-bold">
-                                        <span className="w-8 h-1 bg-brand-gold rounded-full"></span>
-                                        Work Integrated Learning
-                                    </h3>
-                                    <div className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
-                                        {course.workIntegratedLearning}
-                                    </div>
+                                                        <span className="text-sm text-gray-600 leading-relaxed font-medium">
+                                                            {item}
+                                                        </span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
                                 </div>
                             </LightAccordionItem>
-                        )}
 
-                        {/* 3. Focus Areas */}
-                        <LightAccordionItem
-                            id="mobile-focus"
-                            title={course.qualification === 'Degree' ? 'Degree Focus Area' : 'Focus Areas'}
-                            isOpen={window.innerWidth < 1024 ? openMobileSection === 'focus' : true}
-                            onToggle={() => setOpenMobileSection(openMobileSection === 'focus' ? null : 'focus')}
-                        >
-                            <div id="focus" className="lg:bg-white lg:p-8 lg:shadow-none lg:border lg:border-gray-100">
-                                <h3 className="hidden lg:flex text-brand-primary font-serif text-2xl mb-6 items-center gap-3 font-bold">
-                                    <span className="w-8 h-1 bg-brand-gold rounded-full"></span>
-                                    Focus Areas
-                                </h3>
+                            {/* 2.Successful Graduates Standalone */}
+                            {course.successfulGraduates && (
+                                <LightAccordionItem
+                                    id="mobile-graduates"
+                                    title="Successful Graduates"
+                                    isOpen={window.innerWidth < 1024 ? openMobileSection === 'graduates' : true}
+                                    onToggle={() => setOpenMobileSection(openMobileSection === 'graduates' ? null : 'graduates')}
+                                >
+                                    <div id="graduates" className="lg:bg-white lg:p-8 lg:shadow-none lg:border lg:border-gray-100">
+                                        <h3 className="hidden lg:flex text-brand-primary font-serif text-2xl mb-6 items-center gap-3 font-bold">
+                                            <span className="w-8 h-1 bg-brand-gold rounded-full"></span>
+                                            Successful Graduates
+                                        </h3>
+                                        <div className="space-y-4">
+                                            <h4 className="font-bold text-gray-800 mb-4 text-sm uppercase tracking-[1px]">What will I receive?</h4>
+                                            <p className="text-sm leading-relaxed text-gray-600">
+                                                {course.successfulGraduates}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </LightAccordionItem>
+                            )}
 
-                                {course.extendedFocusAreas ? (
+                            {/* 2.5 Work Integrated Learning (New Section) */}
+                            {course.workIntegratedLearning && (
+                                <LightAccordionItem
+                                    id="mobile-wil"
+                                    title="Work Integrated Learning"
+                                    isOpen={window.innerWidth < 1024 ? openMobileSection === 'wil' : true}
+                                    onToggle={() => setOpenMobileSection(openMobileSection === 'wil' ? null : 'wil')}
+                                >
+                                    <div id="wil" className="lg:bg-white lg:p-8 lg:rounded-sm lg:shadow-sm lg:border lg:border-gray-100">
+                                        <h3 className="hidden lg:flex text-brand-primary font-serif text-2xl mb-6 items-center gap-3 font-bold">
+                                            <span className="w-8 h-1 bg-brand-gold rounded-full"></span>
+                                            Work Integrated Learning
+                                        </h3>
+
+                                        {/* WIL Clarity Callout */}
+                                        <WILInfoBox duration={course.wilDuration} />
+
+                                        <div className="text-sm text-gray-600 leading-relaxed whitespace-pre-line space-y-4">
+                                            {course.workIntegratedLearning?.split('#### ').map((part, i) => {
+                                                if (i === 0 && !course.workIntegratedLearning?.startsWith('#### ')) return <p key={i}>{part}</p>;
+                                                const lines = part.split('\n');
+                                                const header = lines[0];
+                                                const rest = lines.slice(1).join('\n');
+                                                return (
+                                                    <div key={i} className="space-y-4">
+                                                        <h4 className="font-bold text-gray-900 mb-2">{header}</h4>
+                                                        <p>{rest}</p>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                </LightAccordionItem>
+                            )}
+
+
+                            {/* 6. FAQs */}
+                            <LightAccordionItem
+                                id="mobile-faq"
+                                title="FAQs"
+                                isOpen={window.innerWidth < 1024 ? openMobileSection === 'faq' : true}
+                                onToggle={() => setOpenMobileSection(openMobileSection === 'faq' ? null : 'faq')}
+                            >
+                                <div id="faq" className="lg:bg-white lg:p-8 lg:rounded-sm lg:shadow-sm lg:border lg:border-gray-100">
+                                    <h3 className="hidden lg:flex text-brand-primary font-serif text-2xl mb-6 items-center gap-3 font-bold">
+                                        <span className="w-8 h-1 bg-brand-gold rounded-full"></span>
+                                        Frequently Asked Questions
+                                    </h3>
                                     <div className="space-y-4">
-                                        {course.extendedFocusAreas.map((area, idx) => (
-                                            <div key={idx} className="bg-gray-50 p-5 rounded-sm border border-gray-200">
-                                                <h4 className="text-brand-primary font-bold mb-2">{area.title}</h4>
-                                                <p className="text-sm text-gray-600">{area.description}</p>
+                                        <details className="group">
+                                            <summary className="flex justify-between items-center font-bold text-gray-800 cursor-pointer list-none">
+                                                <span>Difference between Diploma and Degree?</span>
+                                                <span className="transition group-open:rotate-180"><ChevronDown size={16} /></span>
+                                            </summary>
+                                            <div className="text-gray-600 text-sm mt-3 leading-relaxed group-open:animate-fadeIn">
+                                                Degrees focus on strategic management (NQF 7), while Diplomas focus on operational management (NQF 6).
                                             </div>
-                                        ))}
-                                    </div>
-                                ) : course.focusAreas ? (
-                                    <div className="flex flex-wrap gap-2">
-                                        {course.focusAreas.map((area, idx) => (
-                                            <span key={idx} className="bg-gray-100 text-gray-700 px-3 py-2 rounded-sm text-sm font-medium border border-gray-200">
-                                                {area}
-                                            </span>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <p className="text-sm text-gray-500 italic">No specific focus areas for this course.</p>
-                                )}
-                            </div>
-                        </LightAccordionItem>
-
-                        {/* 4. Requirements */}
-                        <LightAccordionItem
-                            id="mobile-requirements"
-                            title="Entry Requirements"
-                            isOpen={window.innerWidth < 1024 ? openMobileSection === 'requirements' : true}
-                            onToggle={() => setOpenMobileSection(openMobileSection === 'requirements' ? null : 'requirements')}
-                        >
-                            <div id="requirements" className="lg:bg-white lg:p-8 lg:rounded-sm lg:shadow-sm lg:border lg:border-gray-100">
-                                <h3 className="hidden lg:flex text-brand-primary font-serif text-2xl mb-6 items-center gap-3 font-bold">
-                                    <span className="w-8 h-1 bg-brand-gold rounded-full"></span>
-                                    Entry Requirements
-                                </h3>
-                                <ul className="space-y-3">
-                                    {course.requirements.map((req, idx) => (
-                                        <li key={idx} className="flex items-start gap-3">
-                                            <CheckCircle size={18} className="text-brand-gold shrink-0 mt-0.5" />
-                                            <span className="text-sm text-gray-700">{req}</span>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        </LightAccordionItem>
-
-                        {/* 5. Certification */}
-                        {course.certification && (
-                            <LightAccordionItem
-                                id="mobile-certification"
-                                title="Certification"
-                                isOpen={window.innerWidth < 1024 ? openMobileSection === 'certification' : true}
-                                onToggle={() => setOpenMobileSection(openMobileSection === 'certification' ? null : 'certification')}
-                            >
-                                <div id="certification" className="lg:bg-white lg:p-8 lg:rounded-sm lg:shadow-sm lg:border lg:border-gray-100">
-                                    <h3 className="hidden lg:flex text-brand-primary font-serif text-2xl mb-6 items-center gap-3 font-bold">
-                                        <span className="w-8 h-1 bg-brand-gold rounded-full"></span>
-                                        Certification
-                                    </h3>
-                                    <div className="flex items-start gap-4">
-                                        <div className="w-12 h-12 bg-brand-primary/5 rounded-full flex items-center justify-center text-brand-primary shrink-0">
-                                            <Award size={24} />
-                                        </div>
-                                        <div>
-                                            <h4 className="font-bold text-gray-900 mb-2">Qualification Awarded</h4>
-                                            <p className="text-sm text-gray-600 leading-relaxed mb-6">{course.certification}</p>
-                                        </div>
+                                        </details>
+                                        <hr className="border-gray-100" />
+                                        <details className="group">
+                                            <summary className="flex justify-between items-center font-bold text-gray-800 cursor-pointer list-none">
+                                                <span>Are payment plans available?</span>
+                                                <span className="transition group-open:rotate-180"><ChevronDown size={16} /></span>
+                                            </summary>
+                                            <div className="text-gray-600 text-sm mt-3 leading-relaxed group-open:animate-fadeIn">
+                                                Yes, we offer flexible monthly payment terms for all our programmes.
+                                            </div>
+                                        </details>
                                     </div>
                                 </div>
                             </LightAccordionItem>
-                        )}
 
-                        {/* 6. FAQs */}
-                        <LightAccordionItem
-                            id="mobile-faq"
-                            title="FAQs"
-                            isOpen={window.innerWidth < 1024 ? openMobileSection === 'faq' : true}
-                            onToggle={() => setOpenMobileSection(openMobileSection === 'faq' ? null : 'faq')}
-                        >
-                            <div id="faq" className="lg:bg-white lg:p-8 lg:rounded-sm lg:shadow-sm lg:border lg:border-gray-100">
-                                <h3 className="hidden lg:flex text-brand-primary font-serif text-2xl mb-6 items-center gap-3 font-bold">
-                                    <span className="w-8 h-1 bg-brand-gold rounded-full"></span>
-                                    Frequently Asked Questions
-                                </h3>
-                                <div className="space-y-4">
-                                    <details className="group">
-                                        <summary className="flex justify-between items-center font-bold text-gray-800 cursor-pointer list-none">
-                                            <span>What is the difference between Diploma and Degree?</span>
-                                            <span className="transition group-open:rotate-180"><ChevronDown size={16} /></span>
-                                        </summary>
-                                        <div className="text-gray-600 text-sm mt-3 leading-relaxed group-open:animate-fadeIn">
-                                            Degrees focus on strategic management (NQF 7), while Diplomas focus on operational management (NQF 6).
-                                        </div>
-                                    </details>
-                                    <hr className="border-gray-100" />
-                                    <details className="group">
-                                        <summary className="flex justify-between items-center font-bold text-gray-800 cursor-pointer list-none">
-                                            <span>Are payment plans available?</span>
-                                            <span className="transition group-open:rotate-180"><ChevronDown size={16} /></span>
-                                        </summary>
-                                        <div className="text-gray-600 text-sm mt-3 leading-relaxed group-open:animate-fadeIn">
-                                            Yes, we offer flexible monthly payment terms for all our programmes.
-                                        </div>
-                                    </details>
-                                </div>
-                            </div>
-                        </LightAccordionItem>
-
-                    </div>
-
-                    {/* Right Column: Sidebar (Desktop Only) */}
-                    <div className="hidden lg:block lg:col-span-1">
-                        {/*
-                            Sidebar Sticky Logic:
-                            - `top-[160px]` when header is visible (80px header + 80px tabs).
-                            - `top-[80px]` when header is hidden (0px header + 80px tabs).
-                        */}
-                        <div
-                            className="sticky space-y-6 transition-all duration-300 ease-in-out"
-                            style={{
-                                top: isHeaderVisible ? '160px' : '80px'
-                            }}
-                        >
-                            <FeesCard course={course} />
-
-                            <NeedGuidanceCard />
                         </div>
-                    </div>
 
+                        {/* Right Column: Sidebar (Desktop Only) */}
+                        <div className="hidden lg:block lg:col-span-1">
+                            <div
+                                className="sticky space-y-6 transition-all duration-300 ease-in-out"
+                                style={{
+                                    top: isHeaderVisible ? '160px' : '80px'
+                                }}
+                            >
+                                <FeesCard course={course} onApply={handleApply} />
+                                <ProgrammeOverviewCard course={course} />
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
+
+                {/* Related Programmes Section */}
+                {relatedOfferings.length > 0 && (
+                    <section className="bg-brand-primary py-24 border-t border-white/5">
+                        <CourseCardSlider
+                            title={
+                                <div className="mb-4">
+                                    <h2 className="font-serif text-3xl md:text-4xl text-white mb-4">
+                                        Related <span className="text-brand-gold italic">Programmes</span>
+                                    </h2>
+                                </div>
+                            }
+                            offerings={relatedOfferings}
+                            onExpand={handleRelatedExpand}
+                            dark={true}
+                        />
+                    </section>
+                )}
+
+                {/* Final CTA Before Footer */}
+                <FinalCTA />
+
+                {/* Testimonials Section */}
+                <Testimonial />
             </div>
 
-            {/* Related Programmes Section */}
-            {relatedOfferings.length > 0 && (
-                <section className="bg-brand-primary py-24 border-t border-white/5">
-                    <CourseCardSlider
-                        title={
-                            <div className="mb-4">
-                                <h2 className="font-serif text-3xl md:text-4xl text-white mb-4">
-                                    Related <span className="text-brand-gold italic">Programmes</span>
-                                </h2>
-                            </div>
-                        }
-                        offerings={relatedOfferings}
-                        onExpand={handleRelatedExpand}
-                        dark={true}
-                    />
-                </section>
-            )}
-            
-            {/* Testimonials Section */}
-            <Testimonial />
+            {/* Sticky Mini-CTA (Desktop) - Commented out for now
+            <StickyMiniCTA
+                course={course}
+                visible={scrolledPastHero && !isNearFooter}
+                onApply={handleApply}
+            />
+            */}
 
             {/* Mobile Bottom Drawer */}
             <MobileFeesDrawer

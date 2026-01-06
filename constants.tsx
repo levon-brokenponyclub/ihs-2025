@@ -5,7 +5,10 @@ import {
 } from 'lucide-react';
 import { Offering, SuccessStep, NavLink, CourseDetail } from './types';
 
-// Updated Menu Structure for Chelsea Style Header
+/* =========================
+   Navigation
+========================= */
+
 export const NAV_LINKS: NavLink[] = [
   { label: 'Our Programmes', href: '#offerings' },
   { label: 'Admissions', href: '#' },
@@ -20,483 +23,495 @@ export const MORE_MENU_LINKS: NavLink[] = [
   { label: 'Careers', href: '#' },
 ];
 
-
-// Filter Constants
+/* =========================
+   Filters
+========================= */
 
 export const FOCUS_AREAS = [
-    { label: 'Business', value: 'Business' },
-    { label: 'Conference & Events', value: 'Conference & Events' },
-    { label: 'Food & Beverage', value: 'Food & Beverage' },
-    { label: 'Hospitality Management', value: 'Hospitality' },
-    { label: 'Human Resources', value: 'Human Resources' },
-    { label: 'Culinary', value: 'Culinary' }
+  { label: 'Business', value: 'Business' },
+  { label: 'Conference & Events', value: 'Conference & Events' },
+  { label: 'Food & Beverage', value: 'Food & Beverage' },
+  { label: 'Hospitality Management', value: 'Hospitality Management' },
+  { label: 'Human Resources', value: 'Human Resources' }
 ];
 
+/* =========================
+   Accreditation Logos
+========================= */
+
 export const ACCREDITATION_LOGOS: Record<string, string> = {
-    'AHLEI': 'https://www.hotelschool.co.za/wp-content/uploads/2020/08/ahlei-logo.png',
-    'CATHSSETA': 'https://placehold.co/120x60/transparent/white?text=CATHSSETA',
-    'City & Guilds': 'https://placehold.co/120x60/transparent/white?text=City%20%26%20Guilds',
-    'QCTO': 'https://placehold.co/120x60/transparent/white?text=QCTO',
-    'École Ducasse': 'https://www.hotelschool.co.za/wp-content/uploads/2020/09/ecole-ducasse-programme-logo-img.png',
-    'CTH': 'https://placehold.co/120x60/transparent/white?text=CTH',
-    'Sommet Education': 'https://placehold.co/120x60/transparent/white?text=Sommet',
-    'IHS': 'https://www.hotelschool.co.za/wp-content/uploads/2020/08/ihs-logo-1.png',
-    'CHE': 'https://placehold.co/120x60/transparent/white?text=CHE'
+  AHLEI: 'https://www.hotelschool.co.za/wp-content/uploads/2020/08/ahlei-logo.png',
+  CATHSSETA: 'https://placehold.co/120x60/transparent/white?text=CATHSSETA',
+  'City & Guilds': 'https://placehold.co/120x60/transparent/white?text=City%20%26%20Guilds',
+  QCTO: 'https://placehold.co/120x60/transparent/white?text=QCTO',
+  'École Ducasse': 'https://www.hotelschool.co.za/wp-content/uploads/2020/09/ecole-ducasse-programme-logo-img.png',
+  CTH: 'https://placehold.co/120x60/transparent/white?text=CTH',
+  'Sommet Education': 'https://placehold.co/120x60/transparent/white?text=Sommet',
+  IHS: 'https://www.hotelschool.co.za/wp-content/uploads/2020/08/ihs-logo-1.png',
+  CHE: 'https://placehold.co/120x60/transparent/white?text=CHE'
 };
+
+/* =========================
+   Success Steps
+========================= */
 
 export const SUCCESS_STEPS: SuccessStep[] = [
   {
     icon: BookOpen,
-    title: "Apply & Register",
-    description: "Start your journey by selecting the perfect programme for your career goals."
+    title: 'Apply & Register',
+    description: 'Start your journey by selecting the perfect programme for your career goals.'
   },
   {
     icon: Users,
-    title: "Practical Training",
-    description: "Gain hands-on experience through our industry-integrated learning approach."
+    title: 'Practical Training',
+    description: 'Gain hands-on experience through our industry-integrated learning approach.'
   },
   {
     icon: Award,
-    title: "Graduate Job-Ready",
-    description: "Receive your qualification and join our network of successful alumni."
+    title: 'Graduate Job-Ready',
+    description: 'Receive your qualification and join our network of successful alumni.'
   }
 ];
+
+/* =========================
+   Offerings (UPDATED)
+========================= */
 
 export const OFFERINGS: Offering[] = [
   {
     id: '7',
-    category: 'Hospitality',
+    category: 'Business',
     title: 'Bachelor of Business Administration in Hospitality Operations Management',
-    duration: '3 Years',
+    duration: '3.5 Years',
     qualification: 'Degree',
-    description: 'A prestigious NQF Level 7 qualification designed for future executives. Master the strategic, financial, and operational aspects of the global hospitality industry.',
-    video: 'https://www.shutterstock.com/shutterstock/videos/3541615587/preview/stock-footage-hotel-employees-and-guest-at-reception-for-check-in-hospitality-and-accommodation-with-tourism.webm',
-    programmeTypes: ['Full Time Learning', 'Degrees'],
+    description:
+      'A prestigious NQF Level 7 qualification for future executives. Master the strategic, financial, and operational aspects of the global hospitality industry.',
+    shortDescription:
+      'Degree-level programme focused on hospitality operations, leadership, and strategic management.',
+    video:
+      'https://www.shutterstock.com/shutterstock/videos/3541615587/preview/stock-footage-hotel-employees-and-guest-at-reception-for-check-in-hospitality-and-accommodation-with-tourism.webm',
+    programmeTypes: ['Online Learning', 'Degrees'],
     accreditations: ['IHS'],
-    price: 123000, 
-    startDate: 'March 2025',
-    intake: 'March and July',
+    price: 45400,
+    startDate: 'March, May, July, September',
+    intake: 'March, May, July, September',
     highlights: [
-        'NQF Level 7 Qualification',
-        'Strategic Management Focus',
-        'Financial & Revenue Management',
-        'Research Methodology'
+      'Strategic Operations Management',
+      'Financial & Accounting Principles',
+      'Project Management Excellence',
+      'Research & Sustainability',
+      'NQF Level 7 Degree'
     ]
   },
   {
     id: '1',
-    category: 'Hospitality',
+    category: 'Hospitality Management',
+    title: 'Diploma in Hospitality Management (with AHLEI Recognition)',
+    duration: '3.5 Years',
+    qualification: 'Diploma',
+    description:
+      'Comprehensive hospitality management programme with global AHLEI certification. Equip yourself with leadership skills for the modern workforce.',
+    shortDescription:
+      'Globally recognised hospitality diploma with leadership and operational management focus.',
+    video:
+      'https://www.shutterstock.com/shutterstock/videos/3541615587/preview/stock-footage-hotel-employees-and-guest-at-reception-for-check-in-hospitality-and-accommodation-with-tourism.webm',
+    programmeTypes: ['Online Learning', 'Diplomas'],
+    accreditations: ['AHLEI', 'CATHSSETA', 'IHS'],
+    price: 38600,
+    startDate: 'March (Upcoming)',
+    intake: 'March (Upcoming)',
+    highlights: [
+      'AHLEI Global Diploma',
+      'Work Integrated Learning (WIL)',
+      'Food & Beverage Management',
+      'Business & Rooms Division',
+      'Professional Leadership'
+    ]
+  },
+  {
+    id: '15',
+    category: 'Hospitality Management',
     title: 'Diploma in Hospitality Management',
-    duration: '3 Years',
+    duration: '3.5 Years',
     qualification: 'Diploma',
-    description: 'Comprehensive hospitality management programme with AHLEI certification. Graduate job-ready with global skills.',
-    video: 'https://www.shutterstock.com/shutterstock/videos/3541615587/preview/stock-footage-hotel-employees-and-guest-at-reception-for-check-in-hospitality-and-accommodation-with-tourism.webm',
-    programmeTypes: ['Full Time Learning', 'Blended Learning', 'Diplomas'],
-    accreditations: ['AHLEI', 'CATHSSETA', 'CTH'],
-    price: 95000,
-    startDate: '12 Feb 2025',
-    intake: 'March & July',
+    description:
+      'Foundational hospitality management programme developing core operational and theoretical skills.',
+    shortDescription:
+      'Foundational hospitality management diploma covering core operational disciplines.',
+    video:
+      'https://www.shutterstock.com/shutterstock/videos/3541615587/preview/stock-footage-hotel-employees-and-guest-at-reception-for-check-in-hospitality-and-accommodation-with-tourism.webm',
+    programmeTypes: ['Online Learning', 'Diplomas'],
+    accreditations: ['CATHSSETA', 'IHS'],
+    price: 30850,
+    startDate: 'March, May, July, September',
+    intake: 'March, May, July, September',
     highlights: [
-        'AHLEI & CTH International Accreditation',
-        '6-Month Industry Internship included',
-        'Management & Leadership focus',
-        'Global alumni network access'
+      'Core Management Principles',
+      'Work Integrated Learning (WIL)',
+      'Food & Beverage Operations',
+      'Rooms Division Practices',
+      'Workplace Communication'
     ]
   },
   {
-    id: '2',
-    category: 'Culinary',
-    title: 'Diploma in Culinary Arts',
-    duration: '2 Years',
+    id: '16',
+    category: 'Food & Beverage',
+    title: 'Diploma in Food & Beverage Operations Management (with AHLEI Recognition)',
+    duration: '3.5 Years',
     qualification: 'Diploma',
-    description: 'Professional culinary training with École Ducasse certification. Learn from industry experts and gain practical skills.',
-    video: 'https://media.istockphoto.com/id/472897860/video/culinary-school-intructor-teaching-students-in-commercial-kitchen.mp4?s=mp4-640x640-is&k=20&c=hsucGTdCRxP4qSN4fHeX9YW7_qNeeNno0dfHRiaB5_k=',
-    programmeTypes: ['Full Time Learning', 'Diplomas'],
-    accreditations: ['QCTO', 'CATHSSETA', 'City & Guilds', 'École Ducasse'],
-    price: 110000,
-    startDate: '14 Feb 2025',
-    intake: 'February & July',
-    highlights: [
-        'École Ducasse Certification',
-        'Advanced French Culinary Techniques',
-        'State-of-the-art kitchen facilities',
-        'Fast-track to Executive Chef'
-    ]
-  },
-  {
-    id: '3',
-    category: 'Culinary',
-    title: 'Professional Cookery Certificate',
-    duration: '1 Year',
-    qualification: 'Certificate',
-    description: 'Intensive culinary certificate programme for aspiring chefs. Master fundamental techniques and build your portfolio.',
-    video: 'https://www.shutterstock.com/shutterstock/videos/1087550930/preview/stock-footage-chef-teaching-how-to-cook-cutting-vegetables-indoors-in-commercial-kitchen.webm',
-    programmeTypes: ['Full Time Learning', 'In-Service Traineeship', 'Certificates'],
-    accreditations: ['CATHSSETA', 'City & Guilds'],
-    price: 65000,
-    startDate: '01 Mar 2025',
-    intake: 'March & August',
-    highlights: [
-        'Intensive practical training',
-        'Foundation culinary techniques',
-        'Industry exposure',
-        'Fast-track to employment'
-    ]
-  },
-  {
-    id: '4',
-    category: 'Culinary',
-    title: 'Professional Patisserie',
-    duration: '1 Year',
-    qualification: 'Certificate',
-    description: 'Specialised pastry and baking programme. Master the art of French patisserie with internationally recognized methods.',
-    video: 'https://media.istockphoto.com/id/472897860/video/culinary-school-intructor-teaching-students-in-commercial-kitchen.mp4?s=mp4-640x640-is&k=20&c=hsucGTdCRxP4qSN4fHeX9YW7_qNeeNno0dfHRiaB5_k=',
-    programmeTypes: ['Full Time Learning', 'Part Time Learning', 'Certificates'],
-    accreditations: ['CATHSSETA', 'City & Guilds', 'École Ducasse'],
-    price: 72000,
-    startDate: '01 Mar 2025',
-    intake: 'March & August',
-    highlights: [
-        'Specialised Pastry Techniques',
-        'Chocolate & Sugar Arts',
-        'Artisan Bread Baking',
-        'Wedding Cake Design'
-    ]
-  },
-  {
-    id: '5',
-    category: 'Hospitality',
-    title: 'Certificate in Hotel Operations',
-    duration: '1 Year',
-    qualification: 'Certificate',
-    description: 'Foundational hotel operations programme covering front office, housekeeping, and guest services.',
+    description: 'Master the entire Food & Beverage operation. Learn to forecast, plan, and control F&B departments with global AHLEI recognition.',
+    shortDescription: 'Comprehensive F&B management diploma with global AHLEI certification.',
     video: 'https://www.shutterstock.com/shutterstock/videos/3541615587/preview/stock-footage-hotel-employees-and-guest-at-reception-for-check-in-hospitality-and-accommodation-with-tourism.webm',
-    programmeTypes: ['Part Time Learning', 'Online Learning', 'Certificates', 'Credit Bearing Short Courses'],
-    accreditations: ['CATHSSETA', 'AHLEI'],
-    price: 55000,
-    startDate: 'Anytime',
-    intake: 'Anytime',
-    highlights: [
-        'Front Office Operations',
-        'Housekeeping Management',
-        'Guest Service Excellence',
-        'Property Management Systems'
-    ]
+    programmeTypes: ['Online Learning', 'Diplomas'],
+    accreditations: ['AHLEI', 'CATHSSETA', 'IHS'],
+    price: 38600,
+    startDate: 'March, May, July, September',
+    intake: 'March, May, July, September',
+    highlights: ['F&B Operations Management', 'Financial Controls', 'Procurement & Safety', 'AHLEI Recognition']
   },
   {
-    id: '6',
-    category: 'Hospitality',
-    title: 'Food & Beverage Management',
-    duration: '1 Year',
-    qualification: 'Certificate',
-    description: 'Specialised programme in restaurant and bar management. Learn service excellence, menu planning, and cost control.',
-    video: 'https://www.shutterstock.com/shutterstock/videos/1087550930/preview/stock-footage-chef-teaching-how-to-cook-cutting-vegetables-indoors-in-commercial-kitchen.webm',
-    programmeTypes: ['Online Learning', 'In-Service Traineeship', 'Certificates', 'AHLEI Professional Certification'],
-    accreditations: ['CATHSSETA', 'AHLEI'],
-    price: 58000,
-    startDate: 'Anytime',
-    intake: 'Anytime',
-    highlights: [
-        'Restaurant Operations',
-        'Bar & Beverage Management',
-        'Menu Planning & Costing',
-        'Service Standards'
-    ]
-  },
-  {
-    id: '8',
-    category: 'Hospitality',
-    title: 'Front Office Operations & Guest Relations',
-    duration: '6 Months',
-    qualification: 'Certificate',
-    description: 'Master the fundamentals of front office management, check-in procedures, guest relations, and property management systems. Essential skills for hotel reception and guest services roles.',
+    id: '17',
+    category: 'Food & Beverage',
+    title: 'Diploma in Food & Beverage Operations Management',
+    duration: '3.5 Years',
+    qualification: 'Diploma',
+    description: 'Master the entire Food & Beverage operation. Learn to forecast, plan, and control F&B departments.',
+    shortDescription: 'Comprehensive F&B management diploma focusing on operations and financial control.',
     video: 'https://www.shutterstock.com/shutterstock/videos/3541615587/preview/stock-footage-hotel-employees-and-guest-at-reception-for-check-in-hospitality-and-accommodation-with-tourism.webm',
-    programmeTypes: ['Online Learning', 'Certificates', 'Credit Bearing Short Courses'],
-    accreditations: ['CATHSSETA', 'AHLEI'],
-    price: 8500,
-    startDate: 'Anytime',
-    intake: 'Anytime',
-    highlights: [
-        'PMS (Property Management Systems)',
-        'Check-in & Check-out Procedures',
-        'Guest Communication Skills',
-        'Upselling & Revenue Management'
-    ]
+    programmeTypes: ['Online Learning', 'Diplomas'],
+    accreditations: ['CATHSSETA', 'IHS'],
+    price: 30850,
+    startDate: 'March, May, July, September',
+    intake: 'March, May, July, September',
+    highlights: ['F&B Operations Management', 'Financial Controls', 'Procurement & Safety', 'Operational Excellence']
   },
   {
-    id: '9',
-    category: 'Culinary',
-    title: 'International Cuisine & Cooking Techniques',
-    duration: '6 Months',
+    id: '18',
+    category: 'Conference & Events',
+    title: 'Higher Certificate in Events Management',
+    duration: '1.5 Years',
     qualification: 'Certificate',
-    description: 'Explore diverse international cuisines and cooking techniques. Learn plating, presentation, and food safety standards while mastering classic and contemporary recipes from around the world.',
-    video: 'https://www.shutterstock.com/shutterstock/videos/1087550930/preview/stock-footage-chef-teaching-how-to-cook-cutting-vegetables-indoors-in-commercial-kitchen.webm',
+    description:
+      'The Events and Conferencing industries are dynamic industries which are continually evolving, thereby contributing to new venture creation and employment opportunities.',
+    shortDescription:
+      'Foundation for entering the events industry with applicable skills and relevant knowledge.',
+    video:
+      'https://www.shutterstock.com/shutterstock/videos/3541615587/preview/stock-footage-hotel-employees-and-guest-at-reception-for-check-in-hospitality-and-accommodation-with-tourism.webm',
     programmeTypes: ['Online Learning', 'Certificates'],
-    accreditations: ['CATHSSETA', 'City & Guilds'],
-    price: 9800,
-    startDate: 'Anytime',
-    intake: 'Anytime',
+    accreditations: ['CATHSSETA', 'IHS'],
+    price: 48000,
+    startDate: 'March, May, July, September',
+    intake: 'March, May, July, September',
     highlights: [
-        'World Cuisines & Techniques',
-        'Advanced Plating Skills',
-        'Nutrition & Food Safety',
-        'Recipe Development & Costing'
+      'Event Marketing Strategies',
+      'Event Operations & Logistics',
+      'Business Systems & Budgeting',
+      'Public Relations & Media',
+      'Event Communication'
     ]
   },
   {
-    id: '10',
-    category: 'Hospitality',
-    title: 'Customer Service Excellence in Hospitality',
-    duration: '3 Months',
-    qualification: 'Certificate',
-    description: 'Develop exceptional customer service skills critical to the hospitality industry. Learn complaint resolution, communication, and creating memorable guest experiences in any hospitality setting.',
-    video: 'https://www.shutterstock.com/shutterstock/videos/3541615587/preview/stock-footage-hotel-employees-and-guest-at-reception-for-check-in-hospitality-and-accommodation-with-tourism.webm',
-    programmeTypes: ['Online Learning', 'Certificates', 'Credit Bearing Short Courses'],
-    accreditations: ['CATHSSETA', 'AHLEI'],
-    price: 5200,
-    startDate: 'Anytime',
-    intake: 'Anytime',
+    id: 'hrm-spec',
+    category: 'Human Resources',
+    title: 'Human Resources Management Specialisation Package',
+    duration: '12 – 15 Months',
+    qualification: 'Specialisation',
+    description: 'This course presents a systematic approach to human resources management in the hospitality industry. Students will analyse contemporary issues and practices in the field of human resources management.',
+    shortDescription: 'Systematic approach to human resources management, leadership, training and technology in hospitality.',
+    video: 'https://www.shutterstock.com/shutterstock/videos/1055260340/preview/stock-footage-multi-ethnic-team-meeting-in-modern-office-business-people-brainstorming-and-discussing-project.webm',
+    image: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?q=80&w=2940',
+    programmeTypes: ['Online Learning', 'Specialisations'],
+    accreditations: ['AHLEI', 'IHS'],
+    price: 45850,
+    startDate: 'Mar, Apr, May, Jun, Jul, Aug, Oct, Nov',
+    intake: 'Mar, Apr, May, Jun, Jul, Aug, Oct, Nov',
     highlights: [
-        'Communication Skills',
-        'Complaint Handling & Resolution',
-        'Cultural Sensitivity Training',
-        'Guest Experience Management'
+      'AHLEI HR Specialisation Certificate',
+      'Employee Supervision & Leadership',
+      'Training & Instructional Design',
+      'Hospitality Technology Management',
+      'Strategic Career Planning'
     ]
   },
   {
-    id: '11',
-    category: 'Hospitality',
-    title: 'Housekeeping Management & Operations',
-    duration: '6 Months',
-    qualification: 'Certificate',
-    description: 'Comprehensive housekeeping management programme covering room inspections, cleaning standards, staff supervision, and inventory management. Ideal for housekeeping supervisors and managers.',
-    video: 'https://www.shutterstock.com/shutterstock/videos/3541615587/preview/stock-footage-hotel-employees-and-guest-at-reception-for-check-in-hospitality-and-accommodation-with-tourism.webm',
-    programmeTypes: ['Online Learning', 'Certificates', 'Credit Bearing Short Courses'],
-    accreditations: ['CATHSSETA', 'AHLEI'],
-    price: 7800,
-    startDate: 'Anytime',
-    intake: 'Anytime',
+    id: '19',
+    category: 'Food & Beverage',
+    title: 'Purchasing for Food Service Operations',
+    duration: '10 Weeks',
+    qualification: 'Short Course',
+    description:
+      'This course will give students a basic understanding of the purchasing function in the food service sectors. Students will learn about the ways in which value can be added by members of the food service distribution channel.',
+    shortDescription:
+      'Basic understanding of the purchasing function in the food service sectors, covering distribution channels, specifications, and distributor partners.',
+    video:
+      'https://www.shutterstock.com/shutterstock/videos/1087550930/preview/stock-footage-chef-teaching-how-to-cook-cutting-vegetables-indoors-in-commercial-kitchen.webm',
+    image:
+      'https://images.unsplash.com/photo-1556910103-1c02745a30bf?q=80&w=2070',
+    programmeTypes: ['Online Learning', 'Short Courses'],
+    accreditations: ['AHLEI'],
+    price: 9500,
+    startDate: 'Mar, Apr, May, Jun, Jul, Aug, Oct, Nov',
+    intake: 'Mar, Apr, May, Jun, Jul, Aug, Oct, Nov',
     highlights: [
-        'Room Inspection Standards',
-        'Staff Supervision & Training',
-        'Sustainability Practices',
-        'Cost Control & Inventory Management'
-    ]
-  },
-  {
-    id: '12',
-    category: 'Hospitality',
-    title: 'Event Planning & Coordination',
-    duration: '4 Months',
-    qualification: 'Certificate',
-    description: 'Learn the essentials of event planning, coordination, and execution. From conferences to weddings, develop skills in budgeting, logistics, vendor management, and guest coordination.',
-    video: 'https://www.shutterstock.com/shutterstock/videos/1087550930/preview/stock-footage-chef-teaching-how-to-cook-cutting-vegetables-indoors-in-commercial-kitchen.webm',
-    programmeTypes: ['Online Learning', 'Certificates', 'Credit Bearing Short Courses'],
-    accreditations: ['CATHSSETA'],
-    price: 6500,
-    startDate: 'Anytime',
-    intake: 'Anytime',
-    highlights: [
-        'Event Planning & Logistics',
-        'Budgeting & Cost Management',
-        'Vendor & Supplier Relations',
-        'Risk Management & Contingency Planning'
-    ]
-  },
-  {
-    id: '13',
-    category: 'Hospitality',
-    title: 'Hospitality Sales & Marketing Fundamentals',
-    duration: '4 Months',
-    qualification: 'Certificate',
-    description: 'Essential sales and marketing skills for hospitality professionals. Master revenue management, promotional strategies, digital marketing, and client relationship management.',
-    video: 'https://www.shutterstock.com/shutterstock/videos/1087550930/preview/stock-footage-chef-teaching-how-to-cook-cutting-vegetables-indoors-in-commercial-kitchen.webm',
-    programmeTypes: ['Online Learning', 'Certificates', 'Credit Bearing Short Courses'],
-    accreditations: ['CATHSSETA', 'AHLEI'],
-    price: 6800,
-    startDate: 'Anytime',
-    intake: 'Anytime',
-    highlights: [
-        'Sales Techniques & CRM',
-        'Revenue Management Strategies',
-        'Digital & Social Media Marketing',
-        'Brand Positioning & Promotion'
+      'Purchasing Function & Channels',
+      'Purchase Specifications',
+      'Distributor Selection & Ethics',
+      'Inventory Controls & Security',
+      'AHLEI Short Course Certificate'
     ]
   }
 ];
 
-const SPECIFIC_COURSE_DATA: Record<string, Partial<CourseDetail>> = {
-    '7': {
-        fullDescription: "This programme focuses on the strategic and financial management aspects of a hospitality establishment and its operations. Strong leadership capabilities, the ability to apply strategic thinking and strong numerical application is learned. This programme will provide the learner with the knowledge and competence to perform a variety of management functions across the different departments in the hospitality environment through applied theory and Work Integrated Learning.",
-        workIntegratedLearning: "Applied theory and practical experience in hospitality environments.",
-        certification: "Bachelor of Business Administration in Hospitality Operations Management\n(SAQA ID: 110624, HEQF Level 7)",
-        level: 'NQF Level 7',
-        extendedFocusAreas: [
-            {
-                title: "Brand and Marketing Management",
-                description: "Building a brand, creating market awareness, and achieving sales is the lifeblood of any business and hospitality establishment. Therefore, Brand and Marketing Management looks at the different types of marketing strategies that can be implemented to promote a company’s products or services. In addition, you will learn how to master the basics of digital marketing."
-            },
-            {
-                title: "Entrepreneurship and Strategy",
-                description: "Do you have an entrepreneurial spirit? Being a successful entrepreneur is not only about having a good idea, it’s about being able to take the idea, creating concept, developing a business plan, building a strategy around it, and implementing the operational execution, that turns the entrepreneurial idea into a successful venture. In this focus area, you will learn how to seek new business opportunities, be able to implement project management tools and strategic problem-solving."
-            },
-            {
-                title: "Financial Management",
-                description: "Do you have a flair for figures? In this focus area, you will learn how to analyse financial statements for a hospitality establishment. You will learn how to examine and interpret data and learn about basic accounting terms such as income and expenditure, assets, liabilities, and balance sheets."
-            },
-            {
-                title: "Luxury Guest Service and Experience",
-                description: "An exceptional guest experience is the most important aspect to a successful hospitality business. Luxury guest service and experience starts with understanding the ‘touch-points’ of a customer journey and creating moments of magic throughout the journey, to ensure a memorable guest experience. Once graduated, you will be able to identify and understand the basic needs of a guest finding new ways to meet and exceed guests expectations."
-            },
-            {
-                title: "Operations Management",
-                description: "Aspiring to be a manager or owner of a world-class Hospitality establishment? The ability to develop and sustain a hospitality establishment requires integrated knowledge of the hospitality functions and managerial aspects of the operational areas of Food & Beverage, Front Office, and Housekeeping. Revenue and Financial Management form integral parts of any hospitality establishment and are essential financial competencies for Hospitality Managers."
-            },
-            {
-                title: "Organisational Behaviour and Human Resource Management",
-                description: "Aspiring to be a Human Resources Professional? Organisational Behaviour and Human Resources requires an individual to have a good understanding of the relevant labour, employment acts and regulations. Most importantly it’s about understanding and examining the impact of staff management practices, recruitment, employee motivation and productivity, amongst others."
-            }
-        ],
-        programContentIncludes: [
-            "Financial Management",
-            "Accounting Principles",
-            "Statistics for Business",
-            "Marketing",
-            "Human Resources",
-            "Management Information Systems",
-            "Project Management",
-            "Corporate Governance"
-        ],
-        curriculum: [
-             // Empty or hidden for this course per requirements to remove Year 1/2/3
-        ],
-        requirements: [
-            "National Senior Certificate with a Bachelor entry, or equivalent."
-        ],
-        careerOutcomes: [
-            "General Manager",
-            "Operations Director",
-            "Revenue Manager",
-            "Regional Manager",
-            "Hospitality Consultant"
-        ]
-    },
-    '8': {
-        fullDescription: "Master the essentials of front office operations with practical knowledge applicable immediately in hotel environments. This online course covers modern PMS systems, check-in and check-out procedures, guest communication, and revenue management techniques.",
-        workIntegratedLearning: "Practical application of learned concepts in real hotel settings.",
-        certification: "Certificate in Front Office Operations & Guest Relations (CATHSSETA & AHLEI Accredited)",
-        level: 'NQF Level 4',
-        careerOutcomes: [
-            "Front Office Receptionist",
-            "Guest Services Agent",
-            "Front Office Supervisor",
-            "Reservations Manager"
-        ]
-    },
-    '9': {
-        fullDescription: "Develop comprehensive culinary skills through online instruction in international cuisines and advanced cooking techniques. Explore flavor profiles, ingredient sourcing, and presentation methods from cuisines around the world while mastering food safety and nutrition principles.",
-        workIntegratedLearning: "Home kitchen practice with instructor feedback on submitted videos and recipes.",
-        certification: "Certificate in International Cuisine & Cooking Techniques (CATHSSETA & City & Guilds)",
-        level: 'NQF Level 4',
-        careerOutcomes: [
-            "Culinary Chef",
-            "Recipe Developer",
-            "Food Consultant",
-            "Culinary Instructor"
-        ]
-    },
-    '10': {
-        fullDescription: "Enhance customer service excellence specifically for hospitality environments. Learn to anticipate guest needs, resolve complaints effectively, understand cultural differences, and create memorable experiences that foster loyalty and positive reviews.",
-        workIntegratedLearning: "Real-world application in current hospitality role.",
-        certification: "Certificate in Customer Service Excellence in Hospitality (CATHSSETA & AHLEI)",
-        level: 'NQF Level 3',
-        careerOutcomes: [
-            "Guest Services Agent",
-            "Customer Service Supervisor",
-            "Training Coordinator",
-            "Quality Assurance Officer"
-        ]
-    },
-    '11': {
-        fullDescription: "Comprehensive housekeeping management programme ideal for supervisors and department heads. Learn standards of cleanliness, staff scheduling and supervision, inventory management, sustainability practices, and cost control in housekeeping operations.",
-        workIntegratedLearning: "Practical application in housekeeping department.",
-        certification: "Certificate in Housekeeping Management & Operations (CATHSSETA & AHLEI)",
-        level: 'NQF Level 4',
-        careerOutcomes: [
-            "Housekeeping Supervisor",
-            "Executive Housekeeper",
-            "Room Attendant Trainer",
-            "Housekeeping Manager"
-        ]
-    },
-    '12': {
-        fullDescription: "Comprehensive event planning course covering all aspects of event management from concept to execution. Learn budgeting, vendor management, logistics, guest coordination, and risk management for various event types including conferences, banquets, and weddings.",
-        workIntegratedLearning: "Planning and executing practice events with instructor guidance.",
-        certification: "Certificate in Event Planning & Coordination (CATHSSETA Accredited)",
-        level: 'NQF Level 4',
-        careerOutcomes: [
-            "Event Coordinator",
-            "Event Manager",
-            "Wedding Planner",
-            "Conference Manager"
-        ]
-    },
-    '13': {
-        fullDescription: "Essential sales and marketing skills tailored for hospitality professionals. Learn revenue management strategies, promotional techniques, digital marketing for hospitality, customer relationship management, and brand positioning to drive business growth.",
-        workIntegratedLearning: "Apply learned strategies in current hospitality marketing role.",
-        certification: "Certificate in Hospitality Sales & Marketing Fundamentals (CATHSSETA & AHLEI)",
-        level: 'NQF Level 4',
-        careerOutcomes: [
-            "Sales Manager",
-            "Marketing Coordinator",
-            "Revenue Manager",
-            "Business Development Officer"
-        ]
-    }
-};
+/* =========================
+   Course Details (Full Page Data)
+   ========================= */
 
-export const COURSE_DETAILS: Record<string, CourseDetail> = OFFERINGS.reduce((acc, offering) => {
-    const specificData = SPECIFIC_COURSE_DATA[offering.id] || {};
-
-    acc[offering.id] = {
-      ...offering,
-      fullDescription: offering.description + " This comprehensive programme provides in-depth knowledge and practical skills required for the industry. Designed in consultation with industry leaders, it ensures graduates are ready for the challenges of the modern workplace.",
-      level: offering.qualification === 'Diploma' ? 'NQF Level 6' : (offering.qualification === 'Degree' ? 'NQF Level 7' : 'NQF Level 5'),
-      deliveryMode: offering.programmeTypes.join(', '),
-      curriculum: [
-        {
-          year: "Year 1",
-          modules: [
-             { title: "Fundamentals of Hospitality", topics: ["Introduction to Industry", "Basic Operations", "Health & Safety"] },
-             { title: "Service Excellence", topics: ["Customer Care", "Communication", "Grooming"] }
-          ]
-        },
-        {
-          year: "Year 2",
-          modules: [
-             { title: "Advanced Management", topics: ["Financial Management", "Leadership", "Marketing"] },
-             { title: "Specialisation Modules", topics: ["Advanced Techniques", "Industry Placement", "Project Management"] }
-          ]
-        }
-      ],
-      requirements: [
-        "National Senior Certificate (NSC) or equivalent",
-        "English Proficiency",
-        "Passion for the service industry"
-      ],
-      careerOutcomes: [
-        "Junior Manager",
-        "Department Supervisor",
-        "Entrepreneur",
-        "Consultant"
-      ],
-      ...specificData,
-      fees: {
-          tuition: `R ${offering.price ? offering.price.toLocaleString() : 'TBA'}`,
-          registration: "R 2,500",
-          note: "Fees include all learning materials, uniforms and practical ingredients where applicable.",
-          ...(specificData.fees || {})
+export const COURSE_DETAILS: Record<string, CourseDetail> = {
+  '1': {
+    ...OFFERINGS.find(o => o.id === '1')!,
+    fullDescription: 'Learners who complete this programme will be equipped with the knowledge, skills, core abilities and the underlying theory that would be required of them in the field of modern Hospitality Management. This programme aims to emphasize professionalism, leadership and strong management discipline, and to lay a foundation for future career advancement in the hospitality industry.\n\nThis programme will allow students to reach their full potential, develop their knowledge and skills and enter a competitive and challenging workplace environment with confidence based on the required competence and knowledge.',
+    level: 'Diploma',
+    certification: 'Diploma in Hospitality Management (SAQA ID No: 57447, HEQF Level 6)\nAHLEI Diploma in Hospitality Management\nAHLEI award for each module completed',
+    deliveryMode: 'Online Learning',
+    accreditations: ['AHLEI', 'CATHSSETA', 'IHS'],
+    curriculum: [
+      {
+        year: 'Core Modules',
+        modules: [
+          { title: 'Management Principles', topics: ['General Business Management', 'Hospitality Application'] },
+          { title: 'Food & Beverage', topics: ['Management Principles', 'Operational Practices'] },
+          { title: 'Rooms Division', topics: ['Front Office', 'Housekeeping', 'Facilities Management'] }
+        ]
       }
-    };
-    return acc;
-  }, {} as Record<string, CourseDetail>);
+    ],
+    requirements: ['National Senior Certificate with a Diploma entry, or equivalent.'],
+    careerOutcomes: ['Hotel Manager', 'Department Head', 'Operations Manager'],
+    fees: {
+      tuition: 'R 38,600',
+      registration: 'R 2,500',
+      note: 'Price per academic year. Includes AHLEI Award per module and AHLEI Diploma recognition.'
+    },
+    wilDuration: '12 – 20 Weeks',
+    workIntegratedLearning: 'Work Integrated Learning (WIL) is part of the modules a student will complete during their studies. These modules will require a student to spend a requisite number of practical hours in various departments within a hospitality establishment. These departments may include, but are not limited to, Food and Beverage, Kitchens, Front Office, House Keeping, Events and Banqueting.\n\nWhilst in work integrated learning, a student will need to submit a Portfolio of Evidence (POE) which is evidence of their practical hours completed. In accordance with the number of hours for the specific programme, a student will need to submit shift schedules, manager evaluations, self-evaluations, and activities or assignments.\n\nIt is important to note that your practical learning must be completed at an establishment that forms part of the hospitality industry. Online students are required to find their own WIL placements for each WIL module.\n\nShould a student currently be working in the hospitality industry and have the required work experience, a student can apply for Recognition of Prior Learning (RPL) for up to 50% of the Work Integrated Learning (WIL) modules. If a student is not working in the hospitality industry, we will advise on the number of hours to be completed for the required WIL modules.',
+    effort: '5 - 10 hours per week',
+    successfulGraduates: 'In recognition of the quality of the International Hotel School Diploma in Hospitality Management, the American Hotel & Lodging Educational Institute (AHLEI) will award their Diploma in Hospitality Management to those who have registered with them and passed all examinable subjects with a minimum of 70%.',
+    programContentIncludes: [
+      'Communication skills in the workplace.',
+      'Life skills for personal and professional development.',
+      'Health and safety measures in the workplace.',
+      'Understand and apply general business management principles and disciplines within the hospitality environment.',
+      'Apply food and beverage management principles and practices within a hospitality environment.',
+      'Understand and apply practices and management of rooms division within hospitality environments.'
+    ]
+  },
+  '7': {
+    ...OFFERINGS.find(o => o.id === '7')!,
+    fullDescription: 'The ability to successfully manage the operations in a hospitality business requires knowledge of hospitality functions, operations and the managerial aspects associated with a hospitality business.\n\nOperational areas include food service, accommodation, housekeeping, events, facilities and finance. Learning in the operational areas are supported by modules focussing on business management, human resource management, project management, marketing and guest relations. This would ensure graduates are developed with the competence to manage all operations in the hospitality industry.',
+    level: 'Degree',
+    certification: 'Bachelor of Business Administration Degree in Hospitality Operations Management (SAQA ID: 110624, HEQF Level 7)',
+    deliveryMode: 'Online Learning',
+    accreditations: ['IHS'],
+    curriculum: [],
+    requirements: ['National Senior Certificate with a Bachelor entry, or equivalent.'],
+    careerOutcomes: ['Executive Management', 'Strategic Operations', 'Consultancy'],
+    fees: {
+      tuition: 'R 45,400',
+      registration: 'R 2,500',
+      note: 'Price per academic year. Excludes textbook delivery outside the country'
+    },
+    wilDuration: '4 Weeks / 1 Month',
+    workIntegratedLearning: 'Work Integrated Learning (WIL) is part of the modules a student will complete during their studies. These modules will require a student to spend a requisite number of practical hours in various departments within a hospitality establishment. These departments may include, but are not limited to, Food and Beverage, Kitchens, Front Office, House Keeping, Events and Banqueting.\n\nWhilst in work integrated learning, a student will need to submit a Portfolio of Evidence (POE) which is evidence of their practical hours completed. In accordance with the number of hours for the specific programme, a student will need to submit shift schedules, manager evaluations, self-evaluations, and activities or assignments.\n\nIt is important to note that your practical learning must be completed at an establishment that forms part of the hospitality industry. Online students are required to find their own WIL placements for each WIL module.\n\nShould a student currently be working in the hospitality industry and have the required work experience, a student can apply for Recognition of Prior Learning (RPL) for up to 50% of the Work Integrated Learning (WIL) modules. If a student is not working in the hospitality industry, we will advise on the number of hours to be completed for the required WIL modules.',
+    effort: '5 - 10 hours per week',
+    programContentIncludes: [
+      'Knowledge of Financial Management, Accounting Principles and Statistics for Business',
+      'Knowledge of the hospitality industry and its services, operations, and practices, with the use of technology',
+      'The ability to apply management principles and practices to plan and manage operations effectively in a hospitality business.',
+      'To apply strategic management principles to support growth and sustainability in a hospitality business.',
+      'The ability to apply project management principles to achieve objectives within a hospitality operational environment.',
+      'An understanding of research principles and conduct basic research.'
+    ]
+  },
+  '15': {
+    ...OFFERINGS.find(o => o.id === '15')!,
+    fullDescription: 'Learners who complete this programme will be equipped with the knowledge, skills, core abilities and the underlying theory that would be required of them in the field of modern Hospitality Management. This programme aims to emphasize professionalism, leadership and strong management discipline, and to lay a foundation for future career advancement in the hospitality industry.\n\nThis programme will allow students to reach their full potential, develop their knowledge and skills and enter a competitive and challenging workplace environment with confidence based on the required competence and knowledge.',
+    level: 'Diploma',
+    certification: 'Diploma in Hospitality Management (SAQA ID No: 57447, HEQF Level 6)',
+    deliveryMode: 'Online Learning',
+    accreditations: ['CATHSSETA', 'IHS'],
+    curriculum: [],
+    requirements: ['National Senior Certificate with a Diploma entry, or equivalent.'],
+    careerOutcomes: ['Hospitality Management', 'Operational Leadership'],
+    fees: {
+      tuition: 'R 30,850',
+      registration: 'R 2,500',
+      note: 'Price per academic year.'
+    },
+    wilDuration: '12 – 20 Weeks',
+    workIntegratedLearning: 'Work Integrated Learning (WIL) is part of the modules a student will complete during their studies. These modules will require a student to spend a requisite number of practical hours in various departments within a hospitality establishment. These departments may include, but are not limited to, Food and Beverage, Kitchens, Front Office, House Keeping, Events and Banqueting.\n\nWhilst in work integrated learning, a student will need to submit a Portfolio of Evidence (POE) which is evidence of their practical hours completed. In accordance with the number of hours for the specific programme, a student will need to submit shift schedules, manager evaluations, self-evaluations, and activities or assignments.\n\nIt is important to note that your practical learning must be completed at an establishment that forms part of the hospitality industry. Online students are required to find their own WIL placements for each WIL module.\n\nShould a student currently be working in the hospitality industry and have the required work experience, a student can apply for Recognition of Prior Learning (RPL) for up to 50% of the Work Integrated Learning (WIL) modules. If a student is not working in the hospitality industry, we will advise on the number of hours to be completed for the required WIL modules.',
+    effort: '5 - 10 hours per week',
+    programContentIncludes: [
+      'Communication skills in the workplace.',
+      'Life skills for personal and professional development.',
+      'Health and safety measures in the workplace.',
+      'Understand and apply general business management principles and disciplines within the hospitality environment.',
+      'Apply food and beverage management principles and practices within a hospitality environment.',
+      'Understand and apply practices and management of rooms division within hospitality environments.'
+    ]
+  },
+  '16': {
+    ...OFFERINGS.find(o => o.id === '16')!,
+    fullDescription: 'A Food & Beverage Manager is responsible for the entire Food & Beverage Operation of a Hospitality establishment. They forecast, plan and control the ordering of food and beverages, as well as oversee the overall running of the restaurants, bars, stores, kitchens and all staff in the Food & Beverage areas. They are responsible for implementing financial controls and managing Budgets in this area.\n\nWorking at a food and beverage establishment requires innovation, dedication and discipline. Competent managerial staff who have operational experience, skill and the knowledge to manage food and beverage establishments, are in-demand globally.',
+    level: 'Diploma',
+    certification: 'Diploma in Food and Beverage Operations Management (SAQA ID No: 94805, HEQF Level 6)\nAHLEI Diploma in Food & Beverage Management\nAHLEI award for each module completed',
+    deliveryMode: 'Online Learning',
+    accreditations: ['AHLEI', 'CATHSSETA', 'IHS'],
+    curriculum: [],
+    requirements: ['National Senior Certificate with a Diploma entry, or equivalent.'],
+    careerOutcomes: ['F&B Manager', 'Restaurant Manager', 'Bar Manager'],
+    fees: {
+      tuition: 'R 38,600',
+      registration: 'R 2,500',
+      note: 'Price per academic year. Includes AHLEI Award per module and AHLEI Diploma recognition.'
+    },
+    wilDuration: '12 – 20 Weeks',
+    workIntegratedLearning: 'Work Integrated Learning (WIL) is part of the modules a student will complete during their studies. These modules will require a student to spend a requisite number of practical hours in various departments within a hospitality establishment. These departments may include, but are not limited to, Food and Beverage, Kitchens, Front Office, House Keeping, Events and Banqueting.\n\nWhilst in work integrated learning, a student will need to submit a Portfolio of Evidence (POE) which is evidence of their practical hours completed. In accordance with the number of hours for the specific programme, a student will need to submit shift schedules, manager evaluations, self-evaluations, and activities or assignments.\n\nIt is important to note that your practical learning must be completed at an establishment that forms part of the hospitality industry. Online students are required to find their own WIL placements for each WIL module.\n\nShould a student currently be working in the hospitality industry and have the required work experience, a student can apply for Recognition of Prior Learning (RPL) for up to 50% of the Work Integrated Learning (WIL) modules. If a student is not working in the hospitality industry, we will advise on the number of hours to be completed for the required WIL modules.',
+    effort: '5 - 10 hours per week',
+    successfulGraduates: 'In recognition of the quality of the International Hotel School Diploma in Food and Beverage Operations Management, the American Hotel & Lodging Educational Institute will award their Diploma in Food & Beverage Management to those who have registered with them and passed all examinable subjects with a minimum of 70%.',
+    programContentIncludes: [
+      'Detailed knowledge and understanding of the hospitality industry and its contribution to the national and global economy.',
+      'Plan, implement and evaluate the operational, administrative and technological aspects relating to the provision of food and beverage in the context of commercial food service operations in the hospitality industry.',
+      'Plan and implement procurement processes in commercial food service operations in the hospitality industry.',
+      'Develop and maintain food safety practices and processes in commercial food service operations in the hospitality industry.',
+      'Evaluate systems and processes employed in the management and upkeep of the physical establishment.',
+      'Apply human resource management strategies aimed at meeting the needs of the hospitality business.',
+      'Evaluate financial statements, processes and controls aimed at improving the overall performance of the hospitality business.',
+      'Function effectively and ethically as a responsible business manager who contributes to the economic welfare of the hospitality business and the economy.'
+    ]
+  },
+  '17': {
+    ...OFFERINGS.find(o => o.id === '17')!,
+    fullDescription: 'A Food & Beverage Manager is responsible for the entire Food & Beverage Operation of a Hospitality establishment. They forecast, plan and control the ordering of food and beverages, as well as oversee the overall running of the restaurants, bars, stores, kitchens and all staff in the Food & Beverage areas. They are responsible for implementing financial controls and managing Budgets in this area.\n\nWorking at a food and beverage establishment requires innovation, dedication, and discipline. Competent managerial staff who have operational experience, skill and the knowledge to manage food and beverage establishments, are in-demand globally.',
+    level: 'Diploma',
+    certification: 'Diploma in Food and Beverage Operations Management (SAQA ID No: 94805, HEQF Level 6)',
+    deliveryMode: 'Online Learning',
+    accreditations: ['CATHSSETA', 'IHS'],
+    curriculum: [],
+    requirements: ['National Senior Certificate with a Diploma entry, or equivalent.'],
+    careerOutcomes: ['F&B Manager', 'Restaurant Manager', 'Bar Manager'],
+    fees: {
+      tuition: 'R 30,850',
+      registration: 'R 2,500',
+      note: 'Price per academic year.'
+    },
+    wilDuration: '12 – 20 Weeks',
+    workIntegratedLearning: 'Work Integrated Learning (WIL) is part of the modules a student will complete during their studies. These modules will require a student to spend a requisite number of practical hours in various departments within a hospitality establishment. These departments may include, but are not limited to, Food and Beverage, Kitchens, Front Office, House Keeping, Events and Banqueting.\n\nWhilst in work integrated learning, a student will need to submit a Portfolio of Evidence (POE) which is evidence of their practical hours completed. In accordance with the number of hours for the specific programme, a student will need to submit shift schedules, manager evaluations, self-evaluations, and activities or assignments.\n\nIt is important to note that your practical learning must be completed at an establishment that forms part of the hospitality industry. Online students are required to find their own WIL placements for each WIL module.\n\nShould a student currently be working in the hospitality industry and have the required work experience, a student can apply for Recognition of Prior Learning (RPL) for up to 50% of the Work Integrated Learning (WIL) modules. If a student is not working in the hospitality industry, we will advise on the number of hours to be completed for the required WIL modules.',
+    effort: '5 - 10 hours per week',
+    programContentIncludes: [
+      'Detailed knowledge and understanding of the hospitality industry and its contribution to the national and global economy.',
+      'Plan, implement and evaluate the operational, administrative and technological aspects relating to the provision of food and beverage in the context of commercial food service operations in the hospitality industry.',
+      'Plan and implement procurement processes in commercial food service operations in the hospitality industry.',
+      'Develop and maintain food safety practices and processes in commercial food service operations in the hospitality industry.',
+      'Evaluate systems and processes employed in the management and upkeep of the physical establishment.',
+      'Apply human resource management strategies aimed at meeting the needs of the hospitality business.',
+      'Evaluate financial statements, processes and controls aimed at improving the overall performance of the hospitality business.',
+      'Function effectively and ethically as a responsible business manager who contributes to the economic welfare of the hospitality business and the economy.'
+    ]
+  },
+  '18': {
+    ...OFFERINGS.find(o => o.id === '18')!,
+    fullDescription: 'The Events and Conferencing industries are dynamic industries which are continually evolving, thereby contributing to new venture creation and employment opportunities. The Events and Conferencing industries are multi-faceted, service driven, requiring highly skilled and knowledgeable employees.\n\nThe qualification, through the provision of academic and work-integrated learning opportunities provides learners with a competitive edge. These opportunities expose learners to the creative and business aspects of Events Management providing a foundation for learners to enter employment with applicable skills and relevant knowledge.',
+    level: 'Certificate',
+    certification: 'Higher Certificate in Events Management (SAQA ID No: 99626, NQF Level 5)',
+    deliveryMode: 'Online Learning',
+    accreditations: ['CATHSSETA', 'IHS'],
+    curriculum: [],
+    requirements: ['National Senior Certificate with Higher Certificate entry or equivalent.'],
+    careerOutcomes: ['Event Coordinator', 'Conference Planner', 'Events Manager'],
+    fees: {
+      tuition: 'R 48,000',
+      registration: 'R 2,500',
+      note: 'Price per academic year.'
+    },
+    wilDuration: '16 – 20 Weeks',
+    workIntegratedLearning: 'Work Integrated Learning (WIL) is part of the modules a student will complete during their studies. These modules will require a student to spend a requisite number of practical hours in various departments within a hospitality establishment. These departments may include, but are not limited to, Food and Beverage, Kitchens, Front Office, House Keeping, Events and Banqueting.\n\nWhilst in work integrated learning, a student will need to submit a Portfolio of Evidence (POE) which is evidence of their practical hours completed. In accordance with the number of hours for the specific programme, a student will need to submit shift schedules, manager evaluations, self-evaluations, and activities or assignments.\n\nIt is important to note that your practical learning must be completed at an establishment that forms part of the hospitality industry. Online students are required to find their own WIL placements for each WIL module.\n\nShould a student currently be working in the hospitality industry and have the required work experience, a student can apply for Recognition of Prior Learning (RPL) for up to 50% of the Work Integrated Learning (WIL) modules. If a student is not working in the hospitality industry, we will advise on the number of hours to be completed for the required WIL modules.',
+    effort: '5 - 10 hours per week',
+    programContentIncludes: [
+      'How to analyse and apply event marketing strategies.',
+      'To plan, coordinate and manage event operations and logistics for various types of events.',
+      'Prepare, control, manage and evaluate business systems including cash handling, budgeting, cost control mechanisms, pricing of products and inventory control.',
+      'Design, organise and coordinate Public Relations and Media activities.',
+      'Produce and communicate information using a variety of formats and technologies appropriate for the events industry.'
+    ]
+  },
+  'hrm-spec': {
+    ...OFFERINGS.find(o => o.id === 'hrm-spec')!,
+    fullDescription: 'This course presents a systematic approach to human resources management in the hospitality industry. Students will analyse contemporary issues and practices in the field of human resources management. Areas covered include employee supervision, leadership and management, training and development of employees as well as managing technology in the hospitality industry.',
+    level: 'Specialisation',
+    certification: 'AHLEI Human Resources Management specialisation certificate and an AHLEI award per module',
+    deliveryMode: 'Online Learning',
+    accreditations: ['AHLEI', 'IHS'],
+    curriculum: [
+      {
+        year: 'Modules',
+        modules: [
+          { title: 'Supervision in the Hospitality Industry', topics: ['Effective Communication', 'Time Management', 'Conflict Resolution'] },
+          { title: 'Leadership and Management', topics: ['High Performance Teams', 'Diversity', 'Strategic Career Planning'] },
+          { title: 'Training and Development', topics: ['Instructional Design', 'Group Training', 'Evaluation'] },
+          { title: 'Hospitality Technology', topics: ['System Selection', 'Implementation', 'Maintenance'] }
+        ]
+      }
+    ],
+    requirements: ['Grade 12 or equivalent', 'English Proficiency'],
+    careerOutcomes: ['HR Manager', 'Training Manager', 'Department Supervisor'],
+    fees: {
+      tuition: 'R 45,850',
+      registration: 'Included',
+      note: 'Total package price.'
+    },
+    wilDuration: 'N/A',
+    workIntegratedLearning: 'This specialisation focuses on theoretical management principles and case studies. While no formal WIL placement is required, students are encouraged to apply learnings in their current work environment.',
+    effort: '5 - 10 hours per week',
+    programContentIncludes: [
+      'Developing effective managerial skills, staff employment and training.',
+      'Effective communication, time management techniques, manage conflict and change.',
+      'Leadership and Management in the hospitality industry, including communication, high performance teams, diversity, managing organisational change, and strategic career planning.',
+      'Learn how to develop, conduct, and evaluate one-on-one and group training, and how to implement effective instructional design techniques and processes.',
+      'Basics of purchasing, implementing, maintaining, and managing a variety of technology systems used in hospitality.',
+      'Systematic approach to human resources management in the hospitality industry.'
+    ]
+  },
+  '19': {
+    ...OFFERINGS.find(o => o.id === '19')!,
+    fullDescription: 'This course will give students a basic understanding of the purchasing function in the food service sectors. Students will learn about the ways in which value can be added by members of the food service distribution channel, the necessary elements of purchase specifications, and how to select and evaluate distributor partners. The module also covers ethics, group purchasing, and electronic purchasing methods, and food safety and defence issues.',
+    level: 'Short Course',
+    certification: 'AHLEI short course certificate',
+    deliveryMode: 'Online Learning',
+    accreditations: ['AHLEI'],
+    curriculum: [],
+    requirements: ['English proficiency'],
+    careerOutcomes: ['Purchasing Assistant', 'Stock Controller', 'F&B Administrator'],
+    fees: {
+      tuition: 'R 9,500',
+      registration: 'Included',
+      note: 'No refund is given once the short learning programme has been purchased.'
+    },
+    wilDuration: 'N/A',
+    workIntegratedLearning: 'This short course focuses on theoretical principles. No formal WIL placement is required.',
+    effort: '5 - 10 hours per week',
+    programContentIncludes: [
+      'The importance of the purchasing function and the primary and secondary members of the food service distribution channel.',
+      'Food service segments, food service process flow.',
+      'The purchasing control point, and the role of internal customers in purchasing.',
+      'Steps in the purchasing process, the skills, knowledge, and behaviour required in purchasing personnel, and the role of food service operator ethics in purchasing.',
+      'Purchase specifications and the purchase order system, pricing and cost controls, and the ordering process.',
+      'Food defence and security considerations for food service operations.',
+      'Distributor partners describe the process to select distributor partners, and explain the essentials of ethics from a distributor’s perspective.',
+      'Safety, food defence, and security considerations for distributors.',
+      'Buyer-distributor relationships.',
+      'The audit trail and procedures necessary for effective inventory controls.',
+      'Distribution systems through which various food and beverage products are purchased.',
+      'Purchase specifications for various food and beverage products.',
+      'Inspection and grading processes.'
+    ]
+  }
+};

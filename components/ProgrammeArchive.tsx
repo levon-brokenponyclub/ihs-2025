@@ -1,9 +1,9 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { OFFERINGS } from '../constants';
+import { useParams } from 'react-router-dom';
+import { OFFERINGS, FOCUS_AREAS } from '../constants';
 import { FilterSelect, FilterOption } from './ui/FilterSelect';
-import { ChevronDown, ChevronLeft, ChevronRight, Eye, X } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 import { Offering } from '../types';
 import { CourseCard } from './CourseCard';
 import { useTransition } from '../context/TransitionContext';
@@ -27,7 +27,7 @@ const ARCHIVE_CONFIGS: Record<string, ArchiveConfig> = {
         title: "Full Time Learning",
         description: "Employment focused education which ensures that 93% of our students are employed upon graduation.",
         hasFilters: true,
-        allowedFilters: ['Hospitality', 'Culinary'],
+        allowedFilters: ['Hospitality Management', 'Culinary'],
         heroImage: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=2940',
         baseFilter: 'Full Time Learning'
     },
@@ -42,7 +42,7 @@ const ARCHIVE_CONFIGS: Record<string, ArchiveConfig> = {
         title: "In-Service Traineeship",
         description: "Earn while you learn programme. Students are placed at leading hospitality establishments where they are employed full time, gaining practical skills while completing their studies via online.",
         hasFilters: true,
-        allowedFilters: ['Hospitality', 'Culinary'],
+        allowedFilters: ['Hospitality Management', 'Culinary'],
         heroImage: 'https://images.unsplash.com/photo-1600565193348-f74bd3c7ccdf?q=80&w=2940',
         baseFilter: 'In-Service Traineeship'
     },
@@ -63,10 +63,7 @@ const ARCHIVE_CONFIGS: Record<string, ArchiveConfig> = {
     }
 };
 
-const FOCUS_AREA_OPTIONS: FilterOption[] = [
-    { label: 'Hospitality', value: 'Hospitality' },
-    { label: 'Culinary', value: 'Culinary' }
-];
+const FOCUS_AREA_OPTIONS = FOCUS_AREAS;
 
 const ACCREDITATION_OPTIONS: FilterOption[] = [
     { label: 'AHLEI', value: 'AHLEI' },
@@ -80,7 +77,6 @@ const ITEMS_PER_PAGE = 9;
 
 export const ProgrammeArchive: React.FC = () => {
     const { type } = useParams<{ type: string }>();
-    const navigate = useNavigate();
     const config = type ? ARCHIVE_CONFIGS[type] : null;
 
     // States
@@ -321,11 +317,10 @@ export const ProgrammeArchive: React.FC = () => {
                                     setCurrentPage(page);
                                     scrollToTop();
                                 }}
-                                className={`w-10 h-10 rounded-full text-sm font-bold transition-all ${
-                                    currentPage === page
-                                        ? 'bg-brand-gold text-[#002B4E] scale-110'
-                                        : 'bg-white text-[#002B4E] hover:bg-gray-100'
-                                }`}
+                                className={`w-10 h-10 rounded-full text-sm font-bold transition-all ${currentPage === page
+                                    ? 'bg-brand-gold text-[#002B4E] scale-110'
+                                    : 'bg-white text-[#002B4E] hover:bg-gray-100'
+                                    }`}
                             >
                                 {page}
                             </button>
@@ -347,7 +342,7 @@ export const ProgrammeArchive: React.FC = () => {
 
             {/* Testimonials Section */}
             <Testimonial />
-            
+
         </div>
     );
 };
