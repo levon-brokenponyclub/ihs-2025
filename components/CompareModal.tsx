@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { X } from 'lucide-react';
 import { useCompare } from '../context/CompareContext';
@@ -19,7 +20,8 @@ export const CompareModal: React.FC = () => {
     if (!isCompareOpen) return null;
 
     const handleAction = (item: any) => {
-        const isEcommerce = item.id === '19';
+        // Only "Purchasing for Food Service Operations" (ID 19) and "Puff Pastry" are Buy Now
+        const isEcommerce = ['19', 'puff-pastry'].includes(item.id);
 
         if (isEcommerce) {
             addToCart(item);
@@ -44,8 +46,48 @@ export const CompareModal: React.FC = () => {
             <div className="relative bg-white w-full max-w-6xl rounded-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
                 <div className="flex items-center justify-between p-6 border-b border-white/10 bg-brand-primary text-white">
                     <h2 className="font-serif font-bold text-xl">Compare Programmes</h2>
-                    <button onClick={() => setIsCompareOpen(false)} className="text-white/70 hover:text-white transition-colors bg-white/10 p-2 rounded-full">
-                        <X size={24} />
+                    <button
+                        onClick={() => setIsCompareOpen(false)}
+                        className="text-white h-[40px] w-[40px] flex items-center justify-center hover:opacity-70 transition-opacity bg-white/10 p-2 rounded-full"
+                    >
+                        <svg width="100%" height="100%" viewBox="0 0 100 100" className="overflow-visible">
+                            <path
+                                d="M 20,29.000046 H 80.000231 C 80.000231,29.000046 94.498839,28.817352 94.532987,66.711331 94.543142,77.980673 90.966081,81.670246 85.259173,81.668997 79.552261,81.667751 75.000211,74.999942 75.000211,74.999942 L 25.000021,25.000058"
+                                style={{
+                                    fill: 'none',
+                                    stroke: 'white',
+                                    strokeWidth: 8,
+                                    strokeLinecap: 'round',
+                                    transition: 'stroke-dasharray 600ms cubic-bezier(0.4, 0, 0.2, 1), stroke-dashoffset 600ms cubic-bezier(0.4, 0, 0.2, 1)',
+                                    strokeDasharray: isCompareOpen ? '90 207' : '60 207',
+                                    strokeDashoffset: isCompareOpen ? -134 : 0
+                                }}
+                            />
+                            <path
+                                d="M 20,50 H 80"
+                                style={{
+                                    fill: 'none',
+                                    stroke: 'white',
+                                    strokeWidth: 8,
+                                    strokeLinecap: 'round',
+                                    transition: 'stroke-dasharray 600ms cubic-bezier(0.4, 0, 0.2, 1), stroke-dashoffset 600ms cubic-bezier(0.4, 0, 0.2, 1)',
+                                    strokeDasharray: isCompareOpen ? '1 60' : '60 60',
+                                    strokeDashoffset: isCompareOpen ? -30 : 0
+                                }}
+                            />
+                            <path
+                                d="M 20,70.999954 H 80.000231 C 80.000231,70.999954 94.498839,71.182648 94.532987,33.288669 94.543142,22.019327 90.966081,18.329754 85.259173,18.331003 79.552261,18.332249 75.000211,25.000058 75.000211,25.000058 L 25.000021,74.999942"
+                                style={{
+                                    fill: 'none',
+                                    stroke: 'white',
+                                    strokeWidth: 8,
+                                    strokeLinecap: 'round',
+                                    transition: 'stroke-dasharray 600ms cubic-bezier(0.4, 0, 0.2, 1), stroke-dashoffset 600ms cubic-bezier(0.4, 0, 0.2, 1)',
+                                    strokeDasharray: isCompareOpen ? '90 207' : '60 207',
+                                    strokeDashoffset: isCompareOpen ? -134 : 0
+                                }}
+                            />
+                        </svg>
                     </button>
                 </div>
 

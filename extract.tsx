@@ -95,8 +95,8 @@ export const OFFERINGS: Offering[] = [
         programmeTypes: ['Online Learning', 'Diplomas'],
         accreditations: ['AHLEI', 'CATHSSETA', 'IHS'],
         price: 38600,
-        startDate: 'March (Upcoming)',
-        intake: 'March (Upcoming)',
+        startDate: 'March',
+        intake: 'March',
         highlights: [
             'AHLEI Global Diploma',
             'Work Integrated Learning (WIL)',

@@ -16,8 +16,8 @@ interface CourseCardProps {
 
 // Helper for Ecommerce Check (Consolidated logic)
 const checkIsEcommerce = (course: Offering) => {
-    // Only "Purchasing for Food Service Operations" (ID 19) is Buy Now
-    return course.id === '19';
+    // Only "Purchasing for Food Service Operations" (ID 19) and "Puff Pastry" are Buy Now
+    return ['19', 'puff-pastry'].includes(course.id);
 };
 
 export const CourseCard: React.FC<CourseCardProps> = ({ offering, onExpand }) => {
@@ -39,11 +39,11 @@ export const CourseCard: React.FC<CourseCardProps> = ({ offering, onExpand }) =>
     const inCompare = isInCompare(offering.id);
 
     const handleMouseEnter = () => {
-        if (videoRef.current) videoRef.current.play().catch(() => { });
+        if (videoRef.current && offering.video) videoRef.current.play().catch(() => { });
     };
 
     const handleMouseLeave = () => {
-        if (videoRef.current) {
+        if (videoRef.current && offering.video) {
             videoRef.current.pause();
             videoRef.current.currentTime = 0;
         }
@@ -85,9 +85,12 @@ export const CourseCard: React.FC<CourseCardProps> = ({ offering, onExpand }) =>
             <div className="flex flex-col h-full course-card cursor-pointer" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} onClick={handleCardClick}>
                 <div className="bg-white w-full group rounded-[1px] overflow-hidden flex flex-col h-full shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 relative">
                     <div ref={mediaRef} className="relative h-60 overflow-hidden shrink-0 bg-gray-100">
-                        <video ref={videoRef} src={offering.video} muted loop playsInline className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                        <video ref={videoRef} src={offering.video} loop muted playsInline className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                        {(!offering.video || offering.video === 'undefined') && (
+                            <img src={offering.image || 'https://placehold.co/600x400/002B4E/white?text=Course'} alt={offering.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                        )}
                         <div className="absolute top-4 left-4 z-10">
-                            <span ref={categoryRef} className="bg-brand-gold text-white border border-brand-gold/50 text-[10px] font-bold px-3 py-1.5 uppercase rounded-sm shadow-md inline-block tracking-[1px]">
+                            <span ref={categoryRef} className="items-center gap-1.5 px-3.5 py-1.5 bg-brand-gold border uppercase border-brand-gold rounded-full text-white text-xs font-bold font-sans tracking-[1px]">
                                 {offering.category}
                             </span>
                         </div>
@@ -118,10 +121,6 @@ export const CourseCard: React.FC<CourseCardProps> = ({ offering, onExpand }) =>
                                 <GraduationCap size={16} className="text-[#002B4E]" />
                                 <span>{offering.qualification}</span>
                             </div>
-                            <div className="flex items-center gap-1.5">
-                                <Target size={16} className="text-[#002B4E]" />
-                                <span>{offering.category}</span>
-                            </div>
                         </div>
                         <h3 ref={titleRef} className="text-lg lg:text-xl font-serif font-bold text-[#002B4E] mb-4 leading-tight group-hover:text-[#1289fe] transition-colors origin-top-left">
                             {offering.title}
@@ -136,13 +135,9 @@ export const CourseCard: React.FC<CourseCardProps> = ({ offering, onExpand }) =>
                                 <p className="text-[10px] uppercase text-gray-400 font-bold mb-1 tracking-[1px]">Start Date</p>
                                 <div className="flex flex-col items-end">
                                     <p className="text-xs font-bold text-[#002B4E]">
-                                        Next: {offering.startDate?.split(',')[0]}
+                                        {offering.startDate?.split(',')[0]}
                                     </p>
-                                    {offering.startDate?.includes(',') && (
-                                        <p className="text-[10px] text-gray-400 italic">
-                                            Upcoming: {offering.startDate?.split(',').slice(1).join(', ')}
-                                        </p>
-                                    )}
+                                    
                                 </div>
                             </div>
                         </div>
@@ -174,3 +169,4 @@ export const CourseCard: React.FC<CourseCardProps> = ({ offering, onExpand }) =>
         </>
     );
 };
+

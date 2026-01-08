@@ -191,3 +191,11 @@
 .exit-delay-300 {
   animation-delay: 0.3s !important;
 }
+/* Text Wrap Utilities */
+.pretty {
+  text-wrap: pretty;
+}
+
+.balance {
+  text-wrap: balance;
+}

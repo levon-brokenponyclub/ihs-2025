@@ -8,7 +8,7 @@ export interface Offering {
   qualification: string;
 
   description: string;          // Long / marketing description
-  shortDescription: string;     // 👈 Compare, cards, summaries
+  shortDescription?: string;     // 👈 Compare, cards, summaries (made optional)
 
   image?: string; // Legacy: optional, use video instead
   video?: string; // Added for hover video loops
@@ -64,7 +64,7 @@ export interface CourseDetail extends Offering {
   programContentIncludes?: string[];
   fees: {
     tuition: string;
-    registration: string;
+    registration?: string; // made optional to allow partial overrides
     note: string;
   };
   workIntegratedLearning?: string;

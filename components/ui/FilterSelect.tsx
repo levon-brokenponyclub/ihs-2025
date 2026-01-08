@@ -94,28 +94,42 @@ export const FilterSelect: React.FC<FilterSelectProps> = ({
         <div className={`relative w-full ${className}`} ref={containerRef}>
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className={`w-full flex items-center justify-between px-4 py-3 rounded-sm font-bold text-sm tracking-wide border-2 transition-colors uppercase ${
+                className={`w-full flex items-center justify-between px-4 py-3 rounded font-semibold text-xs tracking-[1px] border transition-colors uppercase ${
                     dark 
                     ? 'bg-transparent border-brand-gold text-white hover:bg-brand-gold/10' 
-                    : 'bg-white text-brand-dark border-transparent focus:border-brand-gold'
-                }`}
+                    : 'bg-gray-50 text-gray border-gray-200 hover:bg-slate-50 hover:border-slate-300'
+                } ${className}`}
             >
                 <span className="truncate">{getSelectedLabel()}</span>
-                <ChevronDown size={16} className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown size={14} className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
             </button>
 
             {isOpen && (
-                <div className="absolute top-full left-0 right-0 mt-1 z-50 bg-[#162036] border border-white/10 rounded-sm shadow-2xl max-h-80 overflow-y-auto backdrop-blur-md custom-scrollbar">
-                    <div className="p-2 space-y-1">
+                <div 
+                    className={`absolute top-full left-0 right-0 mt-0 z-50 rounded shadow-2xl max-h-80 overflow-y-auto custom-scrollbar ${
+                        dark 
+                        ? 'bg-[#162036] border border-white/10 backdrop-blur-md' 
+                        : 'bg-white border border-gray-200'
+                    }`}
+                    style={!dark ? { top: '46px', paddingTop: '4px' } : {}}
+                >
+                    <div 
+                        className="p-2 space-y-1"
+                        style={!dark ? { fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase' } : {}}
+                    >
                         <button
                             onClick={() => handleSelect('')}
-                            className={`w-full text-left px-3 py-2 text-sm uppercase font-bold hover:bg-white/5 rounded-sm transition-colors flex items-center justify-between ${isAllSelected ? 'text-brand-gold' : 'text-gray-400'}`}
+                            className={`w-full text-left px-3 py-2 text-sm uppercase font-bold rounded-sm transition-colors flex items-center justify-between ${
+                                isAllSelected 
+                                ? (dark ? 'text-brand-gold' : 'text-brand-primary') 
+                                : (dark ? 'text-gray-400' : 'text-gray-400')
+                            } ${!dark ? 'hover:bg-gray-50' : 'hover:bg-white/5'}`}
                         >
                             <span>All</span>
                             {isAllSelected && <Check size={14} />}
                         </button>
 
-                        <div className="h-px bg-white/10 my-1 mx-2"></div>
+                        <div className={`h-px my-1 mx-2 ${dark ? 'bg-white/10' : 'bg-gray-100'}`}></div>
 
                         {options.map((option) => {
                             const isSelected = multiple 
@@ -127,10 +141,19 @@ export const FilterSelect: React.FC<FilterSelectProps> = ({
 
                             return (
                                 <div key={option.value}>
-                                    <div className={`flex items-center justify-between rounded-sm hover:bg-white/5 transition-colors group ${isSelected ? 'bg-white/5' : ''}`}>
+                                    <div 
+                                        className={`flex items-center justify-between rounded-sm transition-colors group ${
+                                            isSelected ? (dark ? 'bg-white/5' : 'bg-gray-50') : ''
+                                        } ${!dark ? 'hover:bg-gray-50' : 'hover:bg-white/5'}`}
+                                    >
                                         <button
                                             onClick={() => handleSelect(option.value)}
-                                            className={`flex-1 text-left px-3 py-2 text-sm font-medium uppercase truncate ${isSelected ? 'text-brand-gold' : 'text-gray-300 group-hover:text-white'}`}
+                                            className={`flex-1 text-left px-3 py-2 text-sm font-medium uppercase truncate ${
+                                                isSelected 
+                                                ? (dark ? 'text-brand-gold' : 'text-brand-primary font-bold') 
+                                                : (dark ? 'text-brand-primary group-hover:text-white' : 'text-brand-primary')
+                                            }`}
+                                            style={!dark ? { fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase' } : {}}
                                         >
                                             {option.label}
                                         </button>
@@ -138,17 +161,17 @@ export const FilterSelect: React.FC<FilterSelectProps> = ({
                                         {hasSub ? (
                                             <button 
                                                 onClick={(e) => toggleGroup(e, option.value)}
-                                                className="p-2 text-gray-500 hover:text-white transition-colors"
+                                                className={`p-2 transition-colors ${dark ? 'text-gray-500 hover:text-white' : 'text-gray-400 hover:text-brand-primary'}`}
                                             >
                                                 {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
                                             </button>
                                         ) : (
-                                            isSelected && <div className="pr-3 text-brand-gold"><Check size={14} /></div>
+                                            isSelected && <div className={`pr-3 ${dark ? 'text-brand-gold' : 'text-brand-primary'}`}><Check size={14} /></div>
                                         )}
                                     </div>
 
                                     {hasSub && isExpanded && (
-                                        <div className="ml-3 pl-3 border-l border-white/10 mt-1 space-y-1 mb-1">
+                                        <div className={`ml-3 pl-3 mt-1 space-y-1 mb-1 border-l ${dark ? 'border-white/10' : 'border-gray-100'}`}>
                                             {option.subOptions!.map((sub) => {
                                                 const isSubSelected = multiple 
                                                     ? (Array.isArray(value) && value.includes(sub.value))
@@ -158,7 +181,11 @@ export const FilterSelect: React.FC<FilterSelectProps> = ({
                                                     <button
                                                         key={sub.value}
                                                         onClick={() => handleSelect(sub.value)}
-                                                        className={`w-full text-left px-3 py-2 text-xs uppercase font-medium rounded-sm transition-colors flex items-center justify-between hover:bg-white/5 ${isSubSelected ? 'text-brand-gold' : 'text-gray-400 hover:text-white'}`}
+                                                        className={`w-full text-left px-3 py-2 text-xs uppercase font-medium rounded-sm transition-colors flex items-center justify-between ${
+                                                            isSubSelected 
+                                                            ? (dark ? 'text-brand-gold' : 'text-brand-primary font-bold') 
+                                                            : (dark ? 'text-brand-primary/60 hover:text-white' : 'text-brand-primary/60 hover:text-brand-primary')
+                                                        } ${!dark ? 'hover:bg-gray-50' : 'hover:bg-white/5'}`}
                                                     >
                                                         <span className="flex items-center gap-2">
                                                             {isSubSelected && <Circle size={6} fill="currentColor" />}

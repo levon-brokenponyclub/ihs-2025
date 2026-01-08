@@ -65,7 +65,7 @@ const GreetingLoader: React.FC<GreetingLoaderProps> = ({ onComplete }) => {
     >
       <p 
         ref={textRef} 
-        className="font-merriweather text-4xl md:text-6xl text-white font-normal tracking-wider opacity-0"
+        className="font-serif text-4xl md:text-6xl text-white font-normal tracking-wider opacity-0"
       >
         Hello
       </p>

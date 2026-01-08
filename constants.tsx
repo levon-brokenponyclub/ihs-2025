@@ -1,3 +1,4 @@
+
 import {
   Award,
   BookOpen,
@@ -23,6 +24,21 @@ export const MORE_MENU_LINKS: NavLink[] = [
   { label: 'Careers', href: '#' },
 ];
 
+export const ADMISSIONS_LINKS: NavLink[] = [
+    { label: 'Payment Options', href: '/admissions/payment-options' },
+    { label: 'Online Payment', href: '#' },
+    { label: 'International Students', href: '#' },
+    { label: 'Registrations & Accreditations', href: '/admissions/registrations-and-accreditations' },
+    { label: 'International Work Experience', href: '#' },
+    { label: 'Frequently Asked Questions', href: '#' }
+];
+
+export const EXPERIENCES_LINKS: NavLink[] = [
+    { label: 'Open Day', href: '#' },
+    { label: 'Campus Tour', href: '#' },
+    { label: 'Virtual Info Sessions', href: '#' }
+];
+
 /* =========================
    Filters
 ========================= */
@@ -32,7 +48,8 @@ export const FOCUS_AREAS = [
   { label: 'Conference & Events', value: 'Conference & Events' },
   { label: 'Food & Beverage', value: 'Food & Beverage' },
   { label: 'Hospitality Management', value: 'Hospitality Management' },
-  { label: 'Human Resources', value: 'Human Resources' }
+  { label: 'Human Resources', value: 'Human Resources' },
+  { label: 'Culinary', value: 'Culinary' }
 ];
 
 /* =========================
@@ -79,17 +96,82 @@ export const SUCCESS_STEPS: SuccessStep[] = [
 
 export const OFFERINGS: Offering[] = [
   {
-    id: '7',
+    id: 'bba-hom-ft',
     category: 'Business',
     title: 'Bachelor of Business Administration in Hospitality Operations Management',
+    duration: '3 Years',
+    qualification: 'Degree',
+    description: 'This programme focuses on the strategic and financial management aspects of a hospitality establishment and its operations. Strong leadership capabilities, the ability to apply strategic thinking and strong numerical application is learned.',
+    shortDescription: 'Strategic and financial management degree with specialised focus areas in operations, marketing, luxury service, HR, entrepreneurship, or finance.',
+    video: 'https://www.shutterstock.com/shutterstock/videos/3941586401/preview/stock-footage-hospitality-face-woman-hotel-smile-about-us.webm',
+    programmeTypes: ['Full Time Learning', 'Degrees'],
+    accreditations: ['IHS'],
+    price: 123000,
+    startDate: 'March',
+    intake: 'March',
+    highlights: [
+      'Strategic Operations Management',
+      'Financial Management',
+      'Luxury Guest Experience',
+      'Entrepreneurship & Strategy',
+      'NQF Level 7 Degree'
+    ]
+  },
+  {
+    id: 'hc-hm-blended',
+    category: 'Hospitality Management',
+    title: 'Higher Certificate in Hospitality Management',
+    duration: '1 Year',
+    qualification: 'Higher Certificates',
+    description: 'This programme is for students who would like to get their foot into the hospitality industry and equip themselves for a frontline or entry level management position.',
+    shortDescription: 'Entry-level management qualification covering front office, housekeeping, and basic financial management.',
+    video: 'https://www.shutterstock.com/shutterstock/videos/3541615587/preview/stock-footage-hotel-employees-guest-reception-check-in-hospitality.webm',
+    programmeTypes: ['Blended Learning', 'Higher Certificates'],
+    accreditations: ['IHS'],
+    price: 49500,
+    startDate: 'March',
+    intake: 'March',
+    highlights: [
+      'Front Office Operations',
+      'Housekeeping Management',
+      'Beverage Operations',
+      'Financial Management Basics',
+      'Hospitality Supervision'
+    ]
+  },
+  {
+    id: 'prof-cookery-traineeship',
+    category: 'Culinary',
+    title: 'Professional Cookery Programme (1 Year Traineeship)',
+    duration: '1 Year',
+    qualification: 'Occupational Certificate',
+    description: 'This qualification has been developed for professionals in the food preparation industry. It brings together elements of food and drinks preparation as well as supervision. This qualification applies to all sectors, from small restaurants, lodges and large-scale hotels.',
+    shortDescription: 'Work-based culinary qualification covering food preparation, supervision, and kitchen management.',
+    video: 'https://www.shutterstock.com/shutterstock/videos/3912770347/preview/stock-footage-chef-skillfully-ignites-flames-frying-pan-while.webm',
+    programmeTypes: ['In-Service Traineeship', 'Occupational Certificates'],
+    accreditations: ['IHS', 'QCTO'],
+    price: 54000,
+    startDate: 'March, May, August & October',
+    intake: 'March, May, August & October',
+    highlights: [
+      'Food Preparation & Supervision',
+      'Hygiene & Safety (HACCP)',
+      'Budgeting & Cost Control',
+      'Kitchen Maintenance',
+      'Earn While You Learn'
+    ]
+  },
+  {
+    id: '7',
+    category: 'Business',
+    title: 'Bachelor of Business Administration in Hospitality Operations Management (Online)',
     duration: '3.5 Years',
     qualification: 'Degree',
     description:
       'A prestigious NQF Level 7 qualification for future executives. Master the strategic, financial, and operational aspects of the global hospitality industry.',
     shortDescription:
       'Degree-level programme focused on hospitality operations, leadership, and strategic management.',
-    video:
-      'https://www.shutterstock.com/shutterstock/videos/3541615587/preview/stock-footage-hotel-employees-and-guest-at-reception-for-check-in-hospitality-and-accommodation-with-tourism.webm',
+    video: 'https://www.shutterstock.com/shutterstock/videos/1105580105/preview/stock-footage-tracking-shot-african-american-tourists-wanting-upgrade.webm',
     programmeTypes: ['Online Learning', 'Degrees'],
     accreditations: ['IHS'],
     price: 45400,
@@ -113,13 +195,12 @@ export const OFFERINGS: Offering[] = [
       'Comprehensive hospitality management programme with global AHLEI certification. Equip yourself with leadership skills for the modern workforce.',
     shortDescription:
       'Globally recognised hospitality diploma with leadership and operational management focus.',
-    video:
-      'https://www.shutterstock.com/shutterstock/videos/3541615587/preview/stock-footage-hotel-employees-and-guest-at-reception-for-check-in-hospitality-and-accommodation-with-tourism.webm',
+    video: 'https://www.shutterstock.com/shutterstock/videos/3539471785/preview/stock-footage-hotel-employees-clients-reception-check-in-hospitality.webm',
     programmeTypes: ['Online Learning', 'Diplomas'],
     accreditations: ['AHLEI', 'CATHSSETA', 'IHS'],
     price: 38600,
-    startDate: 'March (Upcoming)',
-    intake: 'March (Upcoming)',
+    startDate: 'March',
+    intake: 'March',
     highlights: [
       'AHLEI Global Diploma',
       'Work Integrated Learning (WIL)',
@@ -138,8 +219,7 @@ export const OFFERINGS: Offering[] = [
       'Foundational hospitality management programme developing core operational and theoretical skills.',
     shortDescription:
       'Foundational hospitality management diploma covering core operational disciplines.',
-    video:
-      'https://www.shutterstock.com/shutterstock/videos/3541615587/preview/stock-footage-hotel-employees-and-guest-at-reception-for-check-in-hospitality-and-accommodation-with-tourism.webm',
+    video: 'https://www.shutterstock.com/shutterstock/videos/3638308783/preview/stock-footage-woman-man-concierge-phone-call-reservation-booking.webm',
     programmeTypes: ['Online Learning', 'Diplomas'],
     accreditations: ['CATHSSETA', 'IHS'],
     price: 30850,
@@ -161,7 +241,7 @@ export const OFFERINGS: Offering[] = [
     qualification: 'Diploma',
     description: 'Master the entire Food & Beverage operation. Learn to forecast, plan, and control F&B departments with global AHLEI recognition.',
     shortDescription: 'Comprehensive F&B management diploma with global AHLEI certification.',
-    video: 'https://www.shutterstock.com/shutterstock/videos/3541615587/preview/stock-footage-hotel-employees-and-guest-at-reception-for-check-in-hospitality-and-accommodation-with-tourism.webm',
+    video: 'https://www.shutterstock.com/shutterstock/videos/3511111967/preview/stock-footage-cinematic-image-waiters-employees-working-nordic-styled.webm',
     programmeTypes: ['Online Learning', 'Diplomas'],
     accreditations: ['AHLEI', 'CATHSSETA', 'IHS'],
     price: 38600,
@@ -177,7 +257,7 @@ export const OFFERINGS: Offering[] = [
     qualification: 'Diploma',
     description: 'Master the entire Food & Beverage operation. Learn to forecast, plan, and control F&B departments.',
     shortDescription: 'Comprehensive F&B management diploma focusing on operations and financial control.',
-    video: 'https://www.shutterstock.com/shutterstock/videos/3541615587/preview/stock-footage-hotel-employees-and-guest-at-reception-for-check-in-hospitality-and-accommodation-with-tourism.webm',
+    video: 'https://www.shutterstock.com/shutterstock/videos/3836045755/preview/stock-footage-hindu-male-waiter-holds-tablet-looking-away.webm',
     programmeTypes: ['Online Learning', 'Diplomas'],
     accreditations: ['CATHSSETA', 'IHS'],
     price: 30850,
@@ -195,8 +275,7 @@ export const OFFERINGS: Offering[] = [
       'The Events and Conferencing industries are dynamic industries which are continually evolving, thereby contributing to new venture creation and employment opportunities.',
     shortDescription:
       'Foundation for entering the events industry with applicable skills and relevant knowledge.',
-    video:
-      'https://www.shutterstock.com/shutterstock/videos/3541615587/preview/stock-footage-hotel-employees-and-guest-at-reception-for-check-in-hospitality-and-accommodation-with-tourism.webm',
+    video: 'https://www.shutterstock.com/shutterstock/videos/3737634427/preview/stock-footage-many-fun-people-lift-hand-hold-cell.webm',
     programmeTypes: ['Online Learning', 'Certificates'],
     accreditations: ['CATHSSETA', 'IHS'],
     price: 48000,
@@ -218,13 +297,12 @@ export const OFFERINGS: Offering[] = [
     qualification: 'Specialisation',
     description: 'This course presents a systematic approach to human resources management in the hospitality industry. Students will analyse contemporary issues and practices in the field of human resources management.',
     shortDescription: 'Systematic approach to human resources management, leadership, training and technology in hospitality.',
-    video: 'https://www.shutterstock.com/shutterstock/videos/1055260340/preview/stock-footage-multi-ethnic-team-meeting-in-modern-office-business-people-brainstorming-and-discussing-project.webm',
-    image: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?q=80&w=2940',
+    video: 'https://www.shutterstock.com/shutterstock/videos/1104303543/preview/stock-footage-smiling-african-american-businessman-man-employer-talk.webm',
     programmeTypes: ['Online Learning', 'Specialisations'],
     accreditations: ['AHLEI', 'IHS'],
     price: 45850,
-    startDate: 'Mar, Apr, May, Jun, Jul, Aug, Oct, Nov',
-    intake: 'Mar, Apr, May, Jun, Jul, Aug, Oct, Nov',
+    startDate: 'March, April, May, June, July, August, October, November',
+    intake: 'March, April, May, June, July, August, October, November',
     highlights: [
       'AHLEI HR Specialisation Certificate',
       'Employee Supervision & Leadership',
@@ -243,21 +321,40 @@ export const OFFERINGS: Offering[] = [
       'This course will give students a basic understanding of the purchasing function in the food service sectors. Students will learn about the ways in which value can be added by members of the food service distribution channel.',
     shortDescription:
       'Basic understanding of the purchasing function in the food service sectors, covering distribution channels, specifications, and distributor partners.',
-    video:
-      'https://www.shutterstock.com/shutterstock/videos/1087550930/preview/stock-footage-chef-teaching-how-to-cook-cutting-vegetables-indoors-in-commercial-kitchen.webm',
-    image:
-      'https://images.unsplash.com/photo-1556910103-1c02745a30bf?q=80&w=2070',
+    video: 'https://www.shutterstock.com/shutterstock/videos/3468665823/preview/stock-footage-kyoto-japan-02-march-2024-pouring.webm',
     programmeTypes: ['Online Learning', 'Short Courses'],
     accreditations: ['AHLEI'],
     price: 9500,
-    startDate: 'Mar, Apr, May, Jun, Jul, Aug, Oct, Nov',
-    intake: 'Mar, Apr, May, Jun, Jul, Aug, Oct, Nov',
+    startDate: 'March, April, May, June, July, August, October, November',
+    intake: 'March, April, May, June, July, August, October, November',
     highlights: [
       'Purchasing Function & Channels',
       'Purchase Specifications',
       'Distributor Selection & Ethics',
       'Inventory Controls & Security',
       'AHLEI Short Course Certificate'
+    ]
+  },
+  {
+    id: 'puff-pastry',
+    category: 'Culinary',
+    title: 'Puff Pastry',
+    duration: '1 Day (6 hours)',
+    qualification: 'Short Course',
+    description: 'Enjoy light flaky pastry, with various uses both sweet and savory when you take on this course. Puff Pastry need not be so mysterious, learn how to amaze your lunch or dinner guests by creating your own delightful treats made from scratch.',
+    shortDescription: 'Master the art of puff pastry in this 1-day hands-on workshop. Create savory and sweet delights from scratch.',
+    video: 'https://www.shutterstock.com/shutterstock/videos/3487230603/preview/stock-footage-recipe-pastry-chef-wearing-apron-effectively-sprinkles.webm',
+    programmeTypes: ['Part Time Learning', 'Short Courses'],
+    accreditations: ['IHS'],
+    price: 1000,
+    startDate: 'Monthly',
+    intake: 'Monthly',
+    highlights: [
+      'Lamination Principles',
+      'Savory & Sweet Creations',
+      'Pastry Fillings',
+      'Finishing Techniques',
+      '1 Day Workshop'
     ]
   }
 ];
@@ -267,6 +364,89 @@ export const OFFERINGS: Offering[] = [
    ========================= */
 
 export const COURSE_DETAILS: Record<string, CourseDetail> = {
+  'bba-hom-ft': {
+    ...OFFERINGS.find(o => o.id === 'bba-hom-ft')!,
+    fullDescription: 'This programme focuses on the strategic and financial management aspects of a hospitality establishment and its operations. Strong leadership capabilities, the ability to apply strategic thinking and strong numerical application is learned.\n\nThis programme will provide the learner with the knowledge and competence to perform a variety of management functions across the different departments in the hospitality environment through applied theory and Work Integrated Learning.',
+    level: 'Degree',
+    certification: 'International Hotel School Bachelor of Business Administration in Hospitality Operations Management (SAQA ID: 110624, HEQF Level 7)',
+    deliveryMode: 'Full Time Learning',
+    accreditations: ['IHS'],
+    curriculum: [],
+    requirements: ['National Senior Certificate with a Bachelor entry, or equivalent.'],
+    careerOutcomes: ['Operations Manager', 'General Manager', 'Entrepreneur', 'Marketing Manager'],
+    fees: {
+        tuition: 'R 123,000',
+        registration: 'Included',
+        note: 'Price per year. Excludes study pack.'
+    },
+    wilDuration: 'Included in curriculum',
+    workIntegratedLearning: 'All focus areas include masterclass specialisation sessions, assignments and Work Integrated Learning projects.',
+    extendedFocusAreas: [
+        { title: 'Operations Management', description: 'Aspiring to be a manager or owner of a world-class Hospitality establishment? The ability to develop and sustain a hospitality establishment requires integrated knowledge of the hospitality functions and managerial aspects of the operational areas of Food & Beverage, Front Office, and Housekeeping. Revenue and financial management form integral parts of any hospitality establishment and are essential financial competencies for Hotel Managers.' },
+        { title: 'Brand and Marketing Management', description: 'Building a brand, creating market awareness, and achieving sales is the lifeblood of any business and hospitality establishment. Therefore, Brand and Marketing Management looks at the different types of marketing strategies that can implemented to promote a company’s products or services. In addition, you will learn how to master the basics of digital marketing.' },
+        { title: 'Luxury Guest Service and Experience', description: 'An exceptional guest experience is the most important aspect to a successful hospitality business. Luxury guest service and experience starts with understanding the ‘touch-points’ of a customer journey and creating moments of magic throughout the journey, to ensure a memorable guest experience. Once graduated, you will be able to identify & understand the basic needs of a guest and find new ways to meet and exceed guests expectations.' },
+        { title: 'Organisational Behaviour and Human Resource Management', description: 'Aspiring to be a Human Resources Professional? Organisational Behaviour and Human Resources requires an individual to have a good understanding of the relevant labour, employment acts and regulations. Most importantly, its about understanding and examining the impact of staff management practices, recruitment, employee motivation and productivity, amongst others.' },
+        { title: 'Entrepreneurship and Strategy', description: 'Do you have an entrepreneurial spirit? Being a successful entrepreneur is not only about having a good idea, it’s about being able to take the idea, creating concept, developing a business plan, building a strategy around it and implementing the operational execution, that turns the entrepreneurial idea into a successful venture. In this specialisation, you will learn how to seek new business opportunities, be able to implement project management tools and strategic problem-solving.' },
+        { title: 'Financial Management', description: 'Do you have a flair for figures? In this specialisation area, you will learn how to analyse financial statements for a hospitality establishment. You will learn how to examine and interpret data and learn about basic accounting terms such as income & expenditure, assets & liabilities and balance sheets.' }
+    ]
+  },
+  'hc-hm-blended': {
+    ...OFFERINGS.find(o => o.id === 'hc-hm-blended')!,
+    fullDescription: 'This programme is for students who would like to get their foot into the hospitality industry and equip themselves for a frontline or entry level management position. Students will learn about housekeeping and front office operations and demonstrate an understanding of hospitality-related financial management, accounting and inventory.',
+    level: 'Higher Certificate',
+    certification: 'Higher Certificate in Hospitality Management. (SAQA ID No: 88062, HEQF Level 5)',
+    deliveryMode: 'Blended Learning',
+    accreditations: ['IHS'],
+    curriculum: [],
+    requirements: ['National Senior Certificate with a Higher Certificate entry, or equivalent.'],
+    careerOutcomes: ['Front Office Supervisor', 'Housekeeping Supervisor', 'Guest Relations Officer'],
+    fees: {
+        tuition: 'R 49,500',
+        registration: 'Included',
+        note: 'Price per year. Excludes study pack.'
+    },
+    wilDuration: 'Included in curriculum',
+    workIntegratedLearning: 'Practical work experience is included to ensure you are job-ready.',
+    programContentIncludes: [
+        'Introduction to Hospitality',
+        'Managing Front Office Operations',
+        'Managing Beverage Operations',
+        'Managing Housekeeping Operations',
+        'Supervision in the Hospitality Industry',
+        'Hospitality Facilities Management & Design'
+    ]
+  },
+  'prof-cookery-traineeship': {
+    ...OFFERINGS.find(o => o.id === 'prof-cookery-traineeship')!,
+    fullDescription: 'This qualification has been developed for professionals in the food preparation industry. It brings together elements of food and drinks preparation as well as supervision. This qualification applies to all sectors, from small restaurants, lodges and large-scale hotels.',
+    level: 'Occupational Certificate',
+    certification: 'QCTO Occupational Certificate: Cook (SAQA ID No: 102296, NQF Level 4)',
+    deliveryMode: 'In-Service Traineeship',
+    accreditations: ['IHS', 'QCTO'],
+    curriculum: [],
+    requirements: ['You must be 16 Years or Older. Completed a General Certificate (Grade 9) or Occupational Certificate (NQF Level 1) with Mathematics'],
+    careerOutcomes: ['Commis Chef', 'Line Cook', 'Demi Chef'],
+    fees: {
+        tuition: 'R 54,000',
+        registration: 'Included',
+        note: 'Price per year. Excludes study pack. Trainee allowance is dependent on the hospitality establishment at which they are placed.'
+    },
+    wilDuration: 'Full duration (In-Service)',
+    workIntegratedLearning: 'Trainee allowance is dependent on the hospitality establishment at which they are placed.',
+    programContentIncludes: [
+        'Prepare and cook basic meat, poultry and game',
+        'Prepare and cook basic sauces and soups',
+        'Prepare and cook fish and shellfish dishes',
+        'Prepare fruit for hot and cold dishes',
+        'Prepare vegetables for hot and cold dishes',
+        'Cooking and service of cold preparation dishes',
+        'Hygiene in the kitchen',
+        'Storage of food, equipment and utensils',
+        'Budgeting and cost control',
+        'Kitchen maintenance and design',
+        'Food Safety: Managing with the HACCP Process'
+    ]
+  },
   '1': {
     ...OFFERINGS.find(o => o.id === '1')!,
     fullDescription: 'Learners who complete this programme will be equipped with the knowledge, skills, core abilities and the underlying theory that would be required of them in the field of modern Hospitality Management. This programme aims to emphasize professionalism, leadership and strong management discipline, and to lay a foundation for future career advancement in the hospitality industry.\n\nThis programme will allow students to reach their full potential, develop their knowledge and skills and enter a competitive and challenging workplace environment with confidence based on the required competence and knowledge.',
@@ -512,6 +692,33 @@ export const COURSE_DETAILS: Record<string, CourseDetail> = {
       'Distribution systems through which various food and beverage products are purchased.',
       'Purchase specifications for various food and beverage products.',
       'Inspection and grading processes.'
+    ]
+  },
+  'puff-pastry': {
+    ...OFFERINGS.find(o => o.id === 'puff-pastry')!,
+    fullDescription: 'Enjoy light flaky pastry, with various uses both sweet and savory when you take on this course. Puff Pastry need not be so mysterious, learn how to amaze your lunch or dinner guests by creating your own delightful treats made from scratch. It’s so satisfying to produce, master and finish golden crispy creations with new knowledge you can easily apply to your life.\n\n*In the case of insufficient registrations, or other unforeseen circumstances, International Hotel School reserves the right, to either postpone or cancel any Short Course.',
+    level: 'Short Course',
+    certification: 'Certificate of Completion',
+    deliveryMode: 'Part-Time Learning',
+    accreditations: ['IHS'],
+    curriculum: [],
+    requirements: ['16 years or older'],
+    careerOutcomes: ['Home Baker', 'Pastry Enthusiast'],
+    fees: {
+        tuition: 'R 1,000',
+        registration: 'Included',
+        note: 'Full payment required upfront.'
+    },
+    wilDuration: 'N/A',
+    workIntegratedLearning: 'This is a practical workshop held on campus.',
+    programContentIncludes: [
+        'Prepare and produce a variety of pastry products according to standard recipes',
+        'Learn new methods and finishing techniques',
+        'Master the skills and preparation methods (glazing, kneading and portioning etc) for baking puff pastries',
+        'Learn how to whip up a variety of pastry fillings (Crème Patisserie, Smoke salmon and cream cheese etc)',
+        'Learn how to make delicious Cream Cones, Custard Danish and Vol au Vents etc.',
+        'Learn the basic lamination dough principles',
+        'Ratios and yields – How to decrease and increase your servings'
     ]
   }
 };

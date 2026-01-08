@@ -49,7 +49,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose })
             <div className="relative bg-white w-full max-w-lg rounded-sm shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-slideUp">
 
                 {/* Header */}
-                <div className="flex items-center justify-between p-5 border-b border-white/10 bg-brand-primary text-white shrink-0">
+                <div className="flex items-center justify-between p-6 border-b border-white/10 bg-brand-primary text-white shrink-0">
                     <div className="flex flex-col">
                         <span className="text-brand-gold text-[10px] font-bold uppercase tracking-[2px] mb-1">Payment</span>
                         <div className="flex items-center gap-2">

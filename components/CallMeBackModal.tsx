@@ -43,7 +43,7 @@ export const CallMeBackModal: React.FC<CallMeBackModalProps> = ({ isOpen, onClos
             <div className="relative bg-white w-full max-w-lg rounded-sm shadow-2xl overflow-hidden flex flex-col max-h-[95vh] animate-slideUp">
 
                 {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-white/10 bg-brand-primary text-white">
+                <div className="flex items-center justify-between p-6 border-b border-white/10 bg-brand-primary text-white shrink-0">
                     <div className="flex items-center gap-3">
                         <div className="relative">
                             <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center text-white">
@@ -52,7 +52,7 @@ export const CallMeBackModal: React.FC<CallMeBackModalProps> = ({ isOpen, onClos
                             <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-brand-primary rounded-full animate-pulse"></span>
                         </div>
                         <div>
-                            <h3 className="font-serif font-bold text-lg leading-tight">Call Me Back</h3>
+                            <h3 className="font-serif font-bold text-xl leading-tight">Call Me Back</h3>
                             <p className="text-brand-gold text-[10px] font-bold uppercase tracking-wider">Support Agent Online</p>
                         </div>
                     </div>

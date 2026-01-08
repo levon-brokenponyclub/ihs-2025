@@ -1,0 +1,1 @@
+wp db import ~/Downloads/sae.sql

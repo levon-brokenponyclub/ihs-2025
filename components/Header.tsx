@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { NAV_LINKS, MORE_MENU_LINKS } from '../constants.tsx';
+import { NAV_LINKS, MORE_MENU_LINKS } from '../constants';
 import { Button } from './ui/Button';
 import { Menu, X, ShoppingBag, Search, ChevronRight } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
@@ -15,6 +15,7 @@ export const Header: React.FC = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isFinderOpen, setIsFinderOpen] = useState(false);
     const [isMegaMenuOpen, setIsMegaMenuOpen] = useState(false);
+    const [activeMegaMenu, setActiveMegaMenu] = useState<string | null>(null);
 
     // Header Scroll State
     const [isVisible, setIsVisible] = useState(true);
@@ -30,8 +31,6 @@ export const Header: React.FC = () => {
             const currentScrollY = window.scrollY;
 
             // Show header at top of page or when scrolling up
-            // We don't check isMenuOpen here to avoid stale closure issues. 
-            // We handle the override in the render logic.
             if (currentScrollY < 10) {
                 setIsVisible(true);
             } else if (currentScrollY > lastScrollY.current && currentScrollY > 80) {
@@ -47,6 +46,14 @@ export const Header: React.FC = () => {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
+    // Close menus on route change
+    useEffect(() => {
+        setIsMenuOpen(false);
+        setIsMegaMenuOpen(false);
+        setActiveMegaMenu(null);
+        setIsFinderOpen(false);
+    }, [location]);
+
     // Lock body scroll when menu is open
     useEffect(() => {
         if (isMenuOpen) {
@@ -60,23 +67,33 @@ export const Header: React.FC = () => {
     const handleLinkClick = (href: string) => {
         setIsMenuOpen(false);
         setIsMegaMenuOpen(false);
+        setActiveMegaMenu(null);
         if (href.startsWith('#')) {
             const el = document.getElementById(href.substring(1));
             if (el) el.scrollIntoView({ behavior: 'smooth' });
         }
     };
 
-    const handleMouseEnter = () => {
+    const handleMouseEnter = (label: string) => {
         // Prevent mega menu from opening if the full screen menu is active
         if (isMenuOpen) return;
         if (menuTimeoutRef.current) clearTimeout(menuTimeoutRef.current);
+        setActiveMegaMenu(label);
         setIsMegaMenuOpen(true);
     };
 
     const handleMouseLeave = () => {
         menuTimeoutRef.current = setTimeout(() => {
             setIsMegaMenuOpen(false);
-        }, 100);
+            // Don't null activeMegaMenu immediately to allow transition out
+            setTimeout(() => setActiveMegaMenu(null), 500);
+        }, 300); // Increased timeout to 300ms for better UX
+    };
+
+    const handleMegaMenuEnter = () => {
+        if (menuTimeoutRef.current) {
+            clearTimeout(menuTimeoutRef.current);
+        }
     };
 
     const toggleMenu = () => {
@@ -102,7 +119,7 @@ export const Header: React.FC = () => {
                     <div className="flex items-center h-full">
                         <Link to="/" className="flex items-center group" onClick={() => setIsMenuOpen(false)}>
                             <img
-                                src="components/assets/img/ihs-logo.png"
+                                src="/components/assets/img/ihs-logo.png"
                                 alt="IHS Logo"
                                 className="h-10 lg:h-16 object-contain mb-1 group-hover:opacity-80 transition-opacity duration-200 w-full"
                             />
@@ -112,14 +129,14 @@ export const Header: React.FC = () => {
                     {/* Center: Navigation */}
                     <nav className="absolute left-1/2 top-0 transform -translate-x-1/2 flex items-center h-full gap-8 lg:flex hidden">
                         {NAV_LINKS.map((link) => {
-                            const isMegaTrigger = link.label === 'Our Programmes';
-                            const isActive = isMegaTrigger && isMegaMenuOpen;
+                            const isMegaTrigger = ['Our Programmes', 'Admissions', 'Experiences'].includes(link.label);
+                            const isActive = isMegaTrigger && isMegaMenuOpen && activeMegaMenu === link.label;
 
                             return (
-                                <a
+                                <Link
                                     key={link.label}
-                                    href={link.href}
-                                    onMouseEnter={isMegaTrigger ? handleMouseEnter : undefined}
+                                    to={link.href}
+                                    onMouseEnter={isMegaTrigger ? () => handleMouseEnter(link.label) : undefined}
                                     onMouseLeave={isMegaTrigger ? handleMouseLeave : undefined}
                                     onClick={(e) => {
                                         if (link.href.startsWith('#')) {
@@ -135,7 +152,7 @@ export const Header: React.FC = () => {
 
                                     {/* Animated Underline */}
                                     <span className={`absolute bottom-0 left-0 w-full h-[5px] bg-[#002B4E] transform transition-transform duration-300 ease-out origin-left ${isActive ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'}`}></span>
-                                </a>
+                                </Link>
                             );
                         })}
                     </nav>
@@ -271,7 +288,8 @@ export const Header: React.FC = () => {
                 <div className="hidden lg:block">
                     <MegaMenu
                         isOpen={isMegaMenuOpen}
-                        onMouseEnter={handleMouseEnter}
+                        activeMenu={activeMegaMenu}
+                        onMouseEnter={handleMegaMenuEnter}
                         onMouseLeave={handleMouseLeave}
                     />
                 </div>

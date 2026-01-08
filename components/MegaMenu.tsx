@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { OFFERINGS, FOCUS_AREAS } from '../constants';
+import { OFFERINGS, FOCUS_AREAS, ADMISSIONS_LINKS, EXPERIENCES_LINKS } from '../constants';
 import { ArrowRight, ShoppingBag } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { Offering } from '../types';
@@ -13,18 +14,19 @@ const PROGRAMME_TYPES = [
     { label: 'Online Learning', value: 'Online Learning', slug: 'online' },
 ];
 
-const STUDY_LEVELS = ['Degrees', 'Diplomas', 'Certificates', 'Short Courses'];
+const STUDY_LEVELS = ['Degrees', 'Higher Certificates', 'Diplomas', 'Occupational Certificates', 'Certificates', 'Short Courses'];
 
 interface MegaMenuProps {
     isOpen: boolean;
+    activeMenu: string | null;
     onMouseEnter?: () => void;
     onMouseLeave?: () => void;
 }
 
 // Consolidated Ecommerce Check
 const checkIsEcommerce = (course: Offering) => {
-    // Only "Purchasing for Food Service Operations" (ID 19) is Buy Now
-    return course.id === '19';
+    // Only "Purchasing for Food Service Operations" (ID 19) and "Puff Pastry" are Buy Now
+    return ['19', 'puff-pastry'].includes(course.id);
 };
 
 // ------------------------------------------
@@ -37,7 +39,8 @@ const MenuLink = ({
     to,
     delayIndex = 0,
     isOpen,
-    baseDelay = 0
+    baseDelay = 0,
+    onNavigate
 }: {
     text: string;
     isActive?: boolean;
@@ -46,6 +49,7 @@ const MenuLink = ({
     delayIndex: number;
     isOpen: boolean;
     baseDelay?: number;
+    onNavigate?: (path: string) => void;
 }) => {
     // Base Classes
     const containerClasses = `relative block overflow-hidden group cursor-pointer py-2`;
@@ -78,6 +82,13 @@ const MenuLink = ({
                 to={to}
                 className={`${containerClasses} ${animClasses} ${stateClasses}`}
                 style={{ transitionDelay: `${delay}ms` }}
+                onClick={(e) => {
+                    if (onNavigate) {
+                        e.preventDefault();
+                        onNavigate(to);
+                    }
+                    if (onClick) onClick();
+                }}
             >
                 {innerContent}
             </Link>
@@ -101,10 +112,11 @@ const MenuLink = ({
 interface FilterLinkProps {
     label: string;
     isActive: boolean;
-    onClick: () => void;
+    onClick?: () => void;
     isOpen: boolean;
     baseDelay: number;
     index: number;
+    to?: string;
 }
 
 const FilterLink: React.FC<FilterLinkProps> = ({
@@ -113,15 +125,29 @@ const FilterLink: React.FC<FilterLinkProps> = ({
     onClick,
     isOpen,
     baseDelay,
-    index
+    index,
+    to
 }) => {
     const delay = isOpen ? baseDelay + (index * 40) : 0;
+    const className = `block text-left text-base transition-all duration-500 ease-out transform ${isActive ? 'text-brand-gold translate-x-2 font-bold' : 'text-gray-300 font-medium hover:text-brand-gold'
+        } ${isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`;
+
+    if (to) {
+        return (
+            <Link
+                to={to}
+                className={className}
+                style={{ transitionDelay: `${delay}ms` }}
+            >
+                {label}
+            </Link>
+        );
+    }
 
     return (
         <button
             onClick={onClick}
-            className={`block text-left text-base transition-all duration-500 ease-out transform ${isActive ? 'text-brand-gold translate-x-2 font-bold' : 'text-gray-300 font-medium hover:text-brand-gold'
-                } ${isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+            className={className}
             style={{
                 transitionDelay: `${delay}ms`
             }}
@@ -131,11 +157,22 @@ const FilterLink: React.FC<FilterLinkProps> = ({
     );
 };
 
-export const MegaMenu: React.FC<MegaMenuProps> = ({ isOpen, onMouseEnter, onMouseLeave }) => {
+// =======================
+// OUR PROGRAMMES MEGA MENU
+// =======================
+
+export const MegaMenu: React.FC<MegaMenuProps> = ({
+    isOpen,
+    activeMenu,
+    onMouseEnter,
+    onMouseLeave
+}) => {
     const [activeTypeObj, setActiveTypeObj] = useState(PROGRAMME_TYPES[0]);
     const [activeSubFilter, setActiveSubFilter] = useState<string | null>(null);
     const { addToCart } = useCart();
     const navigate = useNavigate();
+
+    const hasInteracted = Boolean(activeSubFilter);
 
     // Reset state when closed
     useEffect(() => {
@@ -148,12 +185,13 @@ export const MegaMenu: React.FC<MegaMenuProps> = ({ isOpen, onMouseEnter, onMous
         }
     }, [isOpen]);
 
-    // 1. Get Base Offerings for the Active Type
+    // Base offerings
     const baseOfferings = useMemo(() => {
-        return OFFERINGS.filter(o => o.programmeTypes.includes(activeTypeObj.value));
+        return OFFERINGS.filter(o =>
+            o.programmeTypes.includes(activeTypeObj.value)
+        );
     }, [activeTypeObj]);
 
-    // 2. Derive Available Filters based on Base Offerings
     const availableFocusAreas = useMemo(() => {
         const categories = new Set(baseOfferings.map(o => o.category));
         return FOCUS_AREAS.filter(area => categories.has(area.value));
@@ -161,71 +199,210 @@ export const MegaMenu: React.FC<MegaMenuProps> = ({ isOpen, onMouseEnter, onMous
 
     const availableLevels = useMemo(() => {
         const quals = new Set(baseOfferings.map(o => o.qualification));
-        return STUDY_LEVELS.filter(level => {
-            const singular = level.slice(0, -1); // e.g. "Degrees" -> "Degree"
-            // Special handling for 'Short Courses' -> 'Short Course'
-            const check = level === 'Short Courses' ? 'Short Course' : singular;
-            return quals.has(check);
-        });
+        const mappings: Record<string, string[]> = {
+            Degrees: ['Degree'],
+            'Higher Certificates': ['Higher Certificate'],
+            Diplomas: ['Diploma'],
+            'Occupational Certificates': ['Occupational Certificate'],
+            Certificates: ['Certificate'],
+            'Short Courses': ['Short Course']
+        };
+
+        return STUDY_LEVELS.filter(level =>
+            quals.has(level) ||
+            mappings[level]?.some(m => quals.has(m))
+        );
     }, [baseOfferings]);
 
-    // 3. Final Displayed Offerings (Base + SubFilter)
     const displayedOfferings = useMemo(() => {
         if (!activeSubFilter) return baseOfferings;
 
-        let cleanFilter = activeSubFilter;
-        // Mapping plurals to singulars for comparison
-        if (activeSubFilter === 'Degrees') cleanFilter = 'Degree';
-        else if (activeSubFilter === 'Diplomas') cleanFilter = 'Diploma';
-        else if (activeSubFilter === 'Certificates') cleanFilter = 'Certificate';
-        else if (activeSubFilter === 'Short Courses') cleanFilter = 'Short Course';
+        const mappings: Record<string, string[]> = {
+            Degrees: ['Degree'],
+            'Higher Certificates': ['Higher Certificate'],
+            Diplomas: ['Diploma'],
+            'Occupational Certificates': ['Occupational Certificate'],
+            Certificates: ['Certificate'],
+            'Short Courses': ['Short Course']
+        };
 
-        return baseOfferings.filter(o => o.category === cleanFilter || o.qualification === cleanFilter);
+        if (mappings[activeSubFilter]) {
+            return baseOfferings.filter(o =>
+                mappings[activeSubFilter].includes(o.qualification)
+            );
+        }
+
+        return baseOfferings.filter(
+            o => o.category === activeSubFilter
+        );
     }, [baseOfferings, activeSubFilter]);
 
     const handleApplyClick = (e: React.MouseEvent, course: Offering) => {
-        e.stopPropagation();
         e.preventDefault();
+        e.stopPropagation();
+
         const isEcommerce = checkIsEcommerce(course);
         if (isEcommerce) {
             addToCart(course);
+            if (onMouseLeave) onMouseLeave();
         } else {
-            navigate(`/course/${course.id}`);
+            if (onMouseLeave) onMouseLeave();
+            setTimeout(() => {
+                navigate(`/course/${course.id}`);
+            }, 800);
         }
     };
 
+    const handleDelayedLinkClick = (path: string) => {
+        if (onMouseLeave) onMouseLeave();
+        setTimeout(() => {
+            navigate(path);
+        }, 800);
+    };
+
+    const containerClasses = isOpen
+        ? 'opacity-100 translate-y-0 h-[600px] ease-[cubic-bezier(0.25,1,0.5,1)]'
+        : 'opacity-0 -translate-y-6 h-0 ease-[cubic-bezier(0.5,0,0.75,0)]';
+
+    // EXPERIENCES MENU
+    if (activeMenu === 'Experiences') {
+        return (
+            <div
+                className="fixed top-[80px] left-0 right-0 z-50 overflow-hidden pointer-events-none"
+            >
+                <div
+                    className={`w-full shadow-2xl flex relative transition-all duration-300 overflow-hidden pointer-events-auto ${containerClasses}`}
+                    onMouseEnter={onMouseEnter}
+                    onMouseLeave={onMouseLeave}
+                >
+                    {/* Background */}
+                    <div className="absolute inset-0 flex z-0">
+                        <div className="w-[40%] bg-[#002B4E]"></div>
+                        <div className="w-[60%] bg-[#001D36]"></div>
+                    </div>
+
+                    <div className="relative z-10 max-w-7xl mx-auto px-4 lg:px-8 w-full h-full flex items-start">
+                        {/* Experiences Links */}
+                        <div className="w-[40%] h-full pr-8 py-12 flex flex-col justify-start">
+                            <p className={`text-xs font-bold text-gray-500 uppercase tracking-widest mb-8 transition-opacity duration-700 delay-100 ${isOpen ? 'opacity-100' : 'opacity-0'}`}>
+                                Experiences
+                            </p>
+                            <div className="space-y-4">
+                                {EXPERIENCES_LINKS.map((link, index) => (
+                                    <MenuLink
+                                        key={link.label}
+                                        text={link.label}
+                                        to={link.href}
+                                        delayIndex={index}
+                                        isOpen={isOpen}
+                                        baseDelay={200}
+                                        onNavigate={handleDelayedLinkClick}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Right Side Content */}
+                        <div className="w-[60%] h-full pl-12 py-12 flex flex-col justify-center items-center text-center">
+                             <div className={`transition-all duration-700 delay-300 transform ${isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+                                <h3 className="font-serif text-3xl text-white mb-4">Experience Excellence</h3>
+                                <p className="text-gray-400 max-w-md mx-auto mb-8">
+                                    Join us on campus to see our world-class facilities and meet our expert lecturers.
+                                </p>
+                                <button className="bg-[#C2B067] text-[#002B4E] font-bold uppercase tracking-widest px-8 py-4 rounded-sm hover:bg-white transition-colors">
+                                    Book a Visit
+                                </button>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
+    // ADMISSIONS MENU
+    if (activeMenu === 'Admissions') {
+        return (
+            <div
+                className="fixed top-[80px] left-0 right-0 z-50 overflow-hidden pointer-events-none"
+            >
+                <div
+                    className={`w-full shadow-2xl flex relative transition-all duration-300 overflow-hidden pointer-events-auto ${containerClasses}`}
+                    onMouseEnter={onMouseEnter}
+                    onMouseLeave={onMouseLeave}
+                >
+                    {/* Background */}
+                    <div className="absolute inset-0 flex z-0">
+                        <div className="w-[40%] bg-[#002B4E]"></div>
+                        <div className="w-[60%] bg-[#001D36]"></div>
+                    </div>
+
+                    <div className="relative z-10 max-w-7xl mx-auto px-4 lg:px-8 w-full h-full flex items-start">
+                        {/* Admissions Links */}
+                        <div className="w-[40%] h-full pr-8 py-12 flex flex-col justify-start">
+                            <p className={`text-xs font-bold text-gray-500 uppercase tracking-widest mb-8 transition-opacity duration-700 delay-100 ${isOpen ? 'opacity-100' : 'opacity-0'}`}>
+                                Admissions
+                            </p>
+                            <div className="space-y-4">
+                                {ADMISSIONS_LINKS.map((link, index) => (
+                                    <MenuLink
+                                        key={link.label}
+                                        text={link.label}
+                                        to={link.href}
+                                        delayIndex={index}
+                                        isOpen={isOpen}
+                                        baseDelay={200}
+                                        onNavigate={handleDelayedLinkClick}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Right Side Content */}
+                        <div className="w-[60%] h-full pl-12 py-12 flex flex-col justify-center items-center text-center">
+                             <div className={`transition-all duration-700 delay-300 transform ${isOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+                                <h3 className="font-serif text-3xl text-white mb-4">Start Your Journey</h3>
+                                <p className="text-gray-400 max-w-md mx-auto mb-8">
+                                    We are here to help you every step of the way. From payment plans to registration, get all the info you need.
+                                </p>
+                                <button className="bg-[#C2B067] text-[#002B4E] font-bold uppercase tracking-widest px-8 py-4 rounded-sm hover:bg-white transition-colors">
+                                    Apply Now
+                                </button>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
+    // OUR PROGRAMMES MENU
     return (
         <div
             className="fixed top-[80px] left-0 right-0 z-50 overflow-hidden pointer-events-none"
-            style={{ height: '600px' }}
         >
             {/* Curtain Container */}
             <div
-                className={`w-full h-full shadow-2xl flex relative transition-all duration-700 ease-[cubic-bezier(0.76,0,0.24,1)] pointer-events-auto`}
-                style={{
-                    clipPath: isOpen ? 'inset(0 0 0% 0)' : 'inset(0 0 100% 0)',
-                    opacity: isOpen ? 1 : 0
-                }}
+                className={`w-full shadow-2xl flex relative transition-all duration-300 overflow-hidden pointer-events-auto ${containerClasses}`}
                 onMouseEnter={onMouseEnter}
                 onMouseLeave={onMouseLeave}
             >
-                {/* Background Layer - 3 Part Split */}
+                {/* Background */}
                 <div className="absolute inset-0 flex z-0">
-                    <div className="w-[30%] bg-[#002B4E] border-r border-white/5"></div>
-                    <div className="w-[28%] bg-[#002B4E] border-r border-white/5"></div>
-                    <div className="w-[42%] bg-[#001D36]"></div>
+                    <div className="w-[30%] bg-[#002B4E]" />
+                    <div className="w-[28%] bg-[#002B4E] border-r border-white/5" />
+                    <div className="w-[42%] bg-[#001D36]" />
                 </div>
 
-                {/* Content Layer - Centered Grid */}
                 <div className="relative z-10 max-w-7xl mx-auto px-4 lg:px-8 w-full h-full flex items-start">
 
-                    {/* Column 1: Programme Type (30%) */}
-                    <div className="w-[30%] h-full border-r border-white/5 pr-8 py-12 flex flex-col justify-start">
-                        <p className={`text-xs font-bold text-gray-500 uppercase tracking-widest mb-8 transition-opacity duration-700 delay-100 ${isOpen ? 'opacity-100' : 'opacity-0'}`}>
+                    {/* COLUMN 1 – PROGRAMME TYPE */}
+                    <div className="w-[30%] h-full border-r border-white/5 pr-8 py-12 flex flex-col">
+                        <p className="text-xs font-bold text-brand-gold uppercase tracking-widest mb-8">
                             Programme Type
                         </p>
 
-                        <div className="space-y-4">
+                        <div className="space-y-4 flex-1">
                             {PROGRAMME_TYPES.map((type, index) => (
                                 <div
                                     key={type.value}
@@ -237,7 +414,6 @@ export const MegaMenu: React.FC<MegaMenuProps> = ({ isOpen, onMouseEnter, onMous
                                     <MenuLink
                                         text={type.label}
                                         isActive={activeTypeObj.value === type.value}
-                                        onClick={() => setActiveTypeObj(type)}
                                         delayIndex={index}
                                         isOpen={isOpen}
                                         baseDelay={200}
@@ -245,27 +421,45 @@ export const MegaMenu: React.FC<MegaMenuProps> = ({ isOpen, onMouseEnter, onMous
                                 </div>
                             ))}
                         </div>
+
+                        {/* View All Link */}
+                        <Link
+                            to={`/programmes/${activeTypeObj.slug}`}
+                            className="mt-8 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#C2B067] hover:text-white transition-colors"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                handleDelayedLinkClick(`/programmes/${activeTypeObj.slug}`);
+                            }}
+                        >
+                            View all {activeTypeObj.label}
+                            <ArrowRight size={14} />
+                        </Link>
                     </div>
 
-                    {/* Column 2: Focus Areas & Level (28%) */}
-                    <div className="w-[28%] h-full px-8 py-12 flex flex-col justify-start overflow-y-auto custom-scrollbar">
+                    {/* COLUMN 2 – FILTERS */}
+                    <div className="w-[28%] h-full px-8 py-12 overflow-y-auto custom-scrollbar">
+                        <div key={activeTypeObj.value}>
 
-                        {/* Key forces re-render for animation on type change */}
-                        <div key={activeTypeObj.value} className="w-full">
-
-                            {/* Focus Areas Group */}
                             {availableFocusAreas.length > 0 && (
-                                <div className="mb-6">
-                                    <p className={`text-xs font-bold text-gray-500 uppercase tracking-widest mb-6 transition-opacity duration-500 ${isOpen ? 'opacity-100' : 'opacity-0'}`} style={{ transitionDelay: isOpen ? '400ms' : '0ms' }}>
+                                <div className="mb-8">
+                                    <p className="text-xs font-bold text-brand-gold uppercase tracking-widest mb-2">
                                         Focus Areas
                                     </p>
+                                    <p className="text-xs text-gray-400 mb-4">
+                                        Choose what you want to specialise in
+                                    </p>
+
                                     <div className="space-y-3">
                                         {availableFocusAreas.map((area, index) => (
                                             <FilterLink
                                                 key={area.value}
                                                 label={area.label}
                                                 isActive={activeSubFilter === area.value}
-                                                onClick={() => setActiveSubFilter(activeSubFilter === area.value ? null : area.value)}
+                                                onClick={() =>
+                                                    setActiveSubFilter(
+                                                        activeSubFilter === area.value ? null : area.value
+                                                    )
+                                                }
                                                 isOpen={isOpen}
                                                 baseDelay={450}
                                                 index={index}
@@ -275,27 +469,26 @@ export const MegaMenu: React.FC<MegaMenuProps> = ({ isOpen, onMouseEnter, onMous
                                 </div>
                             )}
 
-                            {/* Divider if both exist */}
-                            {availableFocusAreas.length > 0 && availableLevels.length > 0 && (
-                                <div
-                                    className={`w-full h-px bg-white/5 my-6 transition-opacity duration-500 ${isOpen ? 'opacity-100' : 'opacity-0'}`}
-                                    style={{ transitionDelay: isOpen ? '500ms' : '0ms' }}
-                                ></div>
-                            )}
-
-                            {/* Study Levels Group */}
                             {availableLevels.length > 0 && (
                                 <div>
-                                    <p className={`text-xs font-bold text-gray-500 uppercase tracking-widest mb-6 transition-opacity duration-500 ${isOpen ? 'opacity-100' : 'opacity-0'}`} style={{ transitionDelay: isOpen ? '550ms' : '0ms' }}>
-                                        Qualification Level
+                                    <p className="text-xs font-bold text-brand-gold uppercase tracking-widest mb-2">
+                                        Study Level
                                     </p>
+                                    <p className="text-xs text-gray-400 mb-4">
+                                        Filter by outcome or recognition
+                                    </p>
+
                                     <div className="space-y-3">
                                         {availableLevels.map((level, index) => (
                                             <FilterLink
                                                 key={level}
                                                 label={level}
                                                 isActive={activeSubFilter === level}
-                                                onClick={() => setActiveSubFilter(activeSubFilter === level ? null : level)}
+                                                onClick={() =>
+                                                    setActiveSubFilter(
+                                                        activeSubFilter === level ? null : level
+                                                    )
+                                                }
                                                 isOpen={isOpen}
                                                 baseDelay={600}
                                                 index={index}
@@ -307,55 +500,91 @@ export const MegaMenu: React.FC<MegaMenuProps> = ({ isOpen, onMouseEnter, onMous
                         </div>
                     </div>
 
-                    {/* Column 3: Course List (42%) */}
-                    <div className="w-[42%] h-full pl-8 py-12 flex flex-col justify-start bg-[#001D36] relative overflow-hidden">
-                        <p className={`text-xs font-bold text-[#C2B067] uppercase tracking-widest mb-8 transition-opacity duration-700 delay-200 ${isOpen ? 'opacity-100' : 'opacity-0'}`}>
-                            {displayedOfferings.length} {displayedOfferings.length === 1 ? 'Programme' : 'Programmes'} Found
-                        </p>
-
-                        <div className="flex-1 overflow-y-auto custom-scrollbar pr-4 -mr-4">
-                            <div className="space-y-4 pb-20">
-                                {displayedOfferings.map((course, index) => {
-                                    const isEcommerce = checkIsEcommerce(course);
-                                    // Stagger entrance of courses
-                                    const delay = isOpen ? 400 + (index * 50) : 0;
-
-                                    return (
-                                        <div
-                                            key={course.id}
-                                            className={`group relative bg-[#0a233f] border border-white/5 hover:border-[#C2B067]/30 p-5 rounded-sm transition-all duration-500 ${isOpen ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}
-                                            style={{ transitionDelay: `${delay}ms` }}
-                                        >
-                                            <Link to={`/course/${course.id}`} className="block">
-                                                <div className="flex justify-between items-start mb-2">
-                                                    <span className="text-[10px] font-bold text-[#C2B067] uppercase tracking-wider">{course.category}</span>
-                                                    <span className="text-[10px] font-bold text-gray-500 uppercase">{course.qualification}</span>
-                                                </div>
-                                                <h4 className="text-white font-serif font-bold text-lg mb-2 group-hover:text-[#C2B067] transition-colors leading-tight">
-                                                    {course.title}
-                                                </h4>
-                                                <div className="flex items-center justify-between mt-4 border-t border-white/5 pt-3">
-                                                    <span className="text-sm font-bold text-white">R {course.price?.toLocaleString() || 'TBA'}</span>
-
-                                                    <button
-                                                        onClick={(e) => handleApplyClick(e, course)}
-                                                        className="text-[10px] font-bold uppercase tracking-[1px] text-white hover:text-[#C2B067] flex items-center gap-2 transition-colors"
-                                                    >
-                                                        {isEcommerce ? 'Buy Now' : 'Apply Now'} <ArrowRight size={12} />
-                                                    </button>
-                                                </div>
-                                            </Link>
-                                        </div>
-                                    );
-                                })}
-
-                                {displayedOfferings.length === 0 && (
-                                    <div className="text-gray-400 italic text-sm">
-                                        Select a filter to view programmes.
-                                    </div>
-                                )}
+                    {/* COLUMN 3 – RESULTS */}
+                    <div
+                        className={`w-[42%] h-full pl-12 py-12 flex flex-col transition-opacity duration-500 ${
+                            hasInteracted ? 'opacity-100' : 'opacity-60'
+                        }`}
+                    >
+                        {!hasInteracted ? (
+                            <div className="flex flex-col items-center justify-center h-full text-center px-8">
+                                <p className="text-[#C2B067] uppercase tracking-widest text-xs font-bold mb-4">
+                                    Refine your selection
+                                </p>
+                                <p className="text-gray-400 max-w-sm">
+                                    Choose a focus area or Study Level to view matching programmes.
+                                </p>
                             </div>
-                        </div>
+                        ) : (
+                            <>
+                                <div className="flex items-center justify-between mb-6">
+                                    <p className="text-xs font-bold text-[#C2B067] uppercase tracking-widest">
+                                        {displayedOfferings.length} Programmes Found
+                                    </p>
+
+                                    {activeSubFilter && (
+                                        <button
+                                            onClick={() => setActiveSubFilter(null)}
+                                            className="text-xs text-gray-400 hover:text-white"
+                                        >
+                                            Clear filter ✕
+                                        </button>
+                                    )}
+                                </div>
+
+                                <div className="flex-1 overflow-y-auto custom-scrollbar pr-4 -mr-4">
+                                    <div className="space-y-4 pb-16">
+                                        {displayedOfferings.map((course, index) => {
+                                            const isEcommerce = checkIsEcommerce(course);
+                                            const delay = 300 + index * 50;
+
+                                            return (
+                                                <div
+                                                    key={course.id}
+                                                    className="bg-[#0a233f] border border-white/5 hover:border-[#C2B067]/30 p-5 rounded-sm transition-all duration-500"
+                                                    style={{ transitionDelay: `${delay}ms` }}
+                                                >
+                                                    <Link
+                                                        to={`/course/${course.id}`}
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            handleDelayedLinkClick(`/course/${course.id}`);
+                                                        }}
+                                                    >
+                                                        {/* <div className="flex justify-between mb-2">
+                                                            <span className="text-[10px] font-bold text-[#C2B067] uppercase">
+                                                                {course.category}
+                                                            </span>
+                                                            <span className="text-[10px] font-bold text-gray-500 uppercase">
+                                                                {course.qualification}
+                                                            </span>
+                                                        </div> */}
+
+                                                        <h4 className="text-white font-serif font-bold text-base mb-4 mr-0 leading-relaxed hover:text-[#C2B067] transition-colors">
+                                                            {course.title}
+                                                        </h4>
+
+                                                        <div className="flex justify-between items-center border-t border-white/5 pt-3">
+                                                            <span className="text-sm font-bold text-white">
+                                                                R {course.price?.toLocaleString() || 'TBA'}
+                                                            </span>
+
+                                                            <button
+                                                                onClick={(e) => handleApplyClick(e, course)}
+                                                                className="text-[10px] font-bold uppercase tracking-wider text-brand-gold hover:text-[#C2B067] flex items-center gap-2"
+                                                            >
+                                                                {isEcommerce ? 'Buy Now' : 'Apply Now'}
+                                                                <ArrowRight size={12} />
+                                                            </button>
+                                                        </div>
+                                                    </Link>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            </>
+                        )}
                     </div>
 
                 </div>

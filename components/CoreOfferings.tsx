@@ -1,8 +1,7 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { OFFERINGS } from '../constants';
 import { Button } from './ui/Button';
-import { CheckboxGroup } from './ui/CheckboxGroup';
+// Remove CheckboxGroup import as it is now in FilterSlidePanel
 import {
     SlidersHorizontal,
     ChevronLeft,
@@ -16,6 +15,7 @@ import { Offering } from '../types';
 import { useTransition } from '../context/TransitionContext';
 import gsap from 'gsap';
 import { CourseCard } from './CourseCard';
+import { FilterSlidePanel } from './FilterSlidePanel';
 
 // --- Tabs / Filter Options ---
 const TABS = [
@@ -28,13 +28,13 @@ const TABS = [
 ];
 
 const STUDY_LEVELS = [
-    'AHLEI Professional Certification',
-    'Credit Bearing Short Courses',
     'Degrees',
-    'Diplomas',
     'Higher Certificates',
+    'Diplomas',
+    'Occupational Certificates',
     'Specialisations',
-    'Non-credit Bearing Short Courses'
+    'Certificates',
+    'Short Courses'
 ];
 
 const FOCUS_AREAS = [
@@ -47,17 +47,17 @@ const FOCUS_AREAS = [
 ];
 
 const ACCREDITATIONS = [
-    'AHLEI',
-    'CATHSSETA',
-    'City & Guilds',
-    'QCTO',
-    'École Ducasse',
-    'CHE',
-    'International Hotel School'
+    { label: 'International Hotel School', value: 'IHS' },
+    { label: 'AHLEI', value: 'AHLEI' },
+    { label: 'CATHSSETA', value: 'CATHSSETA' },
+    { label: 'QCTO', value: 'QCTO' }
 ];
 
 // Helper to convert strings to options for CheckboxGroup
 const toOptions = (items: string[]) => items.map(item => ({ label: item, value: item }));
+
+// Helper for accreditation options (has custom labels)
+const toAccreditationOptions = (items: { label: string; value: string }[]) => items.map(item => ({ label: item.label, value: item.value }));
 
 // --- Main CoreOfferings Component ---
 export const CoreOfferings: React.FC = () => {
@@ -80,37 +80,10 @@ export const CoreOfferings: React.FC = () => {
     const [selectedAccreditations, setSelectedAccreditations] = useState<string[]>([]);
     const [displayedOfferings, setDisplayedOfferings] = useState<Offering[]>([]);
 
+
     // --- GSAP Drawer Animation ---
-    useEffect(() => {
-        const ctx = gsap.context(() => {
-            if (isFilterOpen) {
-                // Open sequence
-                gsap.to(backdropRef.current, {
-                    autoAlpha: 1,
-                    duration: 0.4,
-                    ease: "power2.out"
-                });
-                gsap.fromTo(drawerRef.current,
-                    { x: '-100%' },
-                    { x: '0%', duration: 0.5, ease: "expo.out", delay: 0.1 }
-                );
-            } else {
-                // Close sequence
-                gsap.to(drawerRef.current, {
-                    x: '-100%',
-                    duration: 0.4,
-                    ease: "power2.in"
-                });
-                gsap.to(backdropRef.current, {
-                    autoAlpha: 0,
-                    duration: 0.3,
-                    delay: 0.1,
-                    ease: "power2.in"
-                });
-            }
-        });
-        return () => ctx.revert();
-    }, [isFilterOpen]);
+    // Moved to FilterSlidePanel component
+    /* useEffect(() => { ... } removed */
 
     // --- Filtering Logic (Data only) ---
     useEffect(() => {
@@ -122,7 +95,23 @@ export const CoreOfferings: React.FC = () => {
             filtered = filtered.filter((o: Offering) => o.title.toLowerCase().includes(q) || o.description.toLowerCase().includes(q));
         }
         if (selectedStudyLevels.length) {
-            filtered = filtered.filter((o: Offering) => selectedStudyLevels.some(level => o.programmeTypes.includes(level) || o.qualification === level));
+            filtered = filtered.filter((o: Offering) => selectedStudyLevels.some(level => {
+                // Check direct match first
+                if (o.programmeTypes.includes(level) || o.qualification === level) return true;
+                
+                // Handle plurals/singulars mapping
+                const mappings: Record<string, string[]> = {
+                    'Degrees': ['Degree'],
+                    'Higher Certificates': ['Higher Certificate'],
+                    'Diplomas': ['Diploma'],
+                    'Occupational Certificates': ['Occupational Certificate'],
+                    'Specialisations': ['Specialisation'],
+                    'Certificates': ['Certificate'],
+                    'Short Courses': ['Short Course']
+                };
+                
+                return mappings[level]?.some(m => o.qualification === m) || false;
+            }));
         }
         if (selectedFocusAreas.length) {
             filtered = filtered.filter((o: Offering) => selectedFocusAreas.every(area => {
@@ -198,103 +187,24 @@ export const CoreOfferings: React.FC = () => {
                 ))}
             </div>
 
-            {/* GSAP Animated Backdrop */}
-            <div
-                ref={backdropRef}
-                className="fixed inset-0 z-[55] bg-black/40 backdrop-blur-sm opacity-0 invisible"
-                onClick={() => setIsFilterOpen(false)}
+            <FilterSlidePanel 
+                isOpen={isFilterOpen}
+                onClose={() => setIsFilterOpen(false)}
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                studyLevels={STUDY_LEVELS}
+                selectedStudyLevels={selectedStudyLevels}
+                onStudyLevelsChange={setSelectedStudyLevels}
+                focusAreas={FOCUS_AREAS}
+                selectedFocusAreas={selectedFocusAreas}
+                onFocusAreasChange={setSelectedFocusAreas}
+                accreditations={ACCREDITATIONS}
+                selectedAccreditations={selectedAccreditations}
+                onAccreditationsChange={setSelectedAccreditations}
+                totalResults={displayedOfferings.length}
+                activeFilterCount={activeFilterCount}
+                onResetFilters={resetFilters}
             />
-
-            {/* GSAP Animated Light Theme Drawer */}
-            <div
-                ref={drawerRef}
-                className="fixed top-0 left-0 bottom-0 w-[340px] z-[60] bg-white shadow-2xl transform -translate-x-full will-change-transform flex flex-col border-r border-gray-200"
-            >
-                {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-gray-100 bg-white shrink-0">
-                    <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-brand-accent/10 flex items-center justify-center text-brand-primary">
-                            <Filter size={18} />
-                        </div>
-                        <h3 className="text-brand-primary font-serif font-bold text-xl">Filters</h3>
-                    </div>
-                    <button
-                        onClick={() => setIsFilterOpen(false)}
-                        className="bg-gray-100 hover:bg-gray-200 p-2 rounded-full text-gray-500 transition-colors"
-                    >
-                        <X size={20} />
-                    </button>
-                </div>
-
-                {/* Content */}
-                <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col bg-white">
-                    {/* Search Input */}
-                    <div className="p-6 pb-2">
-                        <label className="text-xs uppercase font-bold text-gray-400 mb-2 block tracking-wider">Search</label>
-                        <div className="relative group">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-brand-accent transition-colors" size={18} />
-                            <input
-                                type="text"
-                                placeholder="Keywords..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full bg-gray-50 border border-gray-200 rounded-sm py-3 pl-10 pr-4 text-sm text-brand-primary focus:border-brand-accent focus:bg-white outline-none transition-all placeholder:text-gray-400"
-                            />
-                            {searchQuery && (
-                                <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500">
-                                    <X size={14} />
-                                </button>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Accordions */}
-                    <div className="divide-y divide-gray-50 mt-4">
-                        <CheckboxGroup
-                            title="Study Level"
-                            options={toOptions(STUDY_LEVELS)}
-                            selectedValues={selectedStudyLevels}
-                            onChange={(val) => toggleFilter(setSelectedStudyLevels, val)}
-                            variant="accordion"
-                            theme="light"
-                            defaultOpen={true}
-                        />
-                        <CheckboxGroup
-                            title="Focus Areas"
-                            options={toOptions(FOCUS_AREAS)}
-                            selectedValues={selectedFocusAreas}
-                            onChange={(val) => toggleFilter(setSelectedFocusAreas, val)}
-                            variant="accordion"
-                            theme="light"
-                            defaultOpen={false}
-                        />
-                        <CheckboxGroup
-                            title="Accreditation"
-                            options={toOptions(ACCREDITATIONS)}
-                            selectedValues={selectedAccreditations}
-                            onChange={(val) => toggleFilter(setSelectedAccreditations, val)}
-                            variant="accordion"
-                            theme="light"
-                            defaultOpen={false}
-                        />
-                    </div>
-                </div>
-
-                {/* Footer */}
-                <div className="p-6 bg-gray-50 border-t border-gray-100 shrink-0 flex flex-col gap-3">
-                    <div className="flex justify-between items-center text-xs text-gray-500 font-medium uppercase tracking-wide">
-                        <span>{displayedOfferings.length} Programmes Found</span>
-                        {activeFilterCount > 0 && (
-                            <button onClick={resetFilters} className="text-red-500 hover:text-red-700 underline decoration-red-200 hover:decoration-red-700 underline-offset-2 tracking-[1px]">
-                                Reset Filters
-                            </button>
-                        )}
-                    </div>
-                    <Button variant="primary" className="w-full justify-center py-4 tracking-[1px]" onClick={() => setIsFilterOpen(false)}>
-                        View Results
-                    </Button>
-                </div>
-            </div>
 
             {/* --- TOP SECTION (Static White) --- */}
             <div className="relative bg-gray-50 pt-20 pb-20">
@@ -388,3 +298,4 @@ export const CoreOfferings: React.FC = () => {
         </section>
     );
 };
+

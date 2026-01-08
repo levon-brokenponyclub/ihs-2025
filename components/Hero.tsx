@@ -3,6 +3,10 @@ import React, { useState, useEffect } from 'react';
 import { Button } from './ui/Button';
 import { ArrowRight, Search } from 'lucide-react';
 
+interface HeroProps {
+  onFinderClick?: () => void;
+}
+
 const SLIDES = [
   {
     id: 0,
@@ -22,7 +26,8 @@ const SLIDES = [
     title: "Training Solutions",
     description: "Bespoke training solutions for industry partners. Upskill your workforce with world-class curriculum.",
     type: 'video',
-    src: 'https://www.shutterstock.com/shutterstock/videos/1087550930/preview/stock-footage-chef-teaching-how-to-cook-cutting-vegetables-indoors-in-commercial-kitchen.webm',
+    src: 'https://www.shutterstock.com/shutterstock/videos/1105580105/preview/stock-footage-tracking-shot-african-american-tourists-wanting-upgrade.webm',
+    poster: 'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?q=80&w=2940',
     primaryBtn: { label: 'Corporate Enquiries', icon: ArrowRight, action: 'link' },
     theme: 'gold',
   },
@@ -32,13 +37,14 @@ const SLIDES = [
     title: "New Programmes",
     description: "Intake One 2026 is officially open. Brave Through. It's YOUR legacy.",
     type: 'video',
-    src: 'https://www.shutterstock.com/shutterstock/videos/3541615587/preview/stock-footage-hotel-employees-and-guest-at-reception-for-check-in-hospitality-and-accommodation-with-tourism.webm',
+    src: 'https://www.shutterstock.com/shutterstock/videos/3941586401/preview/stock-footage-hospitality-face-woman-hotel-smile-about-us.webm',
+    poster: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=2940',
     primaryBtn: { label: 'View 2026 Intake', icon: ArrowRight, action: 'scroll' },
     theme: 'gold',
   }
 ];
 
-export const Hero: React.FC = () => {
+export const Hero: React.FC<HeroProps> = ({ onFinderClick }) => {
   const [activeSlide, setActiveSlide] = useState(0);
   const [isExiting, setIsExiting] = useState(false);
   const [isVideoLoaded, setIsVideoLoaded] = useState(false);
@@ -102,7 +108,7 @@ export const Hero: React.FC = () => {
                   onLoadedData={() => setIsVideoLoaded(true)}
                   className="absolute inset-0 w-full h-full object-cover scale-105"
                 >
-                  <source src={slide.src} type="video/mp4" />
+                  <source src={slide.src} type={slide.src.endsWith('.webm') ? 'video/webm' : 'video/mp4'} />
                 </video>
               </>
             ) : (
@@ -176,7 +182,7 @@ export const Hero: React.FC = () => {
                         icon={<slide.primaryBtn.icon size={16} />}
                         onClick={() => {
                           if (slide.primaryBtn.action === 'finder') {
-                            document.getElementById('offerings')?.scrollIntoView({ behavior: 'smooth' });
+                            onFinderClick?.();
                           }
                         }}
                         className="hover:scale-105 transition-transform duration-300"

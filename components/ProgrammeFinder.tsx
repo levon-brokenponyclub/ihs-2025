@@ -118,15 +118,15 @@ export const ProgrammeFinder: React.FC<FinderProps> = ({ isOpen, onClose }) => {
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-brand-dark/90 backdrop-blur-md" onClick={onClose} />
+            <div className="absolute inset-0 bg-brand-primary/60 backdrop-blur-md" onClick={onClose} />
 
-            <div className="relative bg-brand-card w-full max-w-3xl rounded-sm shadow-2xl overflow-hidden border border-white/10 flex flex-col min-h-[550px] animate-in fade-in zoom-in duration-300">
+            <div className="relative bg-white w-full max-w-3xl rounded-sm shadow-2xl overflow-hidden border border-brand-primary/10 flex flex-col min-h-[550px] animate-in fade-in zoom-in duration-300">
 
                 {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-white/5 bg-[#162036]">
+                <div className="flex items-center justify-between p-6 border-b border-white/10 bg-brand-primary text-white">
                     <div className="flex items-center gap-3">
                         {currentStep > 0 && currentStep < STEPS.length && (
-                            <button onClick={handleBack} className="text-gray-400 hover:text-white transition-colors">
+                            <button onClick={handleBack} className="text-white/60 hover:text-white transition-colors">
                                 <ArrowLeft size={20} />
                             </button>
                         )}
@@ -136,15 +136,52 @@ export const ProgrammeFinder: React.FC<FinderProps> = ({ isOpen, onClose }) => {
                     </div>
                     <button
                         onClick={onClose}
-                        className="w-8 h-8 flex items-center justify-center bg-white/5 text-gray-400 rounded-full hover:bg-white/10 hover:text-white transition-colors"
+                        className="text-white h-[40px] w-[40px] flex items-center justify-center hover:opacity-70 transition-opacity bg-white/10 p-2 rounded-full"
                     >
-                        <X size={20} />
+                        <svg width="100%" height="100%" viewBox="0 0 100 100" className="overflow-visible">
+                            <path
+                                d="M 20,29.000046 H 80.000231 C 80.000231,29.000046 94.498839,28.817352 94.532987,66.711331 94.543142,77.980673 90.966081,81.670246 85.259173,81.668997 79.552261,81.667751 75.000211,74.999942 75.000211,74.999942 L 25.000021,25.000058"
+                                style={{
+                                    fill: 'none',
+                                    stroke: 'white',
+                                    strokeWidth: 8,
+                                    strokeLinecap: 'round',
+                                    transition: 'stroke-dasharray 600ms cubic-bezier(0.4, 0, 0.2, 1), stroke-dashoffset 600ms cubic-bezier(0.4, 0, 0.2, 1)',
+                                    strokeDasharray: isOpen ? '90 207' : '60 207',
+                                    strokeDashoffset: isOpen ? -134 : 0
+                                }}
+                            />
+                            <path
+                                d="M 20,50 H 80"
+                                style={{
+                                    fill: 'none',
+                                    stroke: 'white',
+                                    strokeWidth: 8,
+                                    strokeLinecap: 'round',
+                                    transition: 'stroke-dasharray 600ms cubic-bezier(0.4, 0, 0.2, 1), stroke-dashoffset 600ms cubic-bezier(0.4, 0, 0.2, 1)',
+                                    strokeDasharray: isOpen ? '1 60' : '60 60',
+                                    strokeDashoffset: isOpen ? -30 : 0
+                                }}
+                            />
+                            <path
+                                d="M 20,70.999954 H 80.000231 C 80.000231,70.999954 94.498839,71.182648 94.532987,33.288669 94.543142,22.019327 90.966081,18.329754 85.259173,18.331003 79.552261,18.332249 75.000211,25.000058 75.000211,25.000058 L 25.000021,74.999942"
+                                style={{
+                                    fill: 'none',
+                                    stroke: 'white',
+                                    strokeWidth: 8,
+                                    strokeLinecap: 'round',
+                                    transition: 'stroke-dasharray 600ms cubic-bezier(0.4, 0, 0.2, 1), stroke-dashoffset 600ms cubic-bezier(0.4, 0, 0.2, 1)',
+                                    strokeDasharray: isOpen ? '90 207' : '60 207',
+                                    strokeDashoffset: isOpen ? -134 : 0
+                                }}
+                            />
+                        </svg>
                     </button>
                 </div>
 
                 {/* Progress Bar */}
                 {currentStep < STEPS.length && (
-                    <div className="h-1 bg-white/5 w-full">
+                    <div className="h-1 bg-brand-primary/5 w-full">
                         <div
                             className="h-full bg-brand-gold transition-all duration-500 ease-out"
                             style={{ width: `${progress}%` }}
@@ -153,7 +190,7 @@ export const ProgrammeFinder: React.FC<FinderProps> = ({ isOpen, onClose }) => {
                 )}
 
                 {/* Content */}
-                <div className="flex-1 p-8 md:p-12 overflow-y-auto relative bg-[#0B1221]">
+                <div className="flex-1 p-8 md:p-12 overflow-y-auto relative bg-white">
 
                     {currentStep < STEPS.length ? (
                         <div className={`space-y-8 transition-opacity duration-300 ${isAnimating ? 'opacity-0' : 'opacity-100'}`}>
@@ -161,7 +198,7 @@ export const ProgrammeFinder: React.FC<FinderProps> = ({ isOpen, onClose }) => {
                                 <span className="text-brand-gold text-xs font-bold uppercase tracking-widest mb-3 block">
                                     Step {currentStep + 1} of {STEPS.length}
                                 </span>
-                                <h3 className="text-3xl md:text-4xl font-serif text-white mb-4">
+                                <h3 className="text-3xl md:text-4xl font-serif text-brand-primary mb-4">
                                     {STEPS[currentStep].question}
                                 </h3>
                             </div>
@@ -171,13 +208,13 @@ export const ProgrammeFinder: React.FC<FinderProps> = ({ isOpen, onClose }) => {
                                     <button
                                         key={option.id}
                                         onClick={() => handleOptionSelect(option.id)}
-                                        className="group relative p-6 bg-[#162036] border border-white/10 rounded-sm hover:border-brand-gold transition-all duration-300 text-left hover:bg-white/5"
+                                        className="group relative p-6 bg-surface-main border border-brand-primary/10 rounded-sm hover:border-brand-gold transition-all duration-300 text-left hover:bg-surface-subtle"
                                     >
-                                        <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center text-brand-gold mb-4 group-hover:scale-110 transition-transform">
+                                        <div className="w-12 h-12 rounded-full bg-brand-primary/5 flex items-center justify-center text-brand-gold mb-4 group-hover:scale-110 transition-transform">
                                             <option.icon size={24} />
                                         </div>
-                                        <h4 className="text-lg font-bold text-white mb-2">{option.label}</h4>
-                                        <p className="text-gray-400 text-xs">{option.description}</p>
+                                        <h4 className="text-lg font-bold text-brand-primary mb-2">{option.label}</h4>
+                                        <p className="text-gray-500 text-xs">{option.description}</p>
                                         <div className="absolute top-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity -translate-x-2 group-hover:translate-x-0">
                                             <ChevronRight className="text-brand-gold" />
                                         </div>
@@ -190,7 +227,7 @@ export const ProgrammeFinder: React.FC<FinderProps> = ({ isOpen, onClose }) => {
                                 <div className="mt-6 text-center">
                                     <button
                                         onClick={handleSkip}
-                                        className="text-gray-500 hover:text-brand-gold text-sm font-medium transition-colors border-b border-transparent hover:border-brand-gold pb-0.5 tracking-wide"
+                                        className="text-gray-400 hover:text-brand-gold text-sm font-medium transition-colors border-b border-transparent hover:border-brand-gold pb-0.5 tracking-wide"
                                     >
                                         I'm not sure
                                     </button>
@@ -203,16 +240,16 @@ export const ProgrammeFinder: React.FC<FinderProps> = ({ isOpen, onClose }) => {
                                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-500/10 text-green-500 mb-4 border border-green-500/20">
                                     <Check size={32} />
                                 </div>
-                                <h3 className="text-3xl font-serif text-white mb-2">
+                                <h3 className="text-3xl font-serif text-brand-primary mb-2">
                                     We Found {filteredOfferings.length} Match{filteredOfferings.length !== 1 ? 'es' : ''}
                                 </h3>
-                                <div className="text-gray-400 text-sm flex flex-wrap justify-center gap-2">
+                                <div className="text-gray-500 text-sm flex flex-wrap justify-center gap-2">
                                     <span>Based on:</span>
-                                    <span className="text-brand-gold bg-brand-gold/10 px-2 py-0.5 rounded-sm">{selections.interest}</span>
+                                    <span className="text-brand-gold bg-brand-gold/10 px-2 py-0.5 rounded-sm font-semibold">{selections.interest}</span>
                                     <span>•</span>
-                                    <span className="text-brand-gold bg-brand-gold/10 px-2 py-0.5 rounded-sm">{selections.mode}</span>
+                                    <span className="text-brand-gold bg-brand-gold/10 px-2 py-0.5 rounded-sm font-semibold">{selections.mode}</span>
                                     <span>•</span>
-                                    <span className="text-brand-gold bg-brand-gold/10 px-2 py-0.5 rounded-sm">{selections.level}</span>
+                                    <span className="text-brand-gold bg-brand-gold/10 px-2 py-0.5 rounded-sm font-semibold">{selections.level}</span>
                                 </div>
                             </div>
 
@@ -221,7 +258,7 @@ export const ProgrammeFinder: React.FC<FinderProps> = ({ isOpen, onClose }) => {
                                     <Link
                                         key={course.id}
                                         to={`/course/${course.id}`}
-                                        className="flex flex-col md:flex-row bg-[#162036] border border-white/10 rounded-sm overflow-hidden hover:border-brand-gold/50 transition-colors group"
+                                        className="flex flex-col md:flex-row bg-surface-main border border-brand-primary/10 rounded-sm overflow-hidden hover:border-brand-gold/50 transition-colors group"
                                         onClick={onClose}
                                     >
                                         <div className="md:w-32 h-32 md:h-auto relative shrink-0">
@@ -229,18 +266,18 @@ export const ProgrammeFinder: React.FC<FinderProps> = ({ isOpen, onClose }) => {
                                         </div>
                                         <div className="p-4 flex-1 flex flex-col justify-center">
                                             <div className="flex justify-between items-start mb-1">
-                                                <h4 className="text-sm font-bold text-white group-hover:text-brand-gold transition-colors line-clamp-1">{course.title}</h4>
-                                                <ChevronRight className="text-gray-500 group-hover:text-brand-gold shrink-0" size={16} />
+                                                <h4 className="text-sm font-bold text-brand-primary group-hover:text-brand-gold transition-colors line-clamp-1">{course.title}</h4>
+                                                <ChevronRight className="text-gray-400 group-hover:text-brand-gold shrink-0" size={16} />
                                             </div>
                                             <p className="text-[10px] text-brand-gold uppercase tracking-wider mb-2 font-bold">{course.qualification} • {course.duration}</p>
-                                            <p className="text-gray-400 text-xs line-clamp-2">{course.description}</p>
+                                            <p className="text-gray-500 text-xs line-clamp-2">{course.description}</p>
                                         </div>
                                     </Link>
                                 ))}
 
                                 {filteredOfferings.length === 0 && (
-                                    <div className="text-center py-12 bg-white/5 rounded-sm border border-white/5 border-dashed">
-                                        <p className="text-gray-300 mb-4 font-serif text-lg">No exact matches found.</p>
+                                    <div className="text-center py-12 bg-surface-main rounded-sm border border-brand-primary/10 border-dashed">
+                                        <p className="text-brand-primary mb-4 font-serif text-lg">No exact matches found.</p>
                                         <p className="text-gray-500 text-sm mb-6">Try adjusting your filters to find more programmes.</p>
                                         <Button variant="secondary" onClick={handleReset} icon={<RefreshCw size={16} />}>
                                             Start Over

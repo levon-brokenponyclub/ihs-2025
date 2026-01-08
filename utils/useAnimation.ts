@@ -1,5 +1,3 @@
-
-import { CSSProperties } from 'react';
 import { AnimationConfig } from './overlayAnimations';
 
 export const useAnimation = (

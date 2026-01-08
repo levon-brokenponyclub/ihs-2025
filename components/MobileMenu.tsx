@@ -1,16 +1,17 @@
+
 import React, { useState, useEffect } from 'react';
 import { ChevronRight, ArrowLeft, ArrowRight, Clock, ShoppingBag } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { NAV_LINKS, MORE_MENU_LINKS, OFFERINGS } from '../constants';
+import { NAV_LINKS, MORE_MENU_LINKS, OFFERINGS, ADMISSIONS_LINKS, EXPERIENCES_LINKS } from '../constants';
 import { Offering } from '../types';
 import { useCart } from '../context/CartContext';
 
 const PROGRAMME_TYPES = [
-    { label: 'Full Time Learning', value: 'Full Time Learning' },
-    { label: 'Blended Learning', value: 'Blended Learning' },
-    { label: 'In-Service Traineeship', value: 'In-Service Traineeship' },
-    { label: 'Part Time Learning', value: 'Part Time Learning' },
-    { label: 'Online Learning', value: 'Online Learning' },
+    { label: 'Full Time Learning', value: 'Full Time Learning', slug: 'full-time' },
+    { label: 'Blended Learning', value: 'Blended Learning', slug: 'blended' },
+    { label: 'In-Service Traineeship', value: 'In-Service Traineeship', slug: 'in-service' },
+    { label: 'Part Time Learning', value: 'Part Time Learning', slug: 'part-time' },
+    { label: 'Online Learning', value: 'Online Learning', slug: 'online' },
 ];
 
 interface MobileMenuProps {
@@ -60,8 +61,8 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
 
     // Helper to determine if a course is e-commerce (Buy Now) vs Application (Apply Now)
     const checkIsEcommerce = (course: Offering) => {
-        // Only "Purchasing for Food Service Operations" (ID 19) is Buy Now
-        return course.id === '19';
+        // Only "Purchasing for Food Service Operations" (ID 19) and "Puff Pastry" are Buy Now
+        return ['19', 'puff-pastry'].includes(course.id);
     };
 
     const handleApplyClick = (course: Offering) => {
@@ -82,17 +83,44 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
             <div className="flex-1 overflow-y-auto py-2">
                 <div className="px-0">
                     <div className="space-y-0 divide-y divide-gray-100">
-                        {NAV_LINKS.map(link => (
-                            link.label === 'Our Programmes' ? (
-                                <button
-                                    key={link.label}
-                                    onClick={() => pushPanel({ id: 'programmes', title: 'Our Programmes', previousTitle: 'Main Menu' })}
-                                    className="w-full flex items-center justify-between text-lg font-bold text-[#002B4E] py-5 px-6 hover:bg-gray-50 transition-colors"
-                                >
-                                    {link.label}
-                                    <ChevronRight size={20} className="text-brand-accent" />
-                                </button>
-                            ) : (
+                        {NAV_LINKS.map(link => {
+                            if (link.label === 'Our Programmes') {
+                                return (
+                                    <button
+                                        key={link.label}
+                                        onClick={() => pushPanel({ id: 'programmes', title: 'Our Programmes', previousTitle: 'Main Menu' })}
+                                        className="w-full flex items-center justify-between text-lg font-bold text-[#002B4E] py-5 px-6 hover:bg-gray-50 transition-colors"
+                                    >
+                                        {link.label}
+                                        <ChevronRight size={20} className="text-brand-accent" />
+                                    </button>
+                                );
+                            }
+                            if (link.label === 'Admissions') {
+                                return (
+                                    <button
+                                        key={link.label}
+                                        onClick={() => pushPanel({ id: 'admissions', title: 'Admissions', previousTitle: 'Main Menu' })}
+                                        className="w-full flex items-center justify-between text-lg font-bold text-[#002B4E] py-5 px-6 hover:bg-gray-50 transition-colors"
+                                    >
+                                        {link.label}
+                                        <ChevronRight size={20} className="text-brand-accent" />
+                                    </button>
+                                );
+                            }
+                            if (link.label === 'Experiences') {
+                                return (
+                                    <button
+                                        key={link.label}
+                                        onClick={() => pushPanel({ id: 'experiences', title: 'Experiences', previousTitle: 'Main Menu' })}
+                                        className="w-full flex items-center justify-between text-lg font-bold text-[#002B4E] py-5 px-6 hover:bg-gray-50 transition-colors"
+                                    >
+                                        {link.label}
+                                        <ChevronRight size={20} className="text-brand-accent" />
+                                    </button>
+                                );
+                            }
+                            return (
                                 <Link
                                     key={link.label}
                                     to={link.href}
@@ -101,8 +129,8 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
                                 >
                                     {link.label}
                                 </Link>
-                            )
-                        ))}
+                            );
+                        })}
                     </div>
                 </div>
 
@@ -132,6 +160,44 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
                     <button className="py-3 px-4 bg-[#002B4E] text-white text-xs font-bold uppercase rounded-sm text-center tracking-[1px]">
                         Apply Now
                     </button>
+                </div>
+            </div>
+        </div>
+    );
+
+    const renderAdmissionsPanel = () => (
+        <div className="flex flex-col h-full bg-white">
+            <div className="flex-1 overflow-y-auto pb-12">
+                <div className="divide-y divide-gray-100">
+                    {ADMISSIONS_LINKS.map(link => (
+                        <Link
+                            key={link.label}
+                            to={link.href}
+                            onClick={() => handleLinkClick(link.href)}
+                            className="block text-base font-bold text-[#002B4E] py-4 px-6 hover:bg-gray-50 transition-colors"
+                        >
+                            {link.label}
+                        </Link>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+
+    const renderExperiencesPanel = () => (
+        <div className="flex flex-col h-full bg-white">
+            <div className="flex-1 overflow-y-auto pb-12">
+                <div className="divide-y divide-gray-100">
+                    {EXPERIENCES_LINKS.map(link => (
+                        <Link
+                            key={link.label}
+                            to={link.href}
+                            onClick={() => handleLinkClick(link.href)}
+                            className="block text-base font-bold text-[#002B4E] py-4 px-6 hover:bg-gray-50 transition-colors"
+                        >
+                            {link.label}
+                        </Link>
+                    ))}
                 </div>
             </div>
         </div>
@@ -167,6 +233,8 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
     const renderTypePanel = (type: string) => {
         // Filter Offerings for this type
         const courses = OFFERINGS.filter(o => o.programmeTypes.includes(type));
+        const typeObj = PROGRAMME_TYPES.find(t => t.value === type);
+        const slug = typeObj?.slug || '';
 
         // Extract available filters for this type
         const uniqueFocusAreas = Array.from(new Set(courses.map(o => o.category))).sort();
@@ -174,28 +242,24 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
 
         return (
             <div className="flex flex-col h-full bg-white">
-                <div className="p-6 bg-brand-surface border-b border-gray-100">
-                    <p className="text-gray-600 text-sm mb-4 leading-relaxed">
+                <div className="p-6 bg-surface-main border-b border-surface-main">
+                    <p className="text-gray-500 font-medium text-sm mb-3 leading-relaxed">
                         Explore our {type} offerings.
                     </p>
-                    <button
-                        onClick={() => pushPanel({
-                            id: 'course_list',
-                            title: `All ${type}`,
-                            previousTitle: type,
-                            data: courses
-                        })}
+                    <Link
+                        to={`/programmes/${slug}`}
+                        onClick={() => handleLinkClick(`/programmes/${slug}`)}
                         className="inline-flex items-center text-xs font-bold text-[#C2B067] uppercase hover:underline tracking-[1px]"
                     >
                         View All {type.replace(' Learning', '').replace('Traineeship', 'Traineeships')} <ArrowRight size={14} className="ml-2" />
-                    </button>
+                    </Link>
                 </div>
 
                 <div className="flex-1 overflow-y-auto pb-12">
                     {/* Focus Areas */}
                     <div className="mb-2">
-                        <div className="bg-gray-50 px-6 py-3 border-b border-gray-100">
-                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Focus Areas</p>
+                        <div className="bg-gray-100 px-6 py-3 border-b border-gray-100">
+                            <p className="text-xs font-bold text-gray-500 uppercase tracking-[1px]">Focus Areas</p>
                         </div>
                         <div className="divide-y divide-gray-100">
                             {uniqueFocusAreas.map(area => (
@@ -219,10 +283,10 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
                         </div>
                     </div>
 
-                    {/* Level of Study */}
+                    {/* Study Level */}
                     <div>
                         <div className="bg-gray-50 px-6 py-3 border-b border-gray-100 border-t border-gray-100">
-                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Level of Study</p>
+                            <p className="text-xs font-bold text-gray-500 uppercase tracking-[1px]">Study Level</p>
                         </div>
                         <div className="divide-y divide-gray-100">
                             {uniqueLevels.map(level => (
@@ -333,6 +397,8 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
         switch (panel.id) {
             case 'main': return renderMainPanel();
             case 'programmes': return renderProgrammesPanel();
+            case 'admissions': return renderAdmissionsPanel();
+            case 'experiences': return renderExperiencesPanel();
             case 'type': return renderTypePanel(panel.data);
             case 'course_list': return renderCourseListPanel(panel.data);
             default: return null;
@@ -357,10 +423,6 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
                 <div className="relative w-full h-full overflow-hidden bg-white">
                     {panels.map((panel, index) => {
                         const isMain = panel.id === 'main';
-                        // All panel headers now use Brand Blue as requested
-                        const headerBg = 'bg-[#002B4E]';
-                        const headerText = 'text-white';
-                        const closeBtn = 'text-white';
 
                         return (
                             <div
@@ -375,14 +437,14 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
                                 {/* Header (Unique per panel or Shared logic) */}
                                 <div className="shrink-0 relative z-10">
                                     {/* Top Bar: Brand/Title + Close */}
-                                    <div className={`h-[70px] ${headerBg} flex items-center justify-between px-6 transition-colors duration-300`}>
-                                        <h2 className={`${headerText} font-serif font-bold text-xl tracking-wide truncate pr-4`}>
+                                    <div className="p-6 border-b border-white/10 flex items-center justify-between bg-brand-primary text-white shrink-0">
+                                        <h2 className="text-white font-serif font-bold text-xl tracking-wide truncate pr-4">
                                             {isMain ? 'International Hotel School' : panel.title}
                                         </h2>
                                         {/* Animated Close Icon matching Header */}
                                         <button
                                             onClick={onClose}
-                                            className={`${closeBtn} h-[40px] w-[40px] flex items-center justify-center hover:opacity-70 transition-opacity`}
+                                            className="text-white h-[40px] w-[40px] flex items-center justify-center hover:opacity-70 transition-opacity bg-white/10 p-2 rounded-full"
                                         >
                                             <svg width="24" height="24" viewBox="0 0 100 100" className="overflow-visible">
                                                 <path
@@ -429,7 +491,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
                                     {!isMain && (
                                         <button
                                             onClick={popPanel}
-                                            className="w-full flex items-center gap-2 px-6 py-3 bg-[#e5e5e5] text-[#002B4E] hover:bg-[#d4d4d4] transition-colors border-b border-gray-200"
+                                            className="w-full flex items-center gap-2 px-6 py-4 bg-brand-gold text-white hover:bg-brand-gold transition-colors"
                                         >
                                             <ArrowLeft size={16} strokeWidth={2.5} />
                                             <span className="text-xs font-bold uppercase tracking-widest">

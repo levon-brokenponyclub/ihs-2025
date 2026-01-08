@@ -52,7 +52,7 @@ const PROBLEMS = [
 
 export const ValuePillars: React.FC = () => {
     return (
-        <section className="bg-[#f8fafc] py-24 overflow-hidden">
+        <section className="bg-[#f8fafc] py-20 overflow-hidden">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 
                 {/* Intro */}

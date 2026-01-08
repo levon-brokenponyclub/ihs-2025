@@ -120,7 +120,7 @@ export const DesktopMenu: React.FC<DesktopMenuProps> = ({ isOpen, onClose }) => 
           {/* COLUMN 3 */}
           <div {...useAnimation(columnEntrance.right(), isOpen)} className="w-[42%] bg-[#001D36] py-16 pl-12 flex flex-col relative" style={{ backgroundColor: '#001D36', opacity: 1, filter: 'none' }}>
             <div className="relative z-10">
-              <h3 className="text-xs font-bold text-white/40 uppercase tracking-widest mb-10">
+              <h3 className="text-xs font-bold text-brand-gold uppercase tracking-widest mb-10">
                 Don't Miss Out
               </h3>
 
@@ -145,7 +145,7 @@ export const DesktopMenu: React.FC<DesktopMenuProps> = ({ isOpen, onClose }) => 
 
                     <div className="flex items-center gap-3 text-white/90 text-sm border-t border-white/10 pt-4">
                     <Calendar size={16} className="text-[#C2B067]" />
-                    <span>3 December 2025</span>
+                    <span>3 March 2026</span>
                     </div>
                      <div className="flex items-center gap-3 text-white/90 text-sm font-medium mt-2">
                         <MapPin size={16} className="text-[#C2B067]" />
@@ -162,7 +162,7 @@ export const DesktopMenu: React.FC<DesktopMenuProps> = ({ isOpen, onClose }) => 
               <div className="text-center">
                 <button
                     onClick={() => handleLinkClick('/admissions')}
-                    className="w-full py-5 bg-white text-[#002B4E] hover:bg-[#C2B067] hover:text-white font-bold uppercase tracking-[2px] text-sm transition-all duration-300 shadow-lg"
+                    className="w-full py-4 bg-white text-bold text-[#002B4E] hover:bg-[#C2B067] hover:text-white font-bold uppercase tracking-[2px] text-sm transition-all duration-300 shadow-lg"
                 >
                     Apply Now
                 </button>

@@ -34,7 +34,7 @@ export const CheckboxGroup: React.FC<CheckboxGroupProps> = ({
     const containerBg = isLight ? 'bg-white' : 'bg-[#0d1424]';
     const headerHover = isLight ? 'hover:bg-gray-50' : 'hover:bg-white/5';
     const titleColor = isLight ? 'text-brand-primary' : 'text-white';
-    const textColor = isLight ? 'text-gray-600' : 'text-gray-400';
+    const textColor = isLight ? 'text-brand-primary' : 'text-gray-400';
     const textHover = isLight ? 'group-hover:text-brand-primary' : 'group-hover:text-gray-300';
     const checkboxBase = isLight ? 'bg-gray-100 border-gray-300 group-hover:border-brand-accent' : 'bg-black/20 border-white/20 group-hover:border-brand-gold';
     const checkboxSelected = 'bg-brand-accent border-brand-accent';
@@ -42,15 +42,15 @@ export const CheckboxGroup: React.FC<CheckboxGroupProps> = ({
 
     if (variant === 'accordion') {
         return (
-            <div className={`flex flex-col ${containerBg} border-b ${isLight ? 'border-gray-100' : 'border-white/10'}`}>
+            <div className={`flex flex-col ${containerBg} border-b ${isLight ? 'border-gray-100' : 'border-gray-100'}`}>
                 <button 
                     onClick={() => setIsOpen(!isOpen)}
                     className={`w-full flex items-center justify-between p-6 text-left transition-colors ${headerHover}`}
                 >
-                    <h4 className={`${titleColor} font-serif font-bold flex items-center gap-2`}>
+                    <h4 className={`${titleColor} text-lg font-serif font-bold flex items-center gap-2`}>
                         {title}
                         {selectedValues.length > 0 && (
-                            <span className="bg-brand-accent text-brand-primary text-[10px] px-1.5 py-0.5 rounded-full font-sans font-bold">
+                            <span className="bg-brand-accent text-white text-center text-xs leading-xl p-1 w-6 h-6 rounded-full font-sans font-bold">
                                 {selectedValues.length}
                             </span>
                         )}
@@ -59,12 +59,12 @@ export const CheckboxGroup: React.FC<CheckboxGroupProps> = ({
                 </button>
                 
                 {isOpen && (
-                    <div className="px-6 pb-6 animate-in slide-in-from-top-2 duration-200">
-                        <div className="space-y-3 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
+                    <div className="px-5 pb-6 animate-in slide-in-from-top-2 duration-200">
+                        <div className="space-y-0 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
                             {options.map((option) => {
                                 const isSelected = selectedValues.includes(option.value);
                                 return (
-                                    <label key={option.value} className="flex items-start gap-3 cursor-pointer group select-none">
+                                    <label key={option.value} className="flex items-start gap-3 cursor-pointer group select-none py-3">
                                         <div className={`w-4 h-4 mt-0.5 rounded border flex items-center justify-center transition-all duration-200 shrink-0 ${
                                             isSelected 
                                             ? checkboxSelected 
@@ -78,7 +78,7 @@ export const CheckboxGroup: React.FC<CheckboxGroupProps> = ({
                                             checked={isSelected}
                                             onChange={() => onChange(option.value)}
                                         />
-                                        <span className={`text-sm leading-tight transition-colors ${
+                                        <span className={`block text-base font-medium text-gray-600 hover:text-[#C2B067] transition-colors ${
                                             isSelected ? (isLight ? 'text-brand-primary font-bold' : 'text-white font-medium') : `${textColor} ${textHover}`
                                         }`}>
                                             {option.label}
@@ -96,7 +96,7 @@ export const CheckboxGroup: React.FC<CheckboxGroupProps> = ({
     // Default Card Variant (Preserved mainly for dark contexts, but updated variables)
     return (
         <div className="flex flex-col h-full bg-[#162036] p-6 rounded-sm border border-white/5">
-            <h4 className="text-white font-serif font-bold mb-4 border-b border-white/10 pb-2 flex items-center gap-2">
+            <h4 className="text-white font-serif font-bold mb-4 border-white/10 pb-2 flex items-center gap-2">
                 {title}
                 {selectedValues.length > 0 && (
                     <span className="bg-brand-accent text-brand-primary text-[10px] px-1.5 py-0.5 rounded-full font-sans">
@@ -104,7 +104,7 @@ export const CheckboxGroup: React.FC<CheckboxGroupProps> = ({
                     </span>
                 )}
             </h4>
-            <div className="space-y-3 overflow-y-auto custom-scrollbar pr-2 max-h-[240px]">
+            <div className="space-y-0 overflow-y-auto custom-scrollbar pr-2 max-h-[240px]">
                 {options.map((option) => {
                     const isSelected = selectedValues.includes(option.value);
                     return (
@@ -122,7 +122,7 @@ export const CheckboxGroup: React.FC<CheckboxGroupProps> = ({
                                 checked={isSelected}
                                 onChange={() => onChange(option.value)}
                             />
-                            <span className={`text-sm leading-tight transition-colors ${
+                            <span className={`text-sm leading-tight transition-colors uppercase font-semibold tracking-[0.5px] ${
                                 isSelected ? 'text-white font-medium' : 'text-gray-400 group-hover:text-gray-300'
                             }`}>
                                 {option.label}

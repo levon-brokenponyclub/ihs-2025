@@ -32,10 +32,10 @@ export const ApplicationModal: React.FC<ApplicationModalProps> = ({ isOpen, onCl
             <div className="relative bg-white w-full max-w-2xl rounded-sm shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-slideUp">
 
                 {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-white/10 bg-brand-primary text-white">
+                <div className="flex items-center justify-between p-6 border-b border-white/10 bg-brand-primary text-white shrink-0">
                     <div>
                         <span className="text-brand-gold text-[10px] font-bold uppercase tracking-[2px] mb-1 block">Application</span>
-                        <h3 className="font-serif font-bold text-xl">{courseTitle || 'Start Your Journey'}</h3>
+                        <h3 className="font-serif font-bold text-xl truncate pr-4">{courseTitle || 'Start Your Journey'}</h3>
                     </div>
                     <button onClick={onClose} className="text-white/70 hover:text-white transition-colors bg-white/10 p-2 rounded-full">
                         <X size={20} />
