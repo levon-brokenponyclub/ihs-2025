@@ -391,6 +391,16 @@ export const ProgrammeMultiGroup: React.FC = () => {
         localStorage.setItem('programmeViewMode', viewMode);
     }, [viewMode]);
 
+    // New state to track focus within the focus-area control group
+    const [isFocusAreaFocused, setIsFocusAreaFocused] = useState(false);
+
+    // Handlers passed to each FilterOption to update focus state
+    const handleFocusAreaFocus = () => setIsFocusAreaFocused(true);
+    const handleFocusAreaBlur = () => {
+        // small delay to allow focus to transfer between buttons without hiding label
+        setTimeout(() => setIsFocusAreaFocused(false), 100);
+    };
+
     // Dynamically extract focus areas from offerings
     const uniqueFocusAreas = useMemo(() => {
         const areas = new Set<string>();
