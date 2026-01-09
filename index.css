@@ -1,0 +1,193 @@
+/* Page transition utilities for Course Detail entrance */
+@keyframes heroContentEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.995);
+    filter: blur(6px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+.animate-hero-content-enter {
+  animation-name: heroContentEnter;
+  animation-duration: 480ms;
+  animation-timing-function: cubic-bezier(0.2, 0.9, 0.3, 1);
+  animation-fill-mode: both;
+}
+
+/* Small helper to preserve hero background during transition */
+.preserve-hero-bg {
+  transition: opacity 200ms ease-in-out;
+}
+
+/* Mask Reveal Animation - Goodboy Style (Smooth, snappier overshoot) */
+@keyframes maskRevealUp {
+  0% {
+    transform: translateY(110%);
+  }
+
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.animate-mask-reveal {
+  animation: maskRevealUp 1.4s cubic-bezier(0.165, 0.84, 0.44, 1) both;
+}
+
+/* Prevent hover transitions during entrance animation to avoid jumping */
+.animate-mask-reveal:not(.entrance-complete) {
+  transition: none !important;
+}
+
+/* Slider Progress Bar Animation */
+@keyframes progressLoad {
+  0% {
+    width: 0%;
+  }
+
+  100% {
+    width: 100%;
+  }
+}
+
+.animate-progress-load {
+  animation: progressLoad 8s linear forwards;
+}
+
+/* Goodboy Hero Animations */
+@keyframes heroGoodboyEnter {
+  0% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateY(0%);
+    opacity: 1;
+  }
+}
+
+@keyframes heroGoodboyExit {
+  0% {
+    transform: translateY(0%);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}
+
+.hero-enter {
+  animation: heroGoodboyEnter 0.3s cubic-bezier(0.165, 0.84, 0.44, 1) both;
+}
+
+.hero-exit {
+  animation: heroGoodboyExit 0.8s cubic-bezier(0.165, 0.84, 0.44, 1) both;
+}
+
+/* 
+   UTILITY CLASSES - MUST BE AT THE BOTTOM 
+   To ensure they override animation shorthand properties
+*/
+
+/* Staggered delay utilities */
+.animation-delay-100 {
+  animation-delay: 100ms !important;
+}
+
+.animation-delay-200 {
+  animation-delay: 200ms !important;
+}
+
+.animation-delay-300 {
+  animation-delay: 300ms !important;
+}
+
+.animation-delay-400 {
+  animation-delay: 400ms !important;
+}
+
+.animation-delay-500 {
+  animation-delay: 500ms !important;
+}
+
+.animation-delay-550 {
+  animation-delay: 550ms !important;
+}
+
+.animation-delay-600 {
+  animation-delay: 600ms !important;
+}
+
+.animation-delay-700 {
+  animation-delay: 700ms !important;
+}
+
+.animation-delay-800 {
+  animation-delay: 800ms !important;
+}
+
+.animation-delay-1000 {
+  animation-delay: 1000ms !important;
+}
+
+.animation-delay-1300 {
+  animation-delay: 1300ms !important;
+}
+
+.animation-delay-700 {
+  animation-delay: 700ms !important;
+}
+
+.animation-delay-800 {
+  animation-delay: 800ms !important;
+}
+
+.animation-delay-850 {
+  animation-delay: 850ms !important;
+}
+
+.animation-delay-900 {
+  animation-delay: 900ms !important;
+}
+
+.animation-delay-1200 {
+  animation-delay: 1200ms !important;
+}
+
+.animation-delay-1500 {
+  animation-delay: 1500ms !important;
+}
+
+.animation-delay-1800 {
+  animation-delay: 1800ms !important;
+}
+
+.animation-delay-1900 {
+  animation-delay: 1900ms !important;
+}
+
+/* Exit Delays (Reverse Stagger) */
+.exit-delay-0 {
+  animation-delay: 0s !important;
+}
+
+.exit-delay-100 {
+  animation-delay: 0.1s !important;
+}
+
+.exit-delay-200 {
+  animation-delay: 0.2s !important;
+}
+
+.exit-delay-300 {
+  animation-delay: 0.3s !important;
+}

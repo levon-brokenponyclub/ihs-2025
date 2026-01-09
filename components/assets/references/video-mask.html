@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Epic Hollywood Kitchen Reveal</title>
+<style>
+  body {
+    margin: 0;
+    background: #111;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    perspective: 1400px;
+    overflow: hidden;
+  }
+
+  .video-container {
+    position: relative;
+    width: 500px;
+    height: 550px;
+    overflow: hidden;
+    border-radius: 20px;
+    box-shadow: 0 20px 80px rgba(0,0,0,0.85);
+    transform-style: preserve-3d;
+  }
+
+  /* Feather overlays on all sides */
+  .overlay {
+    position: absolute;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  /* Top */
+  .overlay.top {
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 80px;
+    background: linear-gradient(to bottom, rgba(0,0,0,1), rgba(0,0,0,0));
+  }
+
+  /* Bottom */
+  .overlay.bottom {
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 80px;
+    background: linear-gradient(to top, rgba(0,0,0,1), rgba(0,0,0,0));
+  }
+
+  /* Left */
+  .overlay.left {
+    top: 0;
+    left: 0;
+    width: 80px;
+    height: 100%;
+    background: linear-gradient(to right, rgba(0,0,0,1), rgba(0,0,0,0));
+  }
+
+  /* Right */
+  .overlay.right {
+    top: 0;
+    right: 0;
+    width: 80px;
+    height: 100%;
+    background: linear-gradient(to left, rgba(0,0,0,1), rgba(0,0,0,0));
+  }
+
+  .layer {
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    width: 150%;
+    height: 150%;
+    object-fit: cover;
+    border-radius: 20px;
+    transform-style: preserve-3d;
+  }
+
+  /* Background layer */
+  .layer.background {
+    filter: blur(1px) brightness(0.9);
+    transform: translate(-50%, -50%) scale(1);
+    animation: bgLayer 50s ease-in-out infinite alternate;
+  }
+
+  @keyframes bgLayer {
+    0%   { transform: translate(-51%, -50%) scale(1); }
+    25%  { transform: translate(-53%, -48%) scale(1.02); }
+    50%  { transform: translate(-49%, -52%) scale(1.03); }
+    75%  { transform: translate(-52%, -49%) scale(1.025); }
+    100% { transform: translate(-51%, -50%) scale(1); }
+  }
+
+  /* Midground layer */
+  .layer.midground {
+    filter: blur(0.5px) brightness(1);
+    transform: translate(-50%, -50%) scale(1);
+    animation: midLayer 40s ease-in-out infinite alternate;
+  }
+
+  @keyframes midLayer {
+    0%   { transform: translate(-50%, -50%) scale(1); }
+    25%  { transform: translate(-52%, -48%) scale(1.03) rotate(0.3deg); }
+    50%  { transform: translate(-48%, -52%) scale(1.04) rotate(-0.3deg); }
+    75%  { transform: translate(-51%, -49%) scale(1.035) rotate(0.2deg); }
+    100% { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+  }
+
+  /* Foreground layer */
+  .layer.foreground {
+    filter: blur(1px) brightness(1.05);
+    transform: translate(-50%, -50%) scale(1.05);
+    opacity: 0.25;
+    animation: fgLayer 35s ease-in-out infinite alternate;
+  }
+
+  @keyframes fgLayer {
+    0%   { transform: translate(-50%, -50%) scale(1.05); }
+    25%  { transform: translate(-54%, -46%) scale(1.08); }
+    50%  { transform: translate(-46%, -54%) scale(1.1); }
+    75%  { transform: translate(-53%, -47%) scale(1.09); }
+    100% { transform: translate(-50%, -50%) scale(1.05); }
+  }
+
+</style>
+</head>
+<body>
+
+<div class="video-container">
+  <!-- Video layers -->
+  <video class="layer foreground" src="../videos/masking-video.mp4" autoplay muted loop></video>
+  <video class="layer midground" src="../videos/masking-video.mp4" autoplay muted loop></video>
+  <video class="layer background" src="../videos/masking-video.mp4" autoplay muted loop></video>
+
+  <!-- Feather overlays -->
+  <div class="overlay top"></div>
+  <div class="overlay bottom"></div>
+  <div class="overlay left"></div>
+  <div class="overlay right"></div>
+</div>
+
+<script>
+  const videos = document.querySelectorAll('video');
+  const START_TIME = 0;
+  const END_TIME = 15;
+
+  videos.forEach(video => {
+    video.addEventListener('timeupdate', function() {
+      if (video.currentTime >= END_TIME) {
+        video.currentTime = START_TIME;
+      }
+    });
+
+    video.addEventListener('seeked', function() {
+      if (video.currentTime < START_TIME) {
+        video.currentTime = START_TIME;
+      }
+    });
+  });
+</script>
+
+</body>
+</html>

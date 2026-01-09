@@ -1,0 +1,290 @@
+
+import React, { useState, useEffect } from 'react';
+import { Button } from './ui/Button';
+import { ArrowRight, Search } from 'lucide-react';
+
+interface HeroProps {
+  onFinderClick?: () => void;
+}
+
+const SLIDES = [
+  {
+    id: 0,
+    preTitle: "Get started",
+    title: "Study with us",
+    description: "Elevate your career with our self-paced, accredited programmes. Start your journey with us today.",
+    type: 'video',
+    src: 'https://media.istockphoto.com/id/472897860/video/culinary-school-intructor-teaching-students-in-commercial-kitchen.mp4?s=mp4-640x640-is&k=20&c=hsucGTdCRxP4qSN4fHeX9YW7_qNeeNno0dfHRiaB5_k=',
+    poster: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?q=80&w=2940',
+    primaryBtn: { label: 'Find a Programme', icon: Search, action: 'finder' },
+    secondaryBtn: { label: 'Apply Now', icon: ArrowRight, action: 'link' },
+    theme: 'navy',
+  },
+  {
+    id: 1,
+    preTitle: "IHS Corporate",
+    title: "Training Solutions",
+    description: "Bespoke training solutions for industry partners. Upskill your workforce with world-class curriculum.",
+    type: 'video',
+    src: 'https://www.shutterstock.com/shutterstock/videos/1105580105/preview/stock-footage-tracking-shot-african-american-tourists-wanting-upgrade.webm',
+    poster: 'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?q=80&w=2940',
+    primaryBtn: { label: 'Corporate Enquiries', icon: ArrowRight, action: 'link' },
+    theme: 'gold',
+  },
+  {
+    id: 2,
+    preTitle: "International Hotel School",
+    title: "New Programmes",
+    description: "Intake One 2026 is officially open. Brave Through. It's YOUR legacy.",
+    type: 'video',
+    src: 'https://www.shutterstock.com/shutterstock/videos/3941586401/preview/stock-footage-hospitality-face-woman-hotel-smile-about-us.webm',
+    poster: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=2940',
+    primaryBtn: { label: 'View 2026 Intake', icon: ArrowRight, action: 'scroll' },
+    theme: 'gold',
+  }
+];
+
+export const Hero: React.FC<HeroProps> = ({ onFinderClick }) => {
+  const [activeSlide, setActiveSlide] = useState(0);
+  const [isExiting, setIsExiting] = useState(false);
+  const [isVideoLoaded, setIsVideoLoaded] = useState(false);
+
+  // Auto-advance slider every 8 seconds, with exit transition
+  useEffect(() => {
+    const exitDelay = 7200; // Start exiting 800ms before slide change
+    const totalDelay = 8000;
+
+    const exitTimer = setTimeout(() => {
+      setIsExiting(true);
+    }, exitDelay);
+
+    const changeTimer = setTimeout(() => {
+      setActiveSlide((prev) => (prev + 1) % SLIDES.length);
+      setIsExiting(false);
+    }, totalDelay);
+
+    return () => {
+      clearTimeout(exitTimer);
+      clearTimeout(changeTimer);
+    };
+  }, [activeSlide]);
+
+  const handleManualChange = (index: number) => {
+    if (index === activeSlide || isExiting) return;
+    setIsExiting(true);
+    setTimeout(() => {
+      setActiveSlide(index);
+      setIsExiting(false);
+    }, 800); // 800ms exit animation duration
+  };
+
+  return (
+    <section className="relative h-[550px] lg:h-[90vh] flex flex-col bg-brand-primary overflow-hidden">
+      {/* Background Layer */}
+      <div className="absolute inset-0 z-0 bg-brand-primary overflow-hidden">
+        {SLIDES.map((slide, index) => (
+          <div
+            key={slide.id}
+            className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${activeSlide === index ? 'opacity-100' : 'opacity-0'
+              }`}
+          >
+            {/* Gradient overlays for text readability */}
+            <div className="absolute inset-0 z-10 bg-brand-primary/30" />
+            <div className="absolute inset-0 z-10 bg-gradient-to-r from-brand-primary via-brand-primary/50 to-transparent" />
+
+            {slide.type === 'video' ? (
+              <>
+                <img
+                  src={slide.poster}
+                  alt="Background"
+                  className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${isVideoLoaded ? 'opacity-0' : 'opacity-100'
+                    }`}
+                />
+                <video
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  onLoadedData={() => setIsVideoLoaded(true)}
+                  className="absolute inset-0 w-full h-full object-cover scale-105"
+                >
+                  <source src={slide.src} type={slide.src.endsWith('.webm') ? 'video/webm' : 'video/mp4'} />
+                </video>
+              </>
+            ) : (
+              <img
+                src={slide.src}
+                alt={slide.title}
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Content Layer */}
+      <div className="relative z-20 flex-grow flex items-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+          <div className="w-full pb-20 lg:pb-0 relative">
+            {SLIDES.map((slide, index) => {
+              const isActive = activeSlide === index;
+              if (!isActive && !isExiting) return null; // Only render active slide or exiting slide
+
+              return (
+                <div
+                  key={slide.id}
+                  className={`w-full max-w-3xl mx-auto lg:mx-0 text-center lg:text-left ${isActive
+                    ? 'relative z-10'
+                    : 'absolute top-0 left-0 right-0 lg:left-0 lg:right-auto z-0 pointer-events-none'
+                    }`}
+                >
+                  {/* Eyebrow */}
+                  <div className="overflow-hidden mb-6">
+                    <div className={`flex items-center justify-center lg:justify-start gap-3 ${isActive
+                      ? (isExiting ? 'hero-exit exit-delay-300' : 'hero-enter animation-delay-100')
+                      : 'opacity-0'
+                      }`}>
+                      <span className="w-12 h-[2px] bg-brand-accent"></span>
+                      <span className="text-sm font-bold tracking-widest uppercase text-brand-accent">
+                        {slide.preTitle}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Headline */}
+                  <div className="overflow-hidden mb-8 pb-4">
+                    <h1 className={`font-serif text-5xl md:text-6xl lg:text-7xl text-white font-semibold leading-[1.1] drop-shadow-lg ${isActive
+                      ? (isExiting ? 'hero-exit exit-delay-200' : 'hero-enter animation-delay-300')
+                      : 'opacity-0'
+                      }`}>
+                      {slide.title}
+                    </h1>
+                  </div>
+
+                  {/* Description */}
+                  <div className="overflow-hidden mb-10">
+                    <p className={`text-lg md:text-xl leading-relaxed max-w-xl mx-auto lg:mx-0 text-white/90 font-light ${isActive
+                      ? (isExiting ? 'hero-exit exit-delay-100' : 'hero-enter animation-delay-500')
+                      : 'opacity-0'
+                      }`}>
+                      {slide.description}
+                    </p>
+                  </div>
+
+                  {/* CTA Buttons */}
+                  <div className="overflow-hidden">
+                    <div className={`flex flex-wrap justify-center lg:justify-start gap-4 ${isActive
+                      ? (isExiting ? 'hero-exit exit-delay-0' : 'hero-enter animation-delay-700')
+                      : 'opacity-0'
+                      }`}>
+                      <Button
+                        variant="gold"
+                        icon={<slide.primaryBtn.icon size={16} />}
+                        onClick={() => {
+                          if (slide.primaryBtn.action === 'finder') {
+                            onFinderClick?.();
+                          }
+                        }}
+                        className="hover:scale-105 transition-transform duration-300"
+                      >
+                        {slide.primaryBtn.label}
+                      </Button>
+
+                      {slide.secondaryBtn && (
+                        <Button
+                          variant="outline-gold"
+                          icon={<slide.secondaryBtn.icon size={16} />}
+                          className="hover:scale-105 transition-transform duration-300 bg-white/5"
+                        >
+                          {slide.secondaryBtn.label}
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Navigation */}
+      <div className="relative z-30 mt-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Mobile: Progress Bars Only */}
+          <div className="block lg:hidden">
+            <div className="flex justify-center gap-2 py-6">
+              {SLIDES.map((_, idx) => {
+                const isActive = activeSlide === idx;
+                return (
+                  <button
+                    key={idx}
+                    onClick={() => handleManualChange(idx)}
+                    className="flex-1 max-w-20 h-1 bg-gray-300 rounded-full overflow-hidden relative focus:outline-none focus:ring-2 focus:ring-brand-accent"
+                    aria-label={`Go to slide ${idx + 1}: ${SLIDES[idx].title}`}
+                  >
+                    {isActive && (
+                      <div className="absolute top-0 left-0 h-full bg-brand-accent animate-progress-load rounded-full"></div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Desktop: Full Navigation Blocks */}
+          <div className="hidden lg:grid lg:grid-cols-4 divide-x divide-gray-200">
+            {/* Navigation Blocks */}
+            {[0, 1, 2].map((idx) => {
+              const s = SLIDES[idx];
+              const isActive = activeSlide === idx;
+              return (
+                <button
+                  key={idx}
+                  onClick={() => handleManualChange(idx)}
+                  className={`px-8 py-8 text-left transition-all duration-300 relative group overflow-hidden ${isActive ? 'bg-brand-surface' : 'bg-white hover:bg-brand-surface'
+                    }`}
+                  aria-label={`Go to slide ${idx + 1}: ${s.title}`}
+                >
+                  {/* Progress Bar */}
+                  <div className="absolute top-0 left-0 right-0 h-1 bg-gray-200"></div>
+                  {isActive && (
+                    <div className="absolute top-0 left-0 h-1 bg-brand-accent animate-progress-load z-10"></div>
+                  )}
+
+                  <span className={`text-[10px] font-bold uppercase tracking-widest block mb-2 transition-colors ${isActive ? 'text-brand-highlight' : 'text-text-secondary/70 group-hover:text-brand-highlight'
+                    }`}>
+                    {s.preTitle}
+                  </span>
+
+                  <h3 className="text-lg font-serif font-semibold transition-colors text-brand-primary">
+                    {s.title}
+                  </h3>
+                </button>
+              );
+            })}
+
+            {/* Apply Now Block */}
+            <div className="relative bg-brand-accent px-8 py-8 cursor-pointer hover:bg-brand-accent/90 transition-all duration-300 group flex items-center justify-between z-10">
+              <div className="relative z-10 text-white">
+                <span className="text-[10px] font-bold text-white/70 uppercase tracking-widest block mb-2 group-hover:translate-x-1 transition-transform">
+                  Interested?
+                </span>
+                <h3 className="text-xl font-serif font-semibold text-white transition-colors">
+                  Apply Now
+                </h3>
+              </div>
+              <div className="relative z-20 flex items-center justify-center w-12 h-12 rounded-full transition-all duration-500 group-hover:bg-brand-primary">
+                <ArrowRight
+                  size={24}
+                  strokeWidth={2}
+                  className="text-white transition-transform duration-500 group-hover:rotate-90"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
