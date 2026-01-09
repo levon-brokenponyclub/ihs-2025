@@ -51,8 +51,9 @@ ngrok http 5173
 ```
 
 **Result:**
-- Ngrok will generate a secure link (e.g., `https://random-name.ngrok-free.app`). 
-- Share this link for external access.
+- Public URL: `https://objectionable-unwindowed-rosana.ngrok-free.app`
+- Local URL: `http://localhost:5173`
+- **Stop:** ( ` https://objectionable-unwindowed-rosana.ngrok-free.dev ). 
 
 ---
 
@@ -75,24 +76,3 @@ You have two options:
     - **Publish Directory:** `dist`
 
 ---
-
-## 🛠 Project Structure
-
-The project is organized for modularity and ease of maintenance:
-
-- **src/**: Application entry point.
-- **components/**:
-    - **ui/**: Reusable UI primitives (Buttons, Forms, Accordions).
-    - **Main Components**: Hero, Course Cards, Modals, Comparison features.
-- **context/**: React Context for global state (Cart, Layout, Transitions).
-- **hooks/**: Custom hooks (e.g., `useAnimation`).
-- **utils/**: Helper functions and constants.
-
-## 📋 Features
-
-- **Responsive Design**: Mobile-first approach using Tailwind CSS.
-- **Interactive UI**:
-    - Sticky "Book Now" footers.
-    - Comparison tool for selecting courses.
-    - Dynamic course filtering.
-- **Performance**: Optimized build using Vite.
