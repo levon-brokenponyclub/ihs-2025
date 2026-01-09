@@ -33,8 +33,8 @@ export const CompareModal: React.FC = () => {
     };
 
     const getAccreditationSrc = (acc: string) => {
-        if (acc === 'IHS' || acc === 'International Hotel School') return '/components/assets/logos/ihs-logo-dark.png';
-        if (acc === 'AHLEI' || acc.includes('American Hotel')) return '/components/assets/logos/american-hotel-lodging-educational-institute-r6djf1a4jfs1u9sokoij74ckub80bbe63d3o4wvozc.png';
+        if (acc === 'IHS' || acc === 'International Hotel School') return '/assets/logos/ihs-logo-dark.png';
+        if (acc === 'AHLEI' || acc.includes('American Hotel')) return '/assets/logos/american-hotel-lodging-educational-institute-r6djf1a4jfs1u9sokoij74ckub80bbe63d3o4wvozc.png';
         if (/^https?:\/\//.test(acc) || /\.(svg|png|jpe?g|webp)$/i.test(acc)) return acc;
         return null;
     };

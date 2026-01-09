@@ -266,10 +266,10 @@ const AccreditationRow = ({ accreditations }: { accreditations: string[] }) => {
         let src = "";
         if (acc === "IHS" || acc === "International Hotel School") {
           // Using matching paths as previously defined in the file
-          src = "components/assets/logos/ihs-logo-dark.png";
+          src = "/assets/logos/ihs-logo-dark.png";
         } else if (acc === "AHLEI") {
           src =
-            "components/assets/logos/american-hotel-lodging-educational-institute-r6djf1a4jfs1u9sokoij74ckub80bbe63d3o4wvozc.png";
+            "/assets/logos/american-hotel-lodging-educational-institute-r6djf1a4jfs1u9sokoij74ckub80bbe63d3o4wvozc.png";
         }
 
         if (

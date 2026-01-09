@@ -66,7 +66,7 @@ export const GuidanceSupport: React.FC = () => {
                         loop
                         playsInline
                     >
-                        <source src="/components/assets/videos/masking-video.mp4" type="video/mp4" />
+                        <source src="/assets/videos/masking-video.mp4" type="video/mp4" />
                     </video>
                     <video
                         ref={video2Ref}
@@ -77,7 +77,7 @@ export const GuidanceSupport: React.FC = () => {
                         loop
                         playsInline
                     >
-                        <source src="/components/assets/videos/masking-video.mp4" type="video/mp4" />
+                        <source src="/assets/videos/masking-video.mp4" type="video/mp4" />
                     </video>
                     <video
                         ref={video3Ref}
@@ -88,7 +88,7 @@ export const GuidanceSupport: React.FC = () => {
                         loop
                         playsInline
                     >
-                        <source src="/components/assets/videos/masking-video.mp4" type="video/mp4" />
+                        <source src="/assets/videos/masking-video.mp4" type="video/mp4" />
                     </video>
                 </div>
 

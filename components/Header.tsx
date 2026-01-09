@@ -119,7 +119,7 @@ export const Header: React.FC = () => {
                     <div className="flex items-center h-full">
                         <Link to="/" className="flex items-center group" onClick={() => setIsMenuOpen(false)}>
                             <img
-                                src="/components/assets/img/ihs-logo.png"
+                                src="/assets/img/ihs-logo.png"
                                 alt="IHS Logo"
                                 className="h-10 lg:h-16 object-contain mb-1 group-hover:opacity-80 transition-opacity duration-200 w-full"
                             />

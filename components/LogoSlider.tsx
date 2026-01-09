@@ -2,17 +2,17 @@
 import React from 'react';
 
 const PARTNERS = [
-    { name: "AHLEI", logo: "components/assets/logos/american-hotel-lodging-educational-institute-r6djf1a4jfs1u9sokoij74ckub80bbe63d3o4wvozc.png", scale: 1.8 },
-    { name: "École Ducasse", logo: "components/assets/logos/ecole-ducasse-logo-r6djihctlkhwessgg65ac91f968gjd2qkf7rhfrq60.jpg", isJpg: true },
-    { name: "Fairmont Hotels", logo: "components/assets/logos/fairmont-hotels-and-resorts-logo-r6djjh2ot9usnzcknll3z00xttcenv0jdc07pyarlk.png" },
-    { name: "Gordon Ramsay", logo: "components/assets/logos/gordon-ramsay-logo-r6djhkggyd8v4g48s9xcezcagoqm1yg4rwdror4i7s.png" },
-    { name: "Hilton Hotels", logo: "components/assets/logos/hilton-hotels-and-resorts-logo-r6djkc3d2t19b43imgzsra75fj3ipvfohlj8k30rw8.png" },
-    { name: "One&Only", logo: "components/assets/logos/one-and-only-logo-png-r6djkd179n2jmq25gzefbrym0wyvxkjetq6q1czdq0.png" },
-    { name: "Protea Hotels", logo: "components/assets/logos/protea-hotels-logo-r6djhikskp6ah86z39439ztd9wzvmk8o3n2sq77ak8.png" },
-    { name: "RHG", logo: "components/assets/logos/rhg-logo-r6djk2oz6goe30h65cxj2ckjhodukwed4b0drbepmg.png" },
-    { name: "Sommet Education", logo: "components/assets/logos/sommet-education-logo-r6djlemqv0i0j4jjdfni3ih1sbtkhgooawa58ffmt4.png" },
-    { name: "Sun International", logo: "components/assets/logos/sun-international-logo-r6djkr4s45lugvho6nhtv6eixp1e513dvnz08ieh4o.png", scale: 1.5 },
-    { name: "IHS", logo: "components/assets/logos/ihs-logo-dark.png", scale: 1.4 }
+    { name: "AHLEI", logo: "/assets/logos/american-hotel-lodging-educational-institute-r6djf1a4jfs1u9sokoij74ckub80bbe63d3o4wvozc.png", scale: 1.8 },
+    { name: "École Ducasse", logo: "/assets/logos/ecole-ducasse-logo-r6djihctlkhwessgg65ac91f968gjd2qkf7rhfrq60.jpg", isJpg: true },
+    { name: "Fairmont Hotels", logo: "/assets/logos/fairmont-hotels-and-resorts-logo-r6djjh2ot9usnzcknll3z00xttcenv0jdc07pyarlk.png" },
+    { name: "Gordon Ramsay", logo: "/assets/logos/gordon-ramsay-logo-r6djhkggyd8v4g48s9xcezcagoqm1yg4rwdror4i7s.png" },
+    { name: "Hilton Hotels", logo: "/assets/logos/hilton-hotels-and-resorts-logo-r6djkc3d2t19b43imgzsra75fj3ipvfohlj8k30rw8.png" },
+    { name: "One&Only", logo: "/assets/logos/one-and-only-logo-png-r6djkd179n2jmq25gzefbrym0wyvxkjetq6q1czdq0.png" },
+    { name: "Protea Hotels", logo: "/assets/logos/protea-hotels-logo-r6djhikskp6ah86z39439ztd9wzvmk8o3n2sq77ak8.png" },
+    { name: "RHG", logo: "/assets/logos/rhg-logo-r6djk2oz6goe30h65cxj2ckjhodukwed4b0drbepmg.png" },
+    { name: "Sommet Education", logo: "/assets/logos/sommet-education-logo-r6djlemqv0i0j4jjdfni3ih1sbtkhgooawa58ffmt4.png" },
+    { name: "Sun International", logo: "/assets/logos/sun-international-logo-r6djkr4s45lugvho6nhtv6eixp1e513dvnz08ieh4o.png", scale: 1.5 },
+    { name: "IHS", logo: "/assets/logos/ihs-logo-dark.png", scale: 1.4 }
 ];
 
 export const LogoSlider: React.FC = () => {

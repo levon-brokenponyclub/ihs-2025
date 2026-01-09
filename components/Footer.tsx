@@ -15,7 +15,7 @@ export const Footer: React.FC = () => {
                     <div>
                         <div className="flex items-center gap-3 mb-6">
                             <div className="flex flex-col">
-                                <img src="./components/assets/img/ihs-logo.png" alt="International Hotel School" className="h-12 w-auto" />
+                                <img src="./assets/img/ihs-logo.png" alt="International Hotel School" className="h-12 w-auto" />
                             </div>
                         </div>
                         <p className="text-white text-sm leading-relaxed mb-8">
