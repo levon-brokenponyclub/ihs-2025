@@ -1,6 +1,6 @@
 # International Hotel School - Landing Page
 
-A high-conversion, premium homepage for the International Hotel School built with React, TypeScript, and Tailwind CSS.
+High-conversion, premium homepage for the International Hotel School built with React, TypeScript, and Tailwind CSS.
 
 ---
 
