@@ -25,7 +25,7 @@ export const Footer: React.FC = () => {
             <div className="flex items-center gap-3 mb-6">
               <Link to="/" className="flex flex-col">
                 <img
-                  src="/assets/img/ihs-logo-light.png"
+                  src="/assets/logos/ihs-logo-light.png"
                   alt="International Hotel School"
                   className="h-12 w-auto"
                 />
