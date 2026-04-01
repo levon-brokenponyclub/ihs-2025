@@ -1,0 +1,168 @@
+# Hero Component Technical Specification
+
+## 1. Overview
+
+The Hero component is a full-viewport, data-driven slider designed for high visual impact and immersive user experience. It utilizes a layered architecture separating background media, foreground content, and navigation controls to achieve a "cinema-style" presentation.
+
+The component uses a custom "Goodboy" animation system (likely named after a design pattern or agency style) characterized by vertical sliding reveals masked by overflow containers.
+
+## 2. Lifecycle States
+
+### On Load (Initial Mount)
+
+1.  **Initialization**: `activeSlide` is set to `0`. `isExiting` is `false`.
+2.  **Media Loading**:
+    - Poster image displays immediately (`opacity-100`).
+    - Video resources fetch in background.
+    - `onLoadedData` triggers `isVideoLoaded = true`, fading out the poster to reveal the playing video.
+3.  **Content Entrance**:
+    - Slide 0 text elements animate in using the **Entrance Sequence**.
+4.  **Timer Start**:
+    - An 8-second internal timer begins for auto-progression.
+
+### On Entrance (New Slide Appears)
+
+When `activeSlide` updates to a new index:
+
+1.  **Background Crossfade**: The new background container fades in (`opacity: 0 -> 1`) over 1000ms.
+2.  **Content Reveal**: Text elements trigger the `hero-enter` animation class.
+3.  **Staggered Timing**: Elements appear sequentially from top to bottom (Eyebrow → CTA).
+
+### On Exit (Current Slide Leaves)
+
+Occurs 800ms _before_ the slide index changes:
+
+1.  **State Change**: `isExiting` becomes `true`.
+2.  **Content Departure**: Text elements trigger the `hero-exit` animation class.
+3.  **Staggered Timing**: Elements disappear sequentially from bottom to top (CTA → Eyebrow).
+4.  **Hard Cut**: At T+800ms, the `activeSlide` index updates, causing the React component to unmount the old content entirely, effectively clipping any remaining animation tail.
+
+---
+
+## 3. Motion & Animation Specification
+
+### Core Animation Primitives
+
+| Animation Name    | Animation Class          | Keyframes                                                         | Duration         | Easing                              | Fill Mode  |
+| :---------------- | :----------------------- | :---------------------------------------------------------------- | :--------------- | :---------------------------------- | :--------- |
+| **Goodboy Enter** | `.hero-enter`            | `translateY(100%)`, `opacity: 0` → `translateY(0%)`, `opacity: 1` | **300ms** (0.3s) | Cubic Bezier (0.165, 0.84, 0.44, 1) | `both`     |
+| **Goodboy Exit**  | `.hero-exit`             | `translateY(0%)`, `opacity: 1` → `translateY(100%)`, `opacity: 0` | **800ms** (0.8s) | Cubic Bezier (0.165, 0.84, 0.44, 1) | `both`     |
+| **Progress Bar**  | `.animate-progress-load` | `width: 0%` → `width: 100%`                                       | **8000ms** (8s)  | Linear                              | `forwards` |
+
+### Entrance Sequence (In-View)
+
+Elements animate **UP** into view from a masked offset.
+
+| Element           | Class Info   | Delay   | Effective Start | Total Visibility Time   |
+| :---------------- | :----------- | :------ | :-------------- | :---------------------- |
+| **Eyebrow**       | `hero-enter` | `100ms` | T+0.1s          | Fully visible at T+0.4s |
+| **Headline**      | `hero-enter` | `300ms` | T+0.3s          | Fully visible at T+0.6s |
+| **Description**   | `hero-enter` | `500ms` | T+0.5s          | Fully visible at T+0.8s |
+| **Buttons (CTA)** | `hero-enter` | `700ms` | T+0.7s          | Fully visible at T+1.0s |
+
+_Note: The 1000ms duration of the background fade roughly matches the completion of the full text entrance sequence._
+
+### Exit Sequence (Leaving View)
+
+Elements animate **DOWN** out of view.
+
+| Element           | Class Info  | Delay   | Effective Start | Notes                                                |
+| :---------------- | :---------- | :------ | :-------------- | :--------------------------------------------------- |
+| **Buttons (CTA)** | `hero-exit` | `0ms`   | T+0.0s          | Starts immediately.                                  |
+| **Description**   | `hero-exit` | `100ms` | T+0.1s          |                                                      |
+| **Headline**      | `hero-exit` | `200ms` | T+0.2s          |                                                      |
+| **Eyebrow**       | `hero-exit` | `300ms` | T+0.3s          | Ends transition at T+1.1s (Clipped by 800ms unmount) |
+
+---
+
+## 4. Layout & Structure
+
+### Container
+
+- **Dimensions**: `h-[550px]` (Mobile) / `lg:h-[90vh]` (Desktop).
+- **Positioning**: `relative`, `overflow-hidden`.
+- **Background**: `bg-brand-primary` (Navy).
+
+### Layer 1: Backgrounds (Z-Index 0)
+
+- **Strategy**: All slides are rendered in the DOM.
+- **Visibility**: Controlled via `opacity-100` (active) vs `opacity-0` (inactive).
+- **Composition**:
+  - `<img>` Poster (z-0, fades out on load).
+  - `<video>` Element (z-0, autoPlay, loop, muted).
+  - Overlay Gradient 1: `bg-brand-primary/30` (overall dim).
+  - Overlay Gradient 2: `bg-gradient-to-r from-brand-primary ...` (left-side text readability).
+
+### Layer 2: Content (Z-Index 20)
+
+- **Centering**: `flex-grow flex items-center`.
+- **Grid**: `max-w-7xl mx-auto`.
+- **Logic**: Only ONE slide content exists in the DOM at any time (Active OR Exiting).
+- **Masking**: Each text block (Eyebrow, Headline, Description) is wrapped in a `div` with `overflow-hidden`. This is critical for the "slide up from nowhere" effect.
+
+### Layer 3: Navigation (Z-Index 30)
+
+- **Desktop**: Grid layout (`grid-cols-4`).
+  - 3 Navigation items.
+  - 1 "Apply Now" static CTA.
+- **Mobile**: Flex row of progress bars.
+- **Progress Bar**: Absolute positioned `div` inside the nav button.
+
+---
+
+## 5. Element Details
+
+### Slide 1 (Index 0)
+
+- **Theme**: Navy
+- **Eyebrow**: "Get started"
+- **Title**: "Study with us"
+- **Media**: Culinary School instruction video.
+- **Buttons**: "Find a Programme" (Search Icon), "Apply Now" (Arrow Icon).
+
+### Slide 2 (Index 1)
+
+- **Theme**: Gold
+- **Eyebrow**: "IHS Corporate"
+- **Title**: "Training Solutions"
+- **Media**: Corporate / Industry partner video.
+- **Buttons**: "Corporate Enquiries" (Arrow Icon).
+
+### Slide 3 (Index 2)
+
+- **Theme**: Gold
+- **Eyebrow**: "International Hotel School"
+- **Title**: "New Programmes"
+- **Media**: Hospitality / Front desk video.
+- **Buttons**: "View 2026 Intake" (Arrow Icon).
+
+## 6. CSS Translate & Transform Reference
+
+All text elements utilize the same transformation logic, differing only in timing.
+
+### Start Position (Hidden State - Entrance)
+
+```css
+transform: translateY(100%);
+opacity: 0;
+```
+
+_Effect: Element is effectively "pushed down" outside its parent container. Because the parent has `overflow-hidden`, it is invisible._
+
+### End Position (Visible State)
+
+```css
+transform: translateY(0%);
+opacity: 1;
+```
+
+_Effect: Element rests in its natural DOM position._
+
+### Exit Position (Hidden State - Exit)
+
+```css
+transform: translateY(100%);
+opacity: 0;
+```
+
+_Effect: Element slides **down** again (not up), returning to the "pushed down" state and fading out._

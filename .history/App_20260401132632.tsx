@@ -23,7 +23,6 @@ import { CompareBar } from "./components/CompareBar";
 import { CompareModal } from "./components/CompareModal";
 import { LayoutSettings } from "./components/LayoutSettings";
 import { LogoSlider } from "./components/LogoSlider";
-import { FinalCTA } from "./components/FinalCTA";
 // import GreetingLoader from './components/GreetingLoader'
 
 // ✅ Import react-whatsapp-widget
@@ -46,7 +45,6 @@ const HomePage = () => {
       <SuccessFramework />
       <GettingStarted />
       <Testimonial />
-      <FinalCTA />
       {/* <AppleInspiration /> */}
     </>
   );
