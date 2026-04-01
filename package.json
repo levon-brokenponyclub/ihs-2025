@@ -23,9 +23,11 @@
     "@types/react-dom": "^18.2.21",
     "@types/styled-components": "^5.1.36",
     "@vitejs/plugin-react": "^4.2.1",
-    "ngrok": "^5.0.0-beta.2",
     "typescript": "^5.2.2",
     "vite": "^7.3.0",
     "wait-port": "^1.1.0"
+  },
+  "optionalDependencies": {
+    "ngrok": "^5.0.0-beta.2"
   }
 }
