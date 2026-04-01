@@ -213,14 +213,14 @@ export const CourseCard: React.FC<CourseCardProps> = ({
             </div>
 
             <div className="flex gap-3 relative z-20 bg-white">
-              {/* <Button
-                                variant="primary"
-                                className="flex-1 !px-2 !py-3 !text-[10px] md:!text-xs"
-                            >
-                                Learn More
-                            </Button> */}
+              <Button
+                variant="primary"
+                className="flex-1 !px-2 !py-3 !text-[10px] md:!text-xs"
+              >
+                Learn More
+              </Button>
 
-              push<Button
+              <Button
                 variant="outline"
                 onClick={handleAction}
                 className="flex-1 !px-2 !py-3 !text-[10px] md:!text-xs"
